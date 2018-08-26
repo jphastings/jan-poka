@@ -32,7 +32,7 @@ var WGS84 = geometry{
 	f: 1.0 / 298.257223518,
 }
 
-func rad(deg float64) float64 {
+func Rad(deg float64) float64 {
 	return deg * math.Pi / 180.0
 }
 
@@ -50,10 +50,10 @@ func RelativeDirection(source LLACoords, target LLACoords, facing float64) (dist
 	y := distance * math.Sin(abs.Θ) * math.Sin(abs.Φ)
 	z := distance * math.Cos(abs.Θ)
 
-	sinφ := math.Sin(rad(source.Φ))
-	cosφ := math.Cos(rad(source.Φ))
-	sinλ := math.Sin(rad(source.Λ))
-	cosλ := math.Cos(rad(source.Λ))
+	sinφ := math.Sin(Rad(source.Φ))
+	cosφ := math.Cos(Rad(source.Φ))
+	sinλ := math.Sin(Rad(source.Λ))
+	cosλ := math.Cos(Rad(source.Λ))
 
 	// Relative direction in cartesian (rotate so forward is North, up is away from earth core)
 	// ie. Rotate 270 - Φ about y axis, then Λ - 180 about the new x axis
@@ -93,10 +93,10 @@ func AbsoluteDirection(sourceLLA LLACoords, targetLLA LLACoords) SphericalCoords
 func LLAToECEF(coords LLACoords) ECEFCoords {
 	geo := WGS84
 
-	sinφ := math.Sin(rad(coords.Φ))
-	cosφ := math.Cos(rad(coords.Φ))
-	sinλ := math.Sin(rad(coords.Λ))
-	cosλ := math.Cos(rad(coords.Λ))
+	sinφ := math.Sin(Rad(coords.Φ))
+	cosφ := math.Cos(Rad(coords.Φ))
+	sinλ := math.Sin(Rad(coords.Λ))
+	cosλ := math.Cos(Rad(coords.Λ))
 
 	a := geo.a
 	b := geo.a * (1 - geo.f)
