@@ -15,7 +15,7 @@ type Motor struct {
 	stepPin      gpio.PinIO
 }
 
-func New(angle float64, directionPin, stepPin gpio.PinIO) *Motor {
+func New(angle Degrees, directionPin, stepPin gpio.PinIO) *Motor {
 	m := &Motor{
 		StepChannel: make(chan bool),
 		Angle:       angle,

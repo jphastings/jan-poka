@@ -6,12 +6,12 @@ import (
 
 	"github.com/jphastings/corviator/pkg/hardware/wheel"
 	"github.com/jphastings/corviator/pkg/locations"
-	"github.com/jphastings/corviator/pkg/math"
+	. "github.com/jphastings/corviator/pkg/math"
 	"github.com/jphastings/corviator/pkg/sphere"
 	"github.com/jphastings/corviator/pkg/transforms"
 )
 
-var home = math.LLACoords{
+var home = LLACoords{
 	Φ: 51.498842,
 	Λ: -0.084357,
 	A: 10,
@@ -32,11 +32,8 @@ func main() {
 	}
 
 	s := sphere.New(
-		motors,
-		200,
-		200.0/48.0,
-		3*time.Millisecond,
-		0)
+		motors, 200, 200.0/48.0,
+		3*time.Millisecond, 0)
 
 	locations := target.Poll()
 
@@ -48,13 +45,9 @@ func main() {
 	}
 }
 
-func admire(s *sphere.Config, target math.LLACoords) {
-	distance, heading, elevation := transforms.RelativeDirection(home, target, s.Facing)
+func admire(s *sphere.Config, target LLACoords) {
+	direction := transforms.RelativeDirection(home, target, s.Facing)
 
-	fmt.Printf("\n\nLooking at (%.2f, %.2f) which is: %.0fm facing %.1fº up %.1fº\n", target.Φ, target.Λ, distance, heading, elevation)
-	_ = pointAt(s, heading, elevation)
-}
-
-func pointAt(s *sphere.Config, heading, elevation float64) time.Duration {
-	return s.StepToElevation(heading, elevation)
+	fmt.Printf("\n\nLooking at (%.2f, %.2f) which is: %.0fm facing %.1fº up %.1fº\n", target.Φ, target.Λ, direction.Distance, direction.Heading, direction.Elevation)
+	s.StepToDirection(direction)
 }

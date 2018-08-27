@@ -13,7 +13,7 @@ type Config struct {
 	sphereRotationSteps float64
 	minStepInterval     time.Duration
 
-	Facing float64
+	Facing Degrees
 
 	isSetUp        bool
 	currentHeading Degrees
@@ -25,7 +25,7 @@ func New(
 	wheelRotationSteps int,
 	wheelRatio float64,
 	minStepInterval time.Duration,
-	facing float64,
+	facing Degrees,
 ) *Config {
 	return &Config{
 		motors:              motors,
@@ -38,26 +38,26 @@ func New(
 	}
 }
 
-func (s *Config) StepToElevation(heading, elevation Degrees) time.Duration {
-	Θ := 90 - elevation
+func (s *Config) StepToDirection(direction Direction) time.Duration {
+	Θ := 90 - direction.Elevation
 	finalΘ := Θ
 	completesIn := time.Duration(0)
 
-	if heading == s.currentHeading {
+	if direction.Heading == s.currentHeading {
 		Θ = s.currentΘ - Θ
 	} else {
 		completesIn = s.stepHome(completesIn)
 	}
 
 	if Θ != 0 {
-		completesIn = s.stepToΘ(heading, Θ, completesIn)
+		completesIn = s.stepToΘ(direction.Heading, Θ, completesIn)
 	}
 
 	finished := time.NewTimer(completesIn)
 	go func() {
 		<-finished.C
 		s.currentΘ = finalΘ
-		s.currentHeading = heading
+		s.currentHeading = direction.Heading
 	}()
 
 	return completesIn
