@@ -4,11 +4,10 @@ import (
 	"fmt"
 	"time"
 
-	wheel "github.com/jphastings/corviator/pkg/hardware/wheel"
+	"github.com/jphastings/corviator/pkg/hardware/wheel"
 	"github.com/jphastings/corviator/pkg/locations"
 	"github.com/jphastings/corviator/pkg/sphere"
 	"github.com/jphastings/corviator/pkg/transforms"
-	"strings"
 )
 
 var home = transforms.LLACoords{
@@ -38,7 +37,6 @@ func main() {
 		3*time.Millisecond,
 		0)
 
-	listenMotors(motors, s)
 	locations := target.Poll()
 
 	for {
@@ -58,24 +56,4 @@ func admire(s *sphere.Config, target transforms.LLACoords) {
 
 func pointAt(s *sphere.Config, heading, elevation float64) time.Duration {
 	return s.StepToElevation(heading, elevation)
-}
-
-func listenMotors(motors []*wheel.Motor, s *sphere.Config) {
-	for i, motor := range motors {
-		name := rune(i + 65)
-		go listenMotor(motor, string(name))
-	}
-}
-
-func listenMotor(motor *wheel.Motor, name string) {
-	for {
-		select {
-		case isForward := <-motor.StepChannel:
-			if isForward {
-				fmt.Printf(name)
-			} else {
-				fmt.Printf(strings.ToLower(name))
-			}
-		}
-	}
 }
