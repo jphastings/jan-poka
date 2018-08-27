@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/jphastings/corviator/pkg/transforms"
+	"github.com/jphastings/corviator/pkg/math"
 )
 
 const TYPE = "iss"
@@ -25,14 +25,14 @@ func NewLocationProvider() *locationProvider {
 
 func (_ *locationProvider) SetParams(func(interface{}) error) error { return nil }
 
-func (_ *locationProvider) Location() (transforms.LLACoords, bool) {
+func (_ *locationProvider) Location() (math.LLACoords, bool) {
 	client := &http.Client{}
 
 	req, _ := http.NewRequest("GET", "http://api.open-notify.org/iss-now.json", nil)
 	req.Header.Add("Accept", "application/json")
 	res, err := client.Do(req)
 	if err != nil {
-		return transforms.LLACoords{}, false
+		return math.LLACoords{}, false
 	}
 
 	defer res.Body.Close()
@@ -40,21 +40,21 @@ func (_ *locationProvider) Location() (transforms.LLACoords, bool) {
 	var response serviceResponse
 	err = decoder.Decode(&response)
 	if err != nil {
-		return transforms.LLACoords{}, false
+		return math.LLACoords{}, false
 	}
 
 	φ, err := strconv.ParseFloat(response.Position.Latitude, 64)
 	if err != nil {
-		return transforms.LLACoords{}, false
+		return math.LLACoords{}, false
 	}
 	λ, err := strconv.ParseFloat(response.Position.Longitude, 64)
 	if err != nil {
-		return transforms.LLACoords{}, false
+		return math.LLACoords{}, false
 	}
 
-	return transforms.LLACoords{
-		Φ: φ,
-		Λ: λ,
+	return math.LLACoords{
+		Φ: math.Degrees(φ),
+		Λ: math.Degrees(λ),
 		A: 408000,
 	}, true
 }

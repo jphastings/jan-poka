@@ -7,14 +7,14 @@ import (
 
 	"github.com/jphastings/corviator/pkg/locations/iss"
 	"github.com/jphastings/corviator/pkg/locations/lla"
-	"github.com/jphastings/corviator/pkg/transforms"
+	"github.com/jphastings/corviator/pkg/math"
 )
 
 type locationProvider interface {
 	// SetParams provides you with a function that will populate the given (json annotated) struct pointer with the JSON params. May return error if JSON does not match. Should validate given parameters and return error if unusable.
 	SetParams(func(decodeInto interface{}) error) error
 	// Location returns the location according to the params set earlier at the current time. Second argument can be false if provider is currently offline.
-	Location() (target transforms.LLACoords, isUsable bool)
+	Location() (target math.LLACoords, isUsable bool)
 }
 
 var locationProviders map[string]locationProvider
@@ -30,7 +30,7 @@ type deciderLocationSpec struct {
 
 type TargetInstructions struct {
 	pollTicker *time.Ticker
-	sequence   []func() (transforms.LLACoords, bool)
+	sequence   []func() (math.LLACoords, bool)
 }
 
 func init() {
@@ -48,7 +48,7 @@ func DecodeJSON(givenJSON []byte) (*TargetInstructions, error) {
 	}
 
 	ti := &TargetInstructions{
-		sequence:   []func() (transforms.LLACoords, bool){},
+		sequence:   []func() (math.LLACoords, bool){},
 		pollTicker: time.NewTicker(time.Duration(target.PollSeconds) * time.Second),
 	}
 
@@ -72,7 +72,7 @@ func DecodeJSON(givenJSON []byte) (*TargetInstructions, error) {
 			return nil, err
 		}
 
-		ti.sequence = append(ti.sequence, func() (transforms.LLACoords, bool) {
+		ti.sequence = append(ti.sequence, func() (math.LLACoords, bool) {
 			return provider.Location()
 		})
 	}
@@ -80,8 +80,8 @@ func DecodeJSON(givenJSON []byte) (*TargetInstructions, error) {
 	return ti, nil
 }
 
-func (ti *TargetInstructions) Poll() <-chan transforms.LLACoords {
-	locationsChan := make(chan transforms.LLACoords)
+func (ti *TargetInstructions) Poll() <-chan math.LLACoords {
+	locationsChan := make(chan math.LLACoords)
 	go func() {
 		for {
 			for _, locationRetriever := range ti.sequence {

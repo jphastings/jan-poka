@@ -1,13 +1,13 @@
 package lla
 
 import (
-	"github.com/jphastings/corviator/pkg/transforms"
+	"github.com/jphastings/corviator/pkg/math"
 )
 
 const TYPE = "lla"
 
 type locationProvider struct {
-	target transforms.LLACoords
+	target math.LLACoords
 }
 
 type params struct {
@@ -24,11 +24,11 @@ func (lp *locationProvider) SetParams(decodeInto func(interface{}) error) error 
 	loc := &params{}
 	err := decodeInto(loc)
 	if err == nil {
-		lp.target = transforms.LLACoords{Φ: loc.Φ, Λ: loc.Λ, A: loc.A}
+		lp.target = math.LLACoords{Φ: loc.Φ, Λ: loc.Λ, A: loc.A}
 	}
 	return err
 }
 
-func (lp *locationProvider) Location() (transforms.LLACoords, bool) {
+func (lp *locationProvider) Location() (math.LLACoords, bool) {
 	return lp.target, true
 }

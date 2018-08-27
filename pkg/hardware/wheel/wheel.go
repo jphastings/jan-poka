@@ -2,13 +2,14 @@ package wheel
 
 import (
 	"fmt"
+	. "github.com/jphastings/corviator/pkg/math"
 	"periph.io/x/periph/conn/gpio"
 	"strings"
 )
 
 type Motor struct {
-	StepChannel  chan bool
-	AngleDegrees float64
+	StepChannel chan bool
+	Angle       Degrees
 
 	directionPin gpio.PinIO
 	stepPin      gpio.PinIO
@@ -16,8 +17,8 @@ type Motor struct {
 
 func New(angle float64, directionPin, stepPin gpio.PinIO) *Motor {
 	m := &Motor{
-		StepChannel:  make(chan bool),
-		AngleDegrees: angle,
+		StepChannel: make(chan bool),
+		Angle:       angle,
 
 		directionPin: directionPin,
 		stepPin:      stepPin,

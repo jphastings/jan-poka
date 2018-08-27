@@ -1,19 +1,23 @@
 package transforms
 
-func RelativeDirection(source LLACoords, target LLACoords, facing degrees) (distance meters, heading, elevation degrees) {
+import . "github.com/jphastings/corviator/pkg/math"
+
+func RelativeDirection(source LLACoords, target LLACoords, facing Degrees) Direction {
 	abs := AbsoluteDirection(source, target)
 
-	distance = abs.R
+	direction := Direction{
+		Distance: abs.R,
+	}
 
 	// Absolute direction in cartesian
-	x := distance * sin(abs.Θ) * cos(abs.Φ)
-	y := distance * sin(abs.Θ) * sin(abs.Φ)
-	z := distance * cos(abs.Θ)
+	x := direction.Distance * Sin(abs.Θ) * Cos(abs.Φ)
+	y := direction.Distance * Sin(abs.Θ) * Sin(abs.Φ)
+	z := direction.Distance * Cos(abs.Θ)
 
-	sinφ := sinº(source.Φ)
-	cosφ := cosº(source.Φ)
-	sinλ := sinº(source.Λ)
-	cosλ := cosº(source.Λ)
+	sinφ := Sinº(source.Φ)
+	cosφ := Cosº(source.Φ)
+	sinλ := Sinº(source.Λ)
+	cosλ := Cosº(source.Λ)
 
 	// Relative direction in cartesian (rotate so forward is North, up is away from earth core)
 	// ie. Rotate 270 - Φ about y axis, then Λ - 180 about the new x axis
@@ -21,14 +25,12 @@ func RelativeDirection(source LLACoords, target LLACoords, facing degrees) (dist
 	yr := z*sinλ - y*cosλ
 	zr := x*cosφ + y*sinφ*sinλ + z*sinφ*cosλ
 
-	// Because heading is positive clockwise, but spherical is positive anticlockwise
-	heading = 180 - atan2D(yr, xr) - facing
-	if heading >= 360 {
-		heading -= 360
-	}
-	elevation = 90 - acosD(zr/distance)
+	// Not sure why this 180 needs to be there… I thought I'd need to invert as spherical is anticlockwise but
+	// headings are clockwise. Tests pass though!
+	direction.Heading = ModDeg(180 + Atan2º(yr, xr) - facing)
+	direction.Elevation = 90 - Acosº(zr/direction.Distance)
 
-	return distance, heading, elevation
+	return direction
 }
 
 func AbsoluteDirection(sourceLLA LLACoords, targetLLA LLACoords) SphericalCoords {
@@ -41,11 +43,11 @@ func AbsoluteDirection(sourceLLA LLACoords, targetLLA LLACoords) SphericalCoords
 		Z: target.Z - source.Z,
 	}
 
-	r := mod(d)
+	r := Mod(d)
 
 	return SphericalCoords{
 		R: r,
-		Θ: acos(d.Z / r),
-		Φ: atan2(d.Y, d.X),
+		Θ: Acos(d.Z / r),
+		Φ: ModRad(Atan2(d.Y, d.X)),
 	}
 }

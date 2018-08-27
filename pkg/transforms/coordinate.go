@@ -1,10 +1,12 @@
 package transforms
 
-import "math"
+import (
+	. "github.com/jphastings/corviator/pkg/math"
+)
 
 type geometry struct {
-	a meters
-	f meters
+	a Meters
+	f Meters
 }
 
 var WGS84 = geometry{
@@ -13,10 +15,10 @@ var WGS84 = geometry{
 }
 
 func LLAToECEF(coords LLACoords) ECEFCoords {
-	sinφ := sinº(coords.Φ)
-	cosφ := cosº(coords.Φ)
-	sinλ := sinº(coords.Λ)
-	cosλ := cosº(coords.Λ)
+	sinφ := Sinº(coords.Φ)
+	cosφ := Cosº(coords.Φ)
+	sinλ := Sinº(coords.Λ)
+	cosλ := Cosº(coords.Λ)
 
 	a := WGS84.a
 	b := WGS84.a * (1 - WGS84.f)
@@ -24,12 +26,12 @@ func LLAToECEF(coords LLACoords) ECEFCoords {
 	a2 := a * a
 	b2 := b * b
 
-	e := meters(math.Sqrt(float64((a2 - b2) / a2)))
+	e := Sqrt((a2 - b2) / a2)
 
 	e2 := e * e
 	sin2φ := sinφ * sinφ
 
-	n := a / meters(math.Sqrt(float64(1-e2*sin2φ)))
+	n := a / Sqrt(1-e2*sin2φ)
 	h := coords.A
 
 	return ECEFCoords{

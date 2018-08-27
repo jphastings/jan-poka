@@ -2,7 +2,7 @@ package sphere
 
 import (
 	"github.com/jphastings/corviator/pkg/hardware/wheel"
-	"github.com/jphastings/corviator/pkg/transforms"
+	. "github.com/jphastings/corviator/pkg/math"
 	"math"
 	"time"
 )
@@ -16,8 +16,8 @@ type Config struct {
 	Facing float64
 
 	isSetUp        bool
-	currentHeading float64
-	currentΘ       float64
+	currentHeading Degrees
+	currentΘ       Degrees
 }
 
 func New(
@@ -38,7 +38,7 @@ func New(
 	}
 }
 
-func (s *Config) StepToElevation(heading, elevation float64) time.Duration {
+func (s *Config) StepToElevation(heading, elevation Degrees) time.Duration {
 	Θ := 90 - elevation
 	finalΘ := Θ
 	completesIn := time.Duration(0)
@@ -73,19 +73,19 @@ func (s *Config) stepHome(wait time.Duration) time.Duration {
 	return s.stepToΘ(oppositeHeading, s.currentΘ, wait)
 }
 
-func (s *Config) stepToΘ(heading, Θ float64, wait time.Duration) time.Duration {
+func (s *Config) stepToΘ(heading, Θ Degrees, wait time.Duration) time.Duration {
 	if Θ == 0 {
 		return wait
 	}
 
-	maxSteps := Θ * s.sphereRotationSteps / 360
+	maxSteps := float64(Θ) * s.sphereRotationSteps / 360
 	travelTime := time.Duration(maxSteps) * s.minStepInterval
 	if travelTime < 0 {
 		travelTime = -travelTime
 	}
 
 	for _, motor := range s.motors {
-		motorSteps := -int(math.Ceil(math.Cos(transforms.Rad(heading-motor.AngleDegrees)) * maxSteps))
+		motorSteps := -int(math.Ceil(float64(Cosº(heading-motor.Angle)) * maxSteps))
 		go travelMotor(wait, travelTime, motor, motorSteps)
 	}
 

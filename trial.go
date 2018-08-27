@@ -6,11 +6,12 @@ import (
 
 	"github.com/jphastings/corviator/pkg/hardware/wheel"
 	"github.com/jphastings/corviator/pkg/locations"
+	"github.com/jphastings/corviator/pkg/math"
 	"github.com/jphastings/corviator/pkg/sphere"
 	"github.com/jphastings/corviator/pkg/transforms"
 )
 
-var home = transforms.LLACoords{
+var home = math.LLACoords{
 	Φ: 51.498842,
 	Λ: -0.084357,
 	A: 10,
@@ -47,7 +48,7 @@ func main() {
 	}
 }
 
-func admire(s *sphere.Config, target transforms.LLACoords) {
+func admire(s *sphere.Config, target math.LLACoords) {
 	distance, heading, elevation := transforms.RelativeDirection(home, target, s.Facing)
 
 	fmt.Printf("\n\nLooking at (%.2f, %.2f) which is: %.0fm facing %.1fº up %.1fº\n", target.Φ, target.Λ, distance, heading, elevation)
