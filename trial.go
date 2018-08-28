@@ -20,7 +20,7 @@ func main() {
 	target, _ := locations.DecodeJSON([]byte(`{
 		"poll": 10,
 		"target": [
-			{"type": "iss", "lat": 47.9520658, "long": 7.9562333, "alt": 0}
+			{"type": "lla", "lat": 47.9520658, "long": 7.9562333, "alt": 0}
 		]
 	}`))
 

@@ -5,11 +5,13 @@ type geometry struct {
 	f Meters
 }
 
+// WGS84 is the earth geometry used by GPS.
 var WGS84 = geometry{
 	a: 6378137,
 	f: 1.0 / 298.257223518,
 }
 
+// ECEF transforms into earth centered, earth fixed coordinates using the given earth geometry.
 func (lla LLACoords) ECEF(geom geometry) ECEFCoords {
 	sinφ := Sinº(lla.Φ)
 	cosφ := Cosº(lla.Φ)
@@ -37,6 +39,7 @@ func (lla LLACoords) ECEF(geom geometry) ECEFCoords {
 	}
 }
 
+// ENU transforms into topocentric meters North, East and Up at the given location.
 func (ecef ECEFCoords) ENU(here LLACoords) ENUCoords {
 	sinφ := Sinº(here.Φ)
 	cosφ := Cosº(here.Φ)
@@ -50,6 +53,7 @@ func (ecef ECEFCoords) ENU(here LLACoords) ENUCoords {
 	}
 }
 
+// AER transforms into a bearing; in degrees Elevated from the horizon, in degrees of Azimuth measured from the given heading (measured from North) as well as the Range.
 func (enu ENUCoords) AER(facing Degrees) AERCoords {
 	distance := Sqrt(enu.North*enu.North + enu.East*enu.East + enu.Up*enu.Up)
 	return AERCoords{
