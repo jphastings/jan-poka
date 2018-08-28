@@ -16,7 +16,7 @@ type Config struct {
 	Facing Degrees
 
 	isSetUp        bool
-	currentHeading Degrees
+	currentAzimuth Degrees
 	currentΘ       Degrees
 }
 
@@ -33,31 +33,31 @@ func New(
 		minStepInterval:     minStepInterval,
 		Facing:              facing,
 
-		currentHeading: 0,
+		currentAzimuth: 0,
 		currentΘ:       0,
 	}
 }
 
-func (s *Config) StepToDirection(direction Direction) time.Duration {
-	Θ := 90 - direction.Elevation
+func (s *Config) StepToDirection(bearing AERCoords) time.Duration {
+	Θ := 90 - bearing.Elevation
 	finalΘ := Θ
 	completesIn := time.Duration(0)
 
-	if direction.Heading == s.currentHeading {
+	if bearing.Azimuth == s.currentAzimuth {
 		Θ = s.currentΘ - Θ
 	} else {
 		completesIn = s.stepHome(completesIn)
 	}
 
 	if Θ != 0 {
-		completesIn = s.stepToΘ(direction.Heading, Θ, completesIn)
+		completesIn = s.stepToΘ(bearing.Azimuth, Θ, completesIn)
 	}
 
 	finished := time.NewTimer(completesIn)
 	go func() {
 		<-finished.C
 		s.currentΘ = finalΘ
-		s.currentHeading = direction.Heading
+		s.currentAzimuth = bearing.Azimuth
 	}()
 
 	return completesIn
@@ -65,7 +65,7 @@ func (s *Config) StepToDirection(direction Direction) time.Duration {
 
 // Home is at Θ = 0 (strait up)
 func (s *Config) stepHome(wait time.Duration) time.Duration {
-	oppositeHeading := 180 + s.currentHeading
+	oppositeHeading := 180 + s.currentAzimuth
 	if oppositeHeading >= 360 {
 		oppositeHeading -= 360
 	}

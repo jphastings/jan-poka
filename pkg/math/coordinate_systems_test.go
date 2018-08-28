@@ -1,4 +1,4 @@
-package transforms
+package math_test
 
 import (
 	"testing"
@@ -14,12 +14,12 @@ func TestCoordinate(t *testing.T) {
 	RunSpecs(t, "Coordinate Suite")
 }
 
-var _ = Describe("LLAToECEF", func() {
+var _ = Describe("LLACoords.ECEF()", func() {
 	accuracy := 1 // Meters
 
 	DescribeTable("known coordinate transforms",
 		func(input math.LLACoords, expected math.ECEFCoords) {
-			actual := LLAToECEF(input)
+			actual := input.ECEF(math.WGS84)
 			Expect(actual.X).To(BeNumerically("~", expected.X, accuracy))
 			Expect(actual.Y).To(BeNumerically("~", expected.Y, accuracy))
 			Expect(actual.Z).To(BeNumerically("~", expected.Z, accuracy))
