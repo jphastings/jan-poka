@@ -7,13 +7,15 @@ import (
 const TYPE = "lla"
 
 type locationProvider struct {
+	name   string
 	target LLACoords
 }
 
 type params struct {
-	Φ Degrees `json:"lat"`
-	Λ Degrees `json:"long"`
-	A Meters  `json:"alt"`
+	Name string  `json:"Name"`
+	Φ    Degrees `json:"lat"`
+	Λ    Degrees `json:"long"`
+	A    Meters  `json:"alt"`
 }
 
 func NewLocationProvider() *locationProvider {
@@ -24,11 +26,16 @@ func (lp *locationProvider) SetParams(decodeInto func(interface{}) error) error 
 	loc := &params{}
 	err := decodeInto(loc)
 	if err == nil {
+		if loc.Name == "" {
+			lp.name = "That location"
+		} else {
+			lp.name = loc.Name
+		}
 		lp.target = LLACoords{Φ: loc.Φ, Λ: loc.Λ, A: loc.A}
 	}
 	return err
 }
 
-func (lp *locationProvider) Location() (LLACoords, bool) {
-	return lp.target, true
+func (lp *locationProvider) Location() (LLACoords, string, bool) {
+	return lp.target, lp.name, true
 }
