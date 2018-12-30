@@ -3,3 +3,4 @@ corviator
 hardware
 google.json
 .DS_Store
+.balena-sync.yaml
