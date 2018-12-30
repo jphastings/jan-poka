@@ -45,9 +45,13 @@ func main() {
 
 
 	// Gogo!
+	for {
+		log.Println("Step 90º")
+		step(90)
 
-	log.Println("Step 90º")
-	step(90)
+		log.Println("Waiting")
+		<-time.NewTimer(5 * time.Second).C
+	}
 }
 
 func step(deg Degrees) {
