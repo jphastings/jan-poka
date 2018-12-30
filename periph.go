@@ -29,11 +29,13 @@ func main() {
 
 	t := time.NewTicker(time.Second)
 	for {
+		log.Println("Go Low")
 		if err := pinStepC.Out(gpio.Low); err != nil {
 			log.Fatal(err)
 		}
 		<-t.C
 
+		log.Println("Go High")
 		if err := pinStepC.Out(gpio.High); err != nil {
 			log.Fatal(err)
 		}
