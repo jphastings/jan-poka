@@ -3,7 +3,7 @@ WORKDIR /go/src/corviator
 COPY . .
 RUN go install -a -ldflags '-extldflags "-static"'
 
-FROM balena-os/scratch
+FROM balenalib/scratch
 
 ENV INITSYSTEM on
 
