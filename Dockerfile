@@ -3,7 +3,7 @@ WORKDIR /go/src/corviator
 COPY . .
 RUN go install -a -ldflags '-extldflags "-static"'
 
-FROM balenalib/scratch
+FROM balenalib/raspberry-pi
 
 ENV INITSYSTEM on
 
