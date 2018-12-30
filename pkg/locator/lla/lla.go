@@ -12,7 +12,7 @@ type locationProvider struct {
 }
 
 type params struct {
-	Name string  `json:"Name"`
+	Name string  `json:"name"`
 	Φ    Degrees `json:"lat"`
 	Λ    Degrees `json:"long"`
 	A    Meters  `json:"alt"`
