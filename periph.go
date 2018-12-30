@@ -46,6 +46,7 @@ func main() {
 
 	// Gogo!
 
+	log.Println("Step 90º")
 	step(90)
 }
 
