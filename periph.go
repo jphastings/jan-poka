@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"math/rand"
 	"time"
 	"math"
 
@@ -35,10 +36,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if err := pinDirC.Out(gpio.Low); err != nil {
-		log.Fatal(err)
-	}
-
 	if err := pinStepC.Out(gpio.Low); err != nil {
 		log.Fatal(err)
 	}
@@ -46,16 +43,29 @@ func main() {
 
 	// Gogo!
 	for {
-		log.Println("Step 90º")
-		step(90)
+		degs := Degrees(rand.Float64() * 720)
 
-		log.Println("Waiting")
-		<-time.NewTimer(2 * time.Second).C
+		if err := pinDirC.Out(gpio.Low); err != nil {
+			log.Fatal(err)
+		}
+
+		log.Println("Step ", degs, "º")
+		step(degs)
+
+		<-time.NewTimer(1 * time.Second).C
+
+		log.Println("…and back")
+		if err := pinDirC.Out(gpio.High); err != nil {
+			log.Fatal(err)
+		}
+
+		step(degs)
+		<-time.NewTimer(3 * time.Second).C
 	}
 }
 
 func step(deg Degrees) {
-	steps := math.Floor(float64(deg / degreesPerStep))
+	steps := int(math.Floor(float64(deg / degreesPerStep)))
 	log.Println("Going steps:", steps)
 	for ; steps > 0; steps-- {
 		if err := pinStepC.Out(gpio.High); err != nil {
