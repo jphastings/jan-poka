@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	degreesPerStep Degrees = 0.45
+	degreesPerStep Degrees = 1.8
 	motorMinLow = 1 * time.Millisecond
 	motorMinHigh = motorMinLow
 
@@ -50,7 +50,7 @@ func main() {
 		step(90)
 
 		log.Println("Waiting")
-		<-time.NewTimer(5 * time.Second).C
+		<-time.NewTimer(2 * time.Second).C
 	}
 }
 
