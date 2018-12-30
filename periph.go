@@ -17,7 +17,7 @@ func main() {
 
 	pinDirC := rpi.P1_7
 	pinStepC := rpi.P1_11
-	motorActive := rpi.P1_27
+	motorActive := rpi.P1_13
 
 	log.Println("Sleep is high")
 	if err := motorActive.Out(gpio.High); err != nil {
