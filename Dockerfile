@@ -1,6 +1,6 @@
 FROM balenalib/raspberry-pi-golang:1.11 as builder
 WORKDIR /go/src/corviator
-COPY periph.go ./
+COPY . .
 RUN go install -a -ldflags '-extldflags "-static"'
 
 FROM balena-os/scratch
