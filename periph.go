@@ -28,7 +28,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	t := time.NewTicker(time.Second)
+	t := time.NewTicker(30 * time.Millisecond)
 	for {
 		log.Println("Go Low")
 		if err := pinStepC.Out(gpio.Low); err != nil {
@@ -41,6 +41,6 @@ func main() {
 			log.Fatal(err)
 		}
 
-		<-time.NewTimer(200 * time.Millisecond).C
+		<-time.NewTimer(5 * time.Millisecond).C
 	}
 }
