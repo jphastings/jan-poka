@@ -1,7 +1,7 @@
 FROM balenalib/raspberry-pi-golang:1.11 as builder
 WORKDIR /go/src/corviator
 COPY periph.go ./
-RUN CGO_ENABLED=0 go install -a -tags netgo -ldflags '-extldflags "-static"'
+RUN go install -a -ldflags '-extldflags "-static"'
 
 FROM balena-os/scratch
 
