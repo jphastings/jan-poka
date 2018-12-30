@@ -15,11 +15,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	motorNotSleep := rpi.P1_27
 	pinDirC := rpi.P1_7
 	pinStepC := rpi.P1_11
+	motorActive := rpi.P1_27
 
-	if err := motorNotSleep.Out(gpio.High); err != nil {
+	log.Println("Sleep is high")
+	if err := motorActive.Out(gpio.High); err != nil {
 		log.Fatal(err)
 	}
 
