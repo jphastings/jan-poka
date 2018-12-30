@@ -14,8 +14,8 @@ import (
 
 var (
 	degreesPerStep Degrees = 0.45
-	motorMinLow = 1 * time.Microsecond
-	motorMinHigh = 1 * time.Microsecond
+	motorMinLow = 10 * time.Microsecond
+	motorMinHigh = motorMinLow
 
 	pinStepC = rpi.P1_11
 )
