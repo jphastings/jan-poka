@@ -3,11 +3,23 @@ package main
 import (
 	"log"
 	"time"
+	"math"
 
 	"periph.io/x/periph/conn/gpio"
 	"periph.io/x/periph/host"
 	"periph.io/x/periph/host/rpi"
+
+	. "github.com/jphastings/corviator/pkg/math"
 )
+
+var (
+	degreesPerStep Degrees = 0.45
+	motorMinLow = 1 * time.Microsecond
+	motorMinHigh = 1 * time.Microsecond
+
+	pinStepC = rpi.P1_11
+)
+
 
 func main() {
 	// Load all the drivers:
@@ -15,11 +27,10 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Set up
 	pinDirC := rpi.P1_7
-	pinStepC := rpi.P1_11
 	motorActive := rpi.P1_13
 
-	log.Println("Sleep is high")
 	if err := motorActive.Out(gpio.High); err != nil {
 		log.Fatal(err)
 	}
@@ -28,19 +39,26 @@ func main() {
 		log.Fatal(err)
 	}
 
-	t := time.NewTicker(10 * time.Microsecond)
-	for {
-		log.Println("Go Low")
-		if err := pinStepC.Out(gpio.Low); err != nil {
-			log.Fatal(err)
-		}
-		<-t.C
+	if err := pinStepC.Out(gpio.Low); err != nil {
+		log.Fatal(err)
+	}
 
-		log.Println("Go High")
+	
+	// Gogo!
+
+	step(90)
+}
+
+func step(deg Degrees) {
+	for steps := math.Floor(float64(deg / degreesPerStep)); steps > 0; steps++ {
 		if err := pinStepC.Out(gpio.High); err != nil {
 			log.Fatal(err)
 		}
+		<-time.NewTimer(motorMinHigh).C
 
-		<-time.NewTimer(5 * time.Microsecond).C
+		if err := pinStepC.Out(gpio.Low); err != nil {
+			log.Fatal(err)
+		}
+		<-time.NewTimer(motorMinLow).C
 	}
 }
