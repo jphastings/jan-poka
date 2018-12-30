@@ -43,7 +43,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	
+
 	// Gogo!
 
 	step(90)

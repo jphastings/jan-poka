@@ -1,5 +1,5 @@
 FROM balenalib/raspberry-pi-golang:1.11 as builder
-WORKDIR /go/src/corviator
+WORKDIR /go/src/github.com/jphastings/corviator
 COPY . .
 RUN go install -a -ldflags '-extldflags "-static"'
 

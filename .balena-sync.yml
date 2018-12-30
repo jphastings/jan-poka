@@ -1,5 +1,0 @@
-local_balenaos:
-  app-name: local-app
-  build-triggers:
-    - Dockerfile: ee8e7e4b01460756de4b67c039ad76579363c881d2b92de863ab629764ebf0a8
-  environment: []
