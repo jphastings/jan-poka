@@ -15,7 +15,7 @@ import (
 
 var (
 	degreesPerStep Degrees = 0.45
-	motorMinLow            = 90 * time.Microsecond
+	motorMinLow            = 150 * time.Microsecond
 	motorMinHigh           = 10 * time.Microsecond
 
 	motorActive = rpi.P1_13
@@ -63,6 +63,7 @@ func step(deg Degrees) {
 	log.Println("Going steps:", steps)
 
 	motorState(true)
+	<-time.NewTimer(time.Millisecond).C
 	for ; steps > 0; steps-- {
 		if err := pinStepC.Out(gpio.High); err != nil {
 			log.Fatal(err)
@@ -74,6 +75,7 @@ func step(deg Degrees) {
 		}
 		<-time.NewTimer(motorMinLow).C
 	}
+	<-time.NewTimer(time.Millisecond).C
 	motorState(false)
 }
 
