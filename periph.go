@@ -16,7 +16,7 @@ import (
 var (
 	degreesPerStep Degrees = 1.8
 	motorMinLow            = 500 * time.Microsecond
-	motorMinHigh           = motorMinLow
+	motorMinHigh           = 10 * time.Microsecond
 
 	motorActive = rpi.P1_13
 	pinStepC    = rpi.P1_11
@@ -54,7 +54,7 @@ func main() {
 		}
 
 		step(degs)
-		<-time.NewTimer(3 * time.Second).C
+		<-time.NewTimer(10 * time.Second).C
 	}
 }
 
