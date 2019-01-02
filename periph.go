@@ -2,9 +2,9 @@ package main
 
 import (
 	"log"
+	"math"
 	"math/rand"
 	"time"
-	"math"
 
 	"periph.io/x/periph/conn/gpio"
 	"periph.io/x/periph/host"
@@ -15,12 +15,13 @@ import (
 
 var (
 	degreesPerStep Degrees = 1.8
-	motorMinLow = 1 * time.Millisecond
-	motorMinHigh = motorMinLow
+	motorMinLow            = 1 * time.Millisecond
+	motorMinHigh           = motorMinLow
 
-	pinStepC = rpi.P1_11
+	motorActive = rpi.P1_13
+	pinStepC    = rpi.P1_11
+	pinDirC     = rpi.P1_7
 )
-
 
 func main() {
 	// Load all the drivers:
@@ -28,18 +29,11 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Set up
-	pinDirC := rpi.P1_7
-	motorActive := rpi.P1_13
-
-	if err := motorActive.Out(gpio.High); err != nil {
-		log.Fatal(err)
-	}
+	motorState(false)
 
 	if err := pinStepC.Out(gpio.Low); err != nil {
 		log.Fatal(err)
 	}
-
 
 	// Gogo!
 	for {
@@ -67,6 +61,8 @@ func main() {
 func step(deg Degrees) {
 	steps := int(math.Floor(float64(deg / degreesPerStep)))
 	log.Println("Going steps:", steps)
+
+	motorState(true)
 	for ; steps > 0; steps-- {
 		if err := pinStepC.Out(gpio.High); err != nil {
 			log.Fatal(err)
@@ -77,5 +73,20 @@ func step(deg Degrees) {
 			log.Fatal(err)
 		}
 		<-time.NewTimer(motorMinLow).C
+	}
+	motorState(false)
+}
+
+func motorState(on bool) {
+	var level gpio.Level
+
+	if on {
+		level = gpio.High
+	} else {
+		level = gpio.Low
+	}
+
+	if err := motorActive.Out(level); err != nil {
+		log.Fatal(err)
 	}
 }
