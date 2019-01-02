@@ -15,7 +15,7 @@ import (
 
 var (
 	degreesPerStep Degrees = 1.8
-	motorMinLow            = 500 * time.Microsecond
+	motorMinLow            = 10 * time.Millisecond
 	motorMinHigh           = 10 * time.Microsecond
 
 	motorActive = rpi.P1_13
