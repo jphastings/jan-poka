@@ -9,4 +9,8 @@ ENV INITSYSTEM on
 
 COPY --from=builder /go/bin/corviator /corviator
 COPY --from=builder /etc/ssl/certs/ /etc/ssl/certs
+
+ENV CORVIATOR_PORT 80
+EXPOSE 80
+
 CMD ["/corviator"]
