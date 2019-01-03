@@ -2,6 +2,7 @@ package sphere
 
 import (
 	"fmt"
+	"github.com/jphastings/corviator/pkg/future"
 	"github.com/jphastings/corviator/pkg/hardware/motor"
 	. "github.com/jphastings/corviator/pkg/math"
 	"math"
@@ -48,16 +49,12 @@ func New(
 	return config
 }
 
-func (s *Config) TrackerCallback(_ string, bearing AERCoords, _ bool) chan error {
-	return s.StepToDirection(bearing)
-}
-
-func (s *Config) StepToDirection(bearing AERCoords) chan error {
-	promise := make(chan error)
+func (s *Config) StepToDirection(bearing AERCoords) future.Future {
+	f := future.New()
 
 	go func() {
 		if err := s.powerSaver.PowerOn(); err != nil {
-			promise <- err
+			f.Fail(err)
 			return
 		}
 
@@ -67,17 +64,17 @@ func (s *Config) StepToDirection(bearing AERCoords) chan error {
 		if bearing.Azimuth == s.currentAzimuth {
 			theta = s.currentTheta - theta
 		} else {
-			if err := <-s.stepHome(); err != nil {
+			if result := <-s.stepHome(); !result.IsOK() {
 				s.powerSaver.PowerOff()
-				promise <- err
+				f.Bubble(result)
 				return
 			}
 		}
 
 		if theta != 0 {
-			if err := <-s.stepToTheta(bearing.Azimuth, theta); err != nil {
+			if result := <-s.stepToTheta(bearing.Azimuth, theta); !result.IsOK() {
 				s.powerSaver.PowerOff()
-				promise <- err
+				f.Bubble(result)
 				return
 			}
 		}
@@ -86,14 +83,14 @@ func (s *Config) StepToDirection(bearing AERCoords) chan error {
 		s.currentTheta = finalTheta
 		s.currentAzimuth = bearing.Azimuth
 
-		promise <- nil
+		f.Succeed()
 	}()
 
-	return promise
+	return f
 }
 
 // Home is at Θ = 0 (straight up)
-func (s *Config) stepHome() chan error {
+func (s *Config) stepHome() future.Future {
 	oppositeHeading := 180 + s.currentAzimuth
 	if oppositeHeading >= 360 {
 		oppositeHeading -= 360
@@ -102,12 +99,12 @@ func (s *Config) stepHome() chan error {
 	return s.stepToTheta(oppositeHeading, s.currentTheta)
 }
 
-func (s *Config) stepToTheta(heading, theta Degrees) chan error {
-	promise := make(chan error)
+func (s *Config) stepToTheta(heading, theta Degrees) future.Future {
+	f := future.New()
 
 	if theta == 0 {
-		promise <- nil
-		return promise
+		f.Succeed()
+		return f
 	}
 
 	maxSteps := float64(theta) * float64(s.sphereRotationSteps) / 360
@@ -131,8 +128,8 @@ func (s *Config) stepToTheta(heading, theta Degrees) chan error {
 
 	wg.Wait()
 
-	promise <- nil
-	return promise
+	f.Succeed()
+	return f
 }
 
 func travelMotor(t time.Duration, m *motor.Motor, s int) {

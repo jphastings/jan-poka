@@ -1,9 +1,11 @@
 package tracker
 
 import (
+	"github.com/jphastings/corviator/pkg/future"
 	"github.com/jphastings/corviator/pkg/locator"
 	"github.com/jphastings/corviator/pkg/math"
 	. "github.com/jphastings/corviator/pkg/math"
+	"sync"
 )
 
 type Config struct {
@@ -12,7 +14,7 @@ type Config struct {
 	Targets   chan *locator.TargetInstructions
 }
 
-type OnTracked func(string, AERCoords, bool) chan error
+type OnTracked func(string, AERCoords, bool) future.Future
 
 func New(home math.LLACoords, callbacks ...OnTracked) *Config {
 	return &Config{
@@ -37,10 +39,17 @@ func (track *Config) Track() {
 		case details := <-tracker:
 			bearing := track.home.DirectionTo(details.Coords, 0)
 
+			var wg sync.WaitGroup
+
 			for _, callback := range track.callbacks {
-				// TODO: deal with errors
-				_ = callback(details.Name, bearing, isFirstTrack)
+				wg.Add(1)
+				go func(cb OnTracked) {
+					<-cb(details.Name, bearing, isFirstTrack)
+					wg.Done()
+				}(callback)
 			}
+
+			wg.Wait()
 
 			isFirstTrack = false
 		}
