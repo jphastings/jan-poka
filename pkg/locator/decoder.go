@@ -42,8 +42,6 @@ func provider(decider string) (locationProvider, error) {
 		return lla.NewLocationProvider(), nil
 	case iss.TYPE:
 		return iss.NewLocationProvider(), nil
-	case deliveroo.TYPE:
-		return deliveroo.NewLocationProvider(), nil
 	default:
 		return nil, fmt.Errorf("unknown provider: %s", decider)
 	}
