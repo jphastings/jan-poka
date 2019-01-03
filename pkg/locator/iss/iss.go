@@ -43,18 +43,18 @@ func (_ *locationProvider) Location() (math.LLACoords, string, bool) {
 		return math.LLACoords{}, "", false
 	}
 
-	φ, err := strconv.ParseFloat(response.Position.Latitude, 64)
+	latitude, err := strconv.ParseFloat(response.Position.Latitude, 64)
 	if err != nil {
 		return math.LLACoords{}, "", false
 	}
-	λ, err := strconv.ParseFloat(response.Position.Longitude, 64)
+	longitude, err := strconv.ParseFloat(response.Position.Longitude, 64)
 	if err != nil {
 		return math.LLACoords{}, "", false
 	}
 
 	return math.LLACoords{
-		Φ: math.Degrees(φ),
-		Λ: math.Degrees(λ),
-		A: 408000,
+		Latitude:  math.Degrees(latitude),
+		Longitude: math.Degrees(longitude),
+		Altitude:  408000,
 	}, "The International Space Station", true
 }

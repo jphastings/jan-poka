@@ -4,7 +4,7 @@ import (
 	m "math"
 )
 
-const Π = m.Pi
+const Pi = m.Pi
 
 type Degrees float64
 type Radians float64
@@ -24,11 +24,11 @@ type ENUCoords struct {
 	Up    Meters
 }
 
-// LLACoords represents a position on earth by latitude (Φ), longitude (Λ) and altitude above average sea level (Azimuth).
+// LLACoords represents a position on earth by latitude (Latitude), longitude (Longitude) and altitude above average sea level (Azimuth).
 type LLACoords struct {
-	Φ Degrees
-	Λ Degrees
-	A Meters
+	Latitude  Degrees
+	Longitude Degrees
+	Altitude  Meters
 }
 
 // ECEFCoords represents an Earth Centered, Earth Fixed cartesian location in meters from the center towards lat/long 0, 0 (X), towards lat/long 0,90 (Y) and towards lat/long 90,0 (Z).

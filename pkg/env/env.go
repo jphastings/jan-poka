@@ -37,9 +37,9 @@ func ParseEnv() (Config, error) {
 	}
 
 	env.Home = LLACoords{
-		Φ: env.HomeLatitude,
-		Λ: env.HomeLongitude,
-		A: env.HomeAltitude,
+		Latitude:  env.HomeLatitude,
+		Longitude: env.HomeLongitude,
+		Altitude:  env.HomeAltitude,
 	}
 
 	return env, nil

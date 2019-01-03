@@ -21,7 +21,7 @@ type Config struct {
 
 	isSetUp        bool
 	currentAzimuth Degrees
-	currentΘ       Degrees
+	currentTheta   Degrees
 }
 
 func New(
@@ -42,7 +42,7 @@ func New(
 		Facing:              facing,
 
 		currentAzimuth: 0,
-		currentΘ:       0,
+		currentTheta:   0,
 	}
 
 	return config
@@ -65,7 +65,7 @@ func (s *Config) StepToDirection(bearing AERCoords) chan error {
 		finalTheta := theta
 
 		if bearing.Azimuth == s.currentAzimuth {
-			theta = s.currentΘ - theta
+			theta = s.currentTheta - theta
 		} else {
 			if err := <-s.stepHome(); err != nil {
 				s.powerSaver.PowerOff()
@@ -75,7 +75,7 @@ func (s *Config) StepToDirection(bearing AERCoords) chan error {
 		}
 
 		if theta != 0 {
-			if err := <-s.stepToΘ(bearing.Azimuth, theta); err != nil {
+			if err := <-s.stepToTheta(bearing.Azimuth, theta); err != nil {
 				s.powerSaver.PowerOff()
 				promise <- err
 				return
@@ -83,7 +83,7 @@ func (s *Config) StepToDirection(bearing AERCoords) chan error {
 		}
 
 		s.powerSaver.PowerOff()
-		s.currentΘ = finalTheta
+		s.currentTheta = finalTheta
 		s.currentAzimuth = bearing.Azimuth
 
 		promise <- nil
@@ -99,10 +99,10 @@ func (s *Config) stepHome() chan error {
 		oppositeHeading -= 360
 	}
 
-	return s.stepToΘ(oppositeHeading, s.currentΘ)
+	return s.stepToTheta(oppositeHeading, s.currentTheta)
 }
 
-func (s *Config) stepToΘ(heading, theta Degrees) chan error {
+func (s *Config) stepToTheta(heading, theta Degrees) chan error {
 	promise := make(chan error)
 
 	if theta == 0 {
@@ -121,7 +121,7 @@ func (s *Config) stepToΘ(heading, theta Degrees) chan error {
 	var wg sync.WaitGroup
 
 	for _, mtr := range s.motors {
-		motorSteps := -int(math.Ceil(float64(Cosº(heading-mtr.Angle)) * maxSteps))
+		motorSteps := -int(math.Ceil(float64(CosDeg(heading-mtr.Angle)) * maxSteps))
 		wg.Add(1)
 		go func() {
 			travelMotor(travelTime, mtr, motorSteps)

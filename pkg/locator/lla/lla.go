@@ -12,10 +12,10 @@ type locationProvider struct {
 }
 
 type params struct {
-	Name string  `json:"name"`
-	Φ    Degrees `json:"lat"`
-	Λ    Degrees `json:"long"`
-	A    Meters  `json:"alt"`
+	Name      string  `json:"name"`
+	Latitude  Degrees `json:"lat"`
+	Longitude Degrees `json:"long"`
+	Altitude  Meters  `json:"alt"`
 }
 
 func NewLocationProvider() *locationProvider {
@@ -31,7 +31,7 @@ func (lp *locationProvider) SetParams(decodeInto func(interface{}) error) error 
 		} else {
 			lp.name = loc.Name
 		}
-		lp.target = LLACoords{Φ: loc.Φ, Λ: loc.Λ, A: loc.A}
+		lp.target = LLACoords{Latitude: loc.Latitude, Longitude: loc.Longitude, Altitude: loc.Altitude}
 	}
 	return err
 }

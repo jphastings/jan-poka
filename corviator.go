@@ -44,7 +44,7 @@ func main() {
 
 	go track.Track()
 
-	log.Printf("Corviator is ready. Home is (%.2f,%.2f) %.0fm above sea level.\n", environment.Home.Φ, environment.Home.Λ, environment.Home.A)
+	log.Printf("Corviator is ready. Home is (%.2f,%.2f) %.0fm above sea level.\n", environment.Home.Latitude, environment.Home.Longitude, environment.Home.Altitude)
 	http.CorviatorAPI(environment.Port, track)
 }
 
