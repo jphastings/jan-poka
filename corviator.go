@@ -60,7 +60,7 @@ func setupSphere(env env.Config) tracker.OnTracked {
 			motor.New(0, rpi.P1_7, rpi.P1_11),
 		},
 		rpi.P1_13, env.MotorAutoSleepLeeway,
-		env.MotorSteps*env.MicroStep,
+		env.MotorSteps,
 		float64(env.SphereDiameter/env.OmniwheelDiameter),
 		env.MinStepInterval,
 		env.Heading,

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/jphastings/corviator/pkg/hardware/motor"
 	. "github.com/jphastings/corviator/pkg/math"
+	"log"
 	"math"
 	"periph.io/x/periph/conn/gpio"
 	"time"
@@ -13,7 +14,7 @@ type Config struct {
 	motors     []*motor.Motor
 	powerSaver *motor.PowerSaver
 
-	sphereRotationSteps float64
+	sphereRotationSteps int
 	minStepInterval     time.Duration
 
 	Facing Degrees
@@ -36,7 +37,7 @@ func New(
 		motors:     motors,
 		powerSaver: motor.NewPowerSaver(motorsActivePin, motorsActiveLeeway),
 
-		sphereRotationSteps: wheelRatio * float64(wheelRotationSteps),
+		sphereRotationSteps: int(wheelRatio) * wheelRotationSteps,
 		minStepInterval:     minStepInterval,
 		Facing:              facing,
 
@@ -94,8 +95,10 @@ func (s *Config) stepToΘ(heading, Θ Degrees, wait time.Duration) time.Duration
 		return wait
 	}
 
-	maxSteps := float64(Θ) * s.sphereRotationSteps / 360
+	maxSteps := float64(Θ) * float64(s.sphereRotationSteps) / 360
+	log.Println("Maximum steps is", maxSteps)
 	travelTime := time.Duration(maxSteps) * s.minStepInterval
+	log.Println("Travel time is", travelTime.String())
 	if travelTime < 0 {
 		travelTime = -travelTime
 	}
