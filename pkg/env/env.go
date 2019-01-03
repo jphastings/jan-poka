@@ -21,11 +21,12 @@ type Config struct {
 	UseSteppers bool `default:"false"`
 	UseTTS      bool `default:"false"`
 
-	Home              LLACoords     `ignored:"true"`
-	MotorSteps        int           `default:"200"`
-	SphereDiameter    Meters        `default:"0.2"`
-	OmniwheelDiameter Meters        `default:"0.048"`
-	MinStepInterval   time.Duration `default:"400ms"`
+	Home                 LLACoords     `ignored:"true"`
+	MotorSteps           int           `default:"200"`
+	SphereDiameter       Meters        `default:"0.2"`
+	OmniwheelDiameter    Meters        `default:"0.048"`
+	MinStepInterval      time.Duration `default:"400ms"`
+	MotorAutoSleepLeeway time.Duration `default:"5ms"`
 }
 
 func ParseEnv() (Config, error) {
