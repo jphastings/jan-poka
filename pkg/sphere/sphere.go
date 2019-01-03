@@ -1,6 +1,7 @@
 package sphere
 
 import (
+	"fmt"
 	"github.com/jphastings/corviator/pkg/hardware/motor"
 	. "github.com/jphastings/corviator/pkg/math"
 	"math"
@@ -74,6 +75,7 @@ func (s *Config) StepToDirection(bearing AERCoords) time.Duration {
 		s.currentAzimuth = bearing.Azimuth
 	}()
 
+	fmt.Println("Stepping will be complete in", completesIn)
 	return completesIn
 }
 
