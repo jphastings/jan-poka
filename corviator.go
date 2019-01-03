@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/jphastings/corviator/pkg/env"
 	"github.com/jphastings/corviator/pkg/hardware/motor"
 	"github.com/jphastings/corviator/pkg/l10n"
@@ -27,6 +28,7 @@ func main() {
 
 	if environment.UseLog {
 		callbacks = append(callbacks, l10n.TrackerCallback)
+		fmt.Println("Tracking with log")
 	}
 
 	if environment.UseSteppers {
@@ -41,6 +43,7 @@ func main() {
 			environment.Heading,
 		)
 		callbacks = append(callbacks, sphereConfig.TrackerCallback)
+		fmt.Println("Tracking with stepper motors")
 	}
 
 	//if environment.UseTTS {
@@ -50,6 +53,7 @@ func main() {
 	//	}
 	//
 	//	callbacks = append(callbacks, tts.TrackedCallback(ttsEngine))
+	//  fmt.Println("Tracking with text-to-speech engine")
 	//}
 
 	track := tracker.New(environment.Home, callbacks...)
