@@ -12,7 +12,7 @@ type Config struct {
 	Targets   chan *locator.TargetInstructions
 }
 
-type OnTracked func(string, AERCoords, bool) error
+type OnTracked func(string, AERCoords, bool) chan error
 
 func New(home math.LLACoords, callbacks ...OnTracked) *Config {
 	return &Config{

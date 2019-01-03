@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/jphastings/corviator/pkg/env"
 	"github.com/jphastings/corviator/pkg/hardware/motor"
 	"github.com/jphastings/corviator/pkg/l10n"
@@ -48,9 +49,11 @@ func main() {
 }
 
 func setupLogger() tracker.OnTracked {
-	return func(name string, bearing AERCoords, _ bool) error {
-		log.Printf(l10n.Phrase(name, bearing, false))
-		return nil
+	return func(name string, bearing AERCoords, _ bool) chan error {
+		promise := make(chan error)
+		fmt.Printf(l10n.Phrase(name, bearing, false))
+		promise <- nil
+		return promise
 	}
 }
 

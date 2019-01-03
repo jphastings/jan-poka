@@ -9,8 +9,12 @@ type Engine interface {
 	Speak(string) error
 }
 
-func TrackedCallback(ttsEngine Engine) func(string, AERCoords, bool) error {
-	return func(name string, bearing AERCoords, isFirstTrack bool) error {
-		return ttsEngine.Speak(l10n.Phrase(name, bearing, isFirstTrack))
+func TrackedCallback(ttsEngine Engine) func(string, AERCoords, bool) chan error {
+	return func(name string, bearing AERCoords, isFirstTrack bool) chan error {
+		promise := make(chan error)
+		go func() {
+			promise <- ttsEngine.Speak(l10n.Phrase(name, bearing, isFirstTrack))
+		}()
+		return promise
 	}
 }

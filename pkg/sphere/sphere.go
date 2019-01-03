@@ -6,6 +6,7 @@ import (
 	. "github.com/jphastings/corviator/pkg/math"
 	"math"
 	"periph.io/x/periph/conn/gpio"
+	"sync"
 	"time"
 )
 
@@ -47,54 +48,69 @@ func New(
 	return config
 }
 
-func (s *Config) TrackerCallback(_ string, bearing AERCoords, _ bool) error {
-	s.StepToDirection(bearing)
-	return nil
+func (s *Config) TrackerCallback(_ string, bearing AERCoords, _ bool) chan error {
+	return s.StepToDirection(bearing)
 }
 
-func (s *Config) StepToDirection(bearing AERCoords) time.Duration {
-	Θ := 90 - bearing.Elevation
-	finalΘ := Θ
-	completesIn := time.Duration(0)
+func (s *Config) StepToDirection(bearing AERCoords) chan error {
+	promise := make(chan error)
 
-	if bearing.Azimuth == s.currentAzimuth {
-		Θ = s.currentΘ - Θ
-	} else {
-		completesIn = s.stepHome(completesIn)
-	}
-
-	if Θ != 0 {
-		completesIn = s.stepToΘ(bearing.Azimuth, Θ, completesIn)
-	}
-
-	s.powerSaver.PowerUntil(completesIn)
-	finished := time.NewTimer(completesIn)
 	go func() {
-		<-finished.C
-		s.currentΘ = finalΘ
+		if err := s.powerSaver.PowerOn(); err != nil {
+			promise <- err
+			return
+		}
+
+		theta := 90 - bearing.Elevation
+		finalTheta := theta
+
+		if bearing.Azimuth == s.currentAzimuth {
+			theta = s.currentΘ - theta
+		} else {
+			if err := <-s.stepHome(); err != nil {
+				s.powerSaver.PowerOff()
+				promise <- err
+				return
+			}
+		}
+
+		if theta != 0 {
+			if err := <-s.stepToΘ(bearing.Azimuth, theta); err != nil {
+				s.powerSaver.PowerOff()
+				promise <- err
+				return
+			}
+		}
+
+		s.powerSaver.PowerOff()
+		s.currentΘ = finalTheta
 		s.currentAzimuth = bearing.Azimuth
+
+		promise <- nil
 	}()
 
-	fmt.Println("Stepping will be complete in", completesIn)
-	return completesIn
+	return promise
 }
 
 // Home is at Θ = 0 (straight up)
-func (s *Config) stepHome(wait time.Duration) time.Duration {
+func (s *Config) stepHome() chan error {
 	oppositeHeading := 180 + s.currentAzimuth
 	if oppositeHeading >= 360 {
 		oppositeHeading -= 360
 	}
 
-	return s.stepToΘ(oppositeHeading, s.currentΘ, wait)
+	return s.stepToΘ(oppositeHeading, s.currentΘ)
 }
 
-func (s *Config) stepToΘ(heading, Θ Degrees, wait time.Duration) time.Duration {
-	if Θ == 0 {
-		return wait
+func (s *Config) stepToΘ(heading, theta Degrees) chan error {
+	promise := make(chan error)
+
+	if theta == 0 {
+		promise <- nil
+		return promise
 	}
 
-	maxSteps := float64(Θ) * float64(s.sphereRotationSteps) / 360
+	maxSteps := float64(theta) * float64(s.sphereRotationSteps) / 360
 	fmt.Println("Maximum steps is", maxSteps)
 	travelTime := time.Duration(maxSteps) * s.minStepInterval
 	fmt.Println("Travel time is", travelTime.String())
@@ -102,18 +118,24 @@ func (s *Config) stepToΘ(heading, Θ Degrees, wait time.Duration) time.Duration
 		travelTime = -travelTime
 	}
 
+	var wg sync.WaitGroup
+
 	for _, mtr := range s.motors {
 		motorSteps := -int(math.Ceil(float64(Cosº(heading-mtr.Angle)) * maxSteps))
-		go travelMotor(wait, travelTime, mtr, motorSteps)
+		wg.Add(1)
+		go func() {
+			travelMotor(travelTime, mtr, motorSteps)
+			wg.Done()
+		}()
 	}
 
-	// We assume the execution time of this function is negligible
-	return wait + travelTime
+	wg.Wait()
+
+	promise <- nil
+	return promise
 }
 
-func travelMotor(w, t time.Duration, m *motor.Motor, s int) {
-	<-time.NewTimer(w).C
-
+func travelMotor(t time.Duration, m *motor.Motor, s int) {
 	var f bool
 	if s >= 0 {
 		f = true
@@ -123,7 +145,6 @@ func travelMotor(w, t time.Duration, m *motor.Motor, s int) {
 	}
 
 	pulseWidth := t / time.Duration(s)
-	fmt.Println("Pulsewidth is", pulseWidth)
 	ticker := time.NewTicker(pulseWidth)
 	for range ticker.C {
 		m.StepChannel <- f
