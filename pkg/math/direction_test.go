@@ -16,7 +16,7 @@ func TestDirections(t *testing.T) {
 
 const arcSecond = Degrees(0.00027778)
 
-var _ = FDescribe("LLACoords.DirectionTo", func() {
+var _ = Describe("LLACoords.DirectionTo", func() {
 	cancer := Degrees(23.43687)
 
 	DescribeTable("known directions",
