@@ -5,6 +5,8 @@ import (
 	"github.com/jphastings/corviator/pkg/hardware/motor"
 	"github.com/jphastings/corviator/pkg/l10n"
 	"github.com/jphastings/corviator/pkg/sphere"
+	"time"
+
 	//"github.com/jphastings/corviator/pkg/tts"
 	//"github.com/jphastings/corviator/pkg/tts/googletts"
 	"log"
@@ -59,6 +61,7 @@ func setupSphere(env env.Config) tracker.OnTracked {
 		[]*motor.Motor{
 			motor.New(0, rpi.P1_7, rpi.P1_11),
 		},
+		rpi.P1_13, 5*time.Millisecond,
 		env.MotorSteps*env.MicroStep,
 		float64(env.SphereDiameter/env.OmniwheelDiameter),
 		env.MinStepInterval,

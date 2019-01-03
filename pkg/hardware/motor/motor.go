@@ -1,19 +1,23 @@
 package motor
 
 import (
-	"fmt"
 	. "github.com/jphastings/corviator/pkg/math"
 	"periph.io/x/periph/conn/gpio"
-	"strings"
+	"time"
 )
 
 type Motor struct {
 	StepChannel chan bool
 	Angle       Degrees
 
-	directionPin gpio.PinIO
-	stepPin      gpio.PinIO
+	directionPin gpio.PinOut
+	stepPin      gpio.PinOut
 }
+
+var (
+	pulsePeriod     = 25 * time.Microsecond
+	directionLevels = map[bool]gpio.Level{true: gpio.High, false: gpio.Low}
+)
 
 func New(angle Degrees, directionPin, stepPin gpio.PinIO) *Motor {
 	m := &Motor{
@@ -34,12 +38,15 @@ func (m *Motor) Move(name string) {
 	for {
 		select {
 		case isForward := <-m.StepChannel:
-			if isForward {
-				// directionPin = gpio.High
-				fmt.Printf(name)
+			if err := m.directionPin.Out(directionLevels[isForward]); err == nil {
+				if err := m.stepPin.Out(gpio.High); err == nil {
+					<-time.NewTimer(pulsePeriod).C
+					if err := m.stepPin.Out(gpio.Low); err != nil {
+						// TODO: What happens with an error?
+					}
+				}
 			} else {
-				// directionPin = gpio.Low
-				fmt.Printf(strings.ToLower(name))
+				// TODO: What happens with an error?
 			}
 		}
 	}

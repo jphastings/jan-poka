@@ -4,11 +4,13 @@ import (
 	"github.com/jphastings/corviator/pkg/hardware/motor"
 	. "github.com/jphastings/corviator/pkg/math"
 	"math"
+	"periph.io/x/periph/conn/gpio"
 	"time"
 )
 
 type Config struct {
-	motors []*motor.Motor
+	motors     []*motor.Motor
+	powerSaver *motor.PowerSaver
 
 	sphereRotationSteps float64
 	minStepInterval     time.Duration
@@ -22,13 +24,17 @@ type Config struct {
 
 func New(
 	motors []*motor.Motor,
+	motorsActivePin gpio.PinOut,
+	motorsActiveLeeway time.Duration,
 	wheelRotationSteps int,
 	wheelRatio float64,
 	minStepInterval time.Duration,
 	facing Degrees,
 ) *Config {
-	return &Config{
-		motors:              motors,
+	config := &Config{
+		motors:     motors,
+		powerSaver: motor.NewPowerSaver(motorsActivePin, motorsActiveLeeway),
+
 		sphereRotationSteps: wheelRatio * float64(wheelRotationSteps),
 		minStepInterval:     minStepInterval,
 		Facing:              facing,
@@ -36,6 +42,8 @@ func New(
 		currentAzimuth: 0,
 		currentΘ:       0,
 	}
+
+	return config
 }
 
 func (s *Config) TrackerCallback(_ string, bearing AERCoords, _ bool) error {
@@ -58,6 +66,7 @@ func (s *Config) StepToDirection(bearing AERCoords) time.Duration {
 		completesIn = s.stepToΘ(bearing.Azimuth, Θ, completesIn)
 	}
 
+	s.powerSaver.PowerUntil(completesIn)
 	finished := time.NewTimer(completesIn)
 	go func() {
 		<-finished.C
