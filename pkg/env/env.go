@@ -9,9 +9,8 @@ import (
 )
 
 type Config struct {
-	Heading   Degrees `default:"0"`
-	MicroStep int     `default:"1"`
-	Port      uint16  `default:"2678"`
+	Heading Degrees `default:"0"`
+	Port    uint16  `default:"2678"`
 
 	HomeLatitude  Degrees `required:"true"`
 	HomeLongitude Degrees `required:"true"`
@@ -24,8 +23,8 @@ type Config struct {
 	MotorSteps           int           `default:"200"`
 	SphereDiameter       Meters        `default:"0.2"`
 	OmniwheelDiameter    Meters        `default:"0.048"`
-	MinStepInterval      time.Duration `default:"400ms"`
-	MotorAutoSleepLeeway time.Duration `default:"5ms"`
+	MinStepInterval      time.Duration `default:"400us"`
+	MotorAutoSleepLeeway time.Duration `default:"500ms"`
 
 	Home LLACoords `ignored:"true"`
 }

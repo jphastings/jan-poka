@@ -1,7 +1,6 @@
 package motor
 
 import (
-	"fmt"
 	. "github.com/jphastings/corviator/pkg/math"
 	"periph.io/x/periph/conn/gpio"
 	"time"
@@ -16,7 +15,7 @@ type Motor struct {
 }
 
 var (
-	pulsePeriod     = 25 * time.Microsecond
+	pulsePeriod     = 100 * time.Microsecond
 	directionLevels = map[bool]gpio.Level{true: gpio.High, false: gpio.Low}
 )
 
@@ -39,12 +38,7 @@ func (m *Motor) move(name string) {
 	for {
 		select {
 		case isForward := <-m.StepChannel:
-			if isForward {
-				fmt.Println("Stepping motor forward once:", name)
-			} else {
-				fmt.Println("Stepping motor backward once:", name)
-			}
-
+			// TODO: Looks like we're sleeping before the roundtrip is done
 			if err := m.directionPin.Out(directionLevels[isForward]); err == nil {
 				if err := m.stepPin.Out(gpio.High); err == nil {
 					<-time.NewTimer(pulsePeriod).C

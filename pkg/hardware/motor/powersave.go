@@ -1,7 +1,7 @@
 package motor
 
 import (
-	"log"
+	"fmt"
 	"periph.io/x/periph/conn/gpio"
 	"time"
 )
@@ -25,7 +25,7 @@ func NewPowerSaver(activePin gpio.PinOut, leeway time.Duration) *PowerSaver {
 }
 
 func (mps *PowerSaver) PowerUntil(powerDownIn time.Duration) error {
-	log.Println("Powering up motors")
+	fmt.Println("Powering up motors")
 	if err := mps.pin.Out(gpio.High); err != nil {
 		return err
 	}
@@ -42,7 +42,7 @@ func (mps *PowerSaver) runTimer() {
 		case powerDownIn := <-mps.resetTimer:
 			deactivationTimer = time.NewTimer(powerDownIn)
 		case <-deactivationTimer.C:
-			log.Println("Powering down motors")
+			fmt.Println("Powering down motors")
 			if err := mps.pin.Out(gpio.Low); err != nil {
 				// TODO: What to do with error?
 			}

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/jphastings/corviator/pkg/hardware/motor"
 	. "github.com/jphastings/corviator/pkg/math"
-	"log"
 	"math"
 	"periph.io/x/periph/conn/gpio"
 	"time"
@@ -96,9 +95,9 @@ func (s *Config) stepToΘ(heading, Θ Degrees, wait time.Duration) time.Duration
 	}
 
 	maxSteps := float64(Θ) * float64(s.sphereRotationSteps) / 360
-	log.Println("Maximum steps is", maxSteps)
+	fmt.Println("Maximum steps is", maxSteps)
 	travelTime := time.Duration(maxSteps) * s.minStepInterval
-	log.Println("Travel time is", travelTime.String())
+	fmt.Println("Travel time is", travelTime.String())
 	if travelTime < 0 {
 		travelTime = -travelTime
 	}
@@ -123,7 +122,9 @@ func travelMotor(w, t time.Duration, m *motor.Motor, s int) {
 		f = false
 	}
 
-	ticker := time.NewTicker(t / time.Duration(s))
+	pulseWidth := t / time.Duration(s)
+	fmt.Println("Pulsewidth is", pulseWidth)
+	ticker := time.NewTicker(pulseWidth)
 	for range ticker.C {
 		m.StepChannel <- f
 
