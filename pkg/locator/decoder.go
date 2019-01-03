@@ -3,7 +3,6 @@ package locator
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/jphastings/corviator/pkg/locator/deliveroo"
 	"time"
 
 	"github.com/jphastings/corviator/pkg/locator/iss"
