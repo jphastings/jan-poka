@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"math"
-	"math/rand"
 	"time"
 
 	"periph.io/x/periph/conn/gpio"
@@ -37,7 +36,7 @@ func main() {
 
 	// Gogo!
 	for {
-		degs := Degrees(rand.Float64() * 720)
+		degs := Degrees(585)
 
 		if err := pinDirC.Out(gpio.Low); err != nil {
 			log.Fatal(err)

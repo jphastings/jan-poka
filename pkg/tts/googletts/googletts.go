@@ -1,8 +1,9 @@
-package tts
+package googletts
 
 import (
 	"bytes"
 	"context"
+	"github.com/jphastings/corviator/pkg/tts/common"
 	"io/ioutil"
 
 	"cloud.google.com/go/texttospeech/apiv1"
@@ -14,7 +15,7 @@ type googleTTS struct {
 	ctx    context.Context
 }
 
-func NewGoogle() (*googleTTS, error) {
+func New() (*googleTTS, error) {
 	ctx := context.Background()
 	client, err := texttospeech.NewClient(ctx)
 	if err != nil {
@@ -48,7 +49,7 @@ func (g *googleTTS) Speak(text string) error {
 		return err
 	}
 
-	err = play(ioutil.NopCloser(bytes.NewReader(resp.AudioContent)))
+	err = common.Play(ioutil.NopCloser(bytes.NewReader(resp.AudioContent)))
 	if err != nil {
 		return err
 	}

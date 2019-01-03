@@ -1,24 +1,16 @@
 package tts
 
 import (
-	"github.com/faiface/beep/speaker"
-	"github.com/faiface/beep/wav"
-	"io"
-	"time"
+	"github.com/jphastings/corviator/pkg/l10n"
+	. "github.com/jphastings/corviator/pkg/math"
 )
 
-type TTSEngine interface {
+type Engine interface {
 	Speak(string) error
 }
 
-func play(wavdata io.ReadCloser) error {
-	s, format, err := wav.Decode(wavdata)
-	if err != nil {
-		return err
+func TrackedCallback(ttsEngine Engine) func(string, AERCoords, bool) error {
+	return func(name string, bearing AERCoords, isFirstTrack bool) error {
+		return ttsEngine.Speak(l10n.Phrase(name, bearing, isFirstTrack))
 	}
-
-	speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
-	speaker.Play(s)
-
-	return nil
 }

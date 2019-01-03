@@ -1,14 +1,14 @@
 package sphere
 
 import (
-	"github.com/jphastings/corviator/pkg/hardware/wheel"
+	"github.com/jphastings/corviator/pkg/hardware/motor"
 	. "github.com/jphastings/corviator/pkg/math"
 	"math"
 	"time"
 )
 
 type Config struct {
-	motors []*wheel.Motor
+	motors []*motor.Motor
 
 	sphereRotationSteps float64
 	minStepInterval     time.Duration
@@ -21,7 +21,7 @@ type Config struct {
 }
 
 func New(
-	motors []*wheel.Motor,
+	motors []*motor.Motor,
 	wheelRotationSteps int,
 	wheelRatio float64,
 	minStepInterval time.Duration,
@@ -36,6 +36,11 @@ func New(
 		currentAzimuth: 0,
 		currentΘ:       0,
 	}
+}
+
+func (s *Config) TrackerCallback(_ string, bearing AERCoords, _ bool) error {
+	s.StepToDirection(bearing)
+	return nil
 }
 
 func (s *Config) StepToDirection(bearing AERCoords) time.Duration {
@@ -63,7 +68,7 @@ func (s *Config) StepToDirection(bearing AERCoords) time.Duration {
 	return completesIn
 }
 
-// Home is at Θ = 0 (strait up)
+// Home is at Θ = 0 (straight up)
 func (s *Config) stepHome(wait time.Duration) time.Duration {
 	oppositeHeading := 180 + s.currentAzimuth
 	if oppositeHeading >= 360 {
@@ -84,16 +89,16 @@ func (s *Config) stepToΘ(heading, Θ Degrees, wait time.Duration) time.Duration
 		travelTime = -travelTime
 	}
 
-	for _, motor := range s.motors {
-		motorSteps := -int(math.Ceil(float64(Cosº(heading-motor.Angle)) * maxSteps))
-		go travelMotor(wait, travelTime, motor, motorSteps)
+	for _, mtr := range s.motors {
+		motorSteps := -int(math.Ceil(float64(Cosº(heading-mtr.Angle)) * maxSteps))
+		go travelMotor(wait, travelTime, mtr, motorSteps)
 	}
 
 	// We assume the execution time of this function is negligible
 	return wait + travelTime
 }
 
-func travelMotor(w, t time.Duration, m *wheel.Motor, s int) {
+func travelMotor(w, t time.Duration, m *motor.Motor, s int) {
 	<-time.NewTimer(w).C
 
 	var f bool

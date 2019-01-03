@@ -1,30 +1,28 @@
 package tracker
 
 import (
-	"fmt"
 	"github.com/jphastings/corviator/pkg/locator"
 	"github.com/jphastings/corviator/pkg/math"
-	"github.com/jphastings/corviator/pkg/sphere"
-	"github.com/jphastings/corviator/pkg/tts"
+	. "github.com/jphastings/corviator/pkg/math"
 )
 
-type TrackerConfig struct {
+type Config struct {
 	home      math.LLACoords
-	sphere    *sphere.Config
-	ttsEngine tts.TTSEngine
+	callbacks []OnTracked
 	Targets   chan *locator.TargetInstructions
 }
 
-func New(home math.LLACoords, ttsEngine tts.TTSEngine, sphereConfig *sphere.Config) *TrackerConfig {
-	return &TrackerConfig{
+type OnTracked func(string, AERCoords, bool) error
+
+func New(home math.LLACoords, callbacks ...OnTracked) *Config {
+	return &Config{
 		home:      home,
-		sphere:    sphereConfig,
-		ttsEngine: ttsEngine,
+		callbacks: callbacks,
 		Targets:   make(chan *locator.TargetInstructions, 1),
 	}
 }
 
-func (track *TrackerConfig) Track() {
+func (track *Config) Track() {
 	var (
 		target       *locator.TargetInstructions
 		tracker      <-chan locator.TargetDetails
@@ -39,15 +37,11 @@ func (track *TrackerConfig) Track() {
 		case details := <-tracker:
 			bearing := track.home.DirectionTo(details.Coords, 0)
 
-			desc := tts.Phrase(details.Name, bearing, isFirstTrack)
-			fmt.Println(desc)
-
-			err := track.ttsEngine.Speak(desc)
-			if err != nil {
-				panic(err)
+			for _, callback := range track.callbacks {
+				// TODO: deal with errors
+				_ = callback(details.Name, bearing, isFirstTrack)
 			}
 
-			//track.sphere.StepToDirection(bearing)
 			isFirstTrack = false
 		}
 	}

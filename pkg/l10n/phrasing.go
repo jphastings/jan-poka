@@ -1,4 +1,4 @@
-package tts
+package l10n
 
 import (
 	"fmt"

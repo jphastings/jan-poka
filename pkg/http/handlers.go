@@ -9,7 +9,7 @@ import (
 	"github.com/jphastings/corviator/pkg/locator"
 )
 
-func handleFocus(track *tracker.TrackerConfig) http.Handler {
+func handleFocus(track *tracker.Config) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
@@ -33,7 +33,7 @@ func handleFocus(track *tracker.TrackerConfig) http.Handler {
 	})
 }
 
-func handleConfig(track *tracker.TrackerConfig) http.Handler {
+func handleConfig(track *tracker.Config) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotImplemented)
 	})
