@@ -5,8 +5,8 @@ import (
 	"github.com/jphastings/corviator/pkg/hardware/motor"
 	"github.com/jphastings/corviator/pkg/l10n"
 	"github.com/jphastings/corviator/pkg/sphere"
-	"github.com/jphastings/corviator/pkg/tts"
-	"github.com/jphastings/corviator/pkg/tts/googletts"
+	//"github.com/jphastings/corviator/pkg/tts"
+	//"github.com/jphastings/corviator/pkg/tts/googletts"
 	"log"
 	"periph.io/x/periph/host/rpi"
 
@@ -35,9 +35,9 @@ func main() {
 	if environment.UseSteppers {
 		callbacks = append(callbacks, setupSphere(environment))
 	}
-	if environment.UseTTS {
-		callbacks = append(callbacks, setupTTS())
-	}
+	//if environment.UseTTS {
+	//	callbacks = append(callbacks, setupTTS())
+	//}
 
 	track := tracker.New(environment.Home, callbacks...)
 
@@ -66,11 +66,11 @@ func setupSphere(env env.Config) tracker.OnTracked {
 	).TrackerCallback
 }
 
-func setupTTS() tracker.OnTracked {
-	ttsEngine, err := googletts.New()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return tts.TrackedCallback(ttsEngine)
-}
+//func setupTTS() tracker.OnTracked {
+//	ttsEngine, err := googletts.New()
+//	if err != nil {
+//		log.Fatal(err)
+//	}
+//
+//	return tts.TrackedCallback(ttsEngine)
+//}

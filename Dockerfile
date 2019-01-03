@@ -1,7 +1,8 @@
 FROM balenalib/raspberry-pi-golang:1.11 as builder
 WORKDIR /go/src/github.com/jphastings/corviator
 
-RUN apt-get update && apt-get install -y libasound-dev
+# getting "/usr/bin/ld: cannot find -lasound" here :(
+# RUN apt-get update && apt-get install -y libasound-dev
 
 COPY . .
 RUN go install -a -ldflags '-extldflags "-static"'
