@@ -1,6 +1,6 @@
-.idea
-corviator
-hardware
-google.json
+/.idea
+/corviator
+/hardware/
+/google.json
 .DS_Store
-.balena-sync.yml
+/.balena-sync.yml
