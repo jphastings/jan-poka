@@ -9,7 +9,7 @@ import (
 func TrackerCallback(name string, bearing math.AERCoords, _ bool) future.Future {
 	f := future.New()
 	go func() {
-		fmt.Printf(Phrase(name, bearing, false))
+		fmt.Println(Phrase(name, bearing, false))
 		f.Succeed()
 	}()
 	return f
