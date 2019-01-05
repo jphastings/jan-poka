@@ -2,6 +2,8 @@ package math
 
 import m "math"
 
+const Pi = m.Pi
+
 func (deg Degrees) Radians() Radians {
 	return Radians(deg * Pi / 180.0)
 }

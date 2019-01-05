@@ -1,13 +1,9 @@
 package math
 
-import (
-	m "math"
-)
-
-const Pi = m.Pi
-
 type Degrees float64
 type Radians float64
+type ArcSeconds float64
+type AstronomicalUnits float64
 type Meters float64
 
 // AERCoords represents an Azimuth (degrees clockwise from North), Elevation (above the horizon) and Range.
@@ -31,9 +27,13 @@ type LLACoords struct {
 	Altitude  Meters
 }
 
-// ECEFCoords represents an Earth Centered, Earth Fixed cartesian location in meters from the center towards lat/long 0, 0 (X), towards lat/long 0,90 (Y) and towards lat/long 90,0 (Z).
+// ECEFCoords represents an Earth Centered, Earth Fixed cartesian location in meters from the center of Earth towards lat/long 0, 0 (X), towards lat/long 0,90 (Y) and towards lat/long 90,0 (Z).
 type ECEFCoords struct {
 	X Meters
 	Y Meters
 	Z Meters
+}
+
+func (au AstronomicalUnits) Meters() Meters {
+	return Meters(au * 149597870000)
 }
