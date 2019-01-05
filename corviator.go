@@ -6,8 +6,6 @@ import (
 	"github.com/jphastings/corviator/pkg/hardware/motor"
 	"github.com/jphastings/corviator/pkg/l10n"
 	"github.com/jphastings/corviator/pkg/sphere"
-	"github.com/jphastings/corviator/pkg/tts"
-	"github.com/jphastings/corviator/pkg/tts/googletts"
 	"log"
 	"periph.io/x/periph/host/rpi"
 
@@ -48,15 +46,15 @@ func main() {
 		fmt.Println("Tracking with stepper motors")
 	}
 
-	if environment.UseTTS {
-		ttsEngine, err := googletts.New()
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		callbacks = append(callbacks, tts.TrackedCallback(ttsEngine))
-		fmt.Println("Tracking with text-to-speech engine")
-	}
+	//if environment.UseTTS {
+	//	ttsEngine, err := googletts.New()
+	//	if err != nil {
+	//		log.Fatal(err)
+	//	}
+	//
+	//	callbacks = append(callbacks, tts.TrackedCallback(ttsEngine))
+	//	fmt.Println("Tracking with text-to-speech engine")
+	//}
 
 	track := tracker.New(environment.Home, callbacks...)
 
