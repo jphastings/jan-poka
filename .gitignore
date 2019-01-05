@@ -4,3 +4,5 @@
 /google.json
 .DS_Store
 /.balena-sync.yml
+# Remove this for now
+/pkg/locator/celestial
