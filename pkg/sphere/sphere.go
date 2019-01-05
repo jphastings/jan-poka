@@ -51,6 +51,7 @@ func New(
 
 func (s *Config) StepToDirection(bearing AERCoords) future.Future {
 	f := future.New()
+	fmt.Println("Entering StepToDirection")
 
 	go func() {
 		if err := s.powerSaver.PowerOn(); err != nil {
@@ -86,11 +87,13 @@ func (s *Config) StepToDirection(bearing AERCoords) future.Future {
 		f.Succeed()
 	}()
 
+	fmt.Println("Leaving StepToDirection")
 	return f
 }
 
 // Home is at Θ = 0 (straight up)
 func (s *Config) stepHome() future.Future {
+	fmt.Println("Entering stepHome")
 	oppositeHeading := 180 + s.currentAzimuth
 	if oppositeHeading >= 360 {
 		oppositeHeading -= 360
@@ -101,6 +104,7 @@ func (s *Config) stepHome() future.Future {
 
 func (s *Config) stepToTheta(heading, theta Degrees) future.Future {
 	f := future.New()
+	fmt.Println("leaving stepHome")
 
 	if theta == 0 {
 		f.Succeed()
