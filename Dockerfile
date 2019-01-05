@@ -4,7 +4,8 @@ WORKDIR /go/src/github.com/jphastings/corviator
 # getting "/usr/bin/ld: cannot find -lasound" here :(
 # RUN apt-get update && apt-get install -y libasound-dev
 
-RUN apt-get update && apt-get install -y libnova
+# No libnova in raspbian :(
+# RUN apt-get update && apt-get install -y libnova
 
 COPY . .
 RUN go install -a -ldflags '-extldflags "-static"'
