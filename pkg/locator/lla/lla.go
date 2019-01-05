@@ -1,6 +1,7 @@
 package lla
 
 import (
+	"fmt"
 	. "github.com/jphastings/corviator/pkg/math"
 )
 
@@ -12,26 +13,31 @@ type locationProvider struct {
 }
 
 type params struct {
-	Name      string  `json:"name"`
-	Latitude  Degrees `json:"lat"`
-	Longitude Degrees `json:"long"`
-	Altitude  Meters  `json:"alt"`
+	Name      string   `json:"name"`
+	Latitude  *Degrees `json:"lat"`
+	Longitude *Degrees `json:"long"`
+	Altitude  Meters   `json:"alt"`
 }
 
-func NewLocationProvider() *locationProvider {
-	return &locationProvider{}
-}
+func NewLocationProvider() *locationProvider { return &locationProvider{} }
 
 func (lp *locationProvider) SetParams(decodeInto func(interface{}) error) error {
 	loc := &params{}
 	err := decodeInto(loc)
 	if err == nil {
+		if loc.Latitude == nil {
+			return fmt.Errorf("no latitude provided")
+		}
+		if loc.Longitude == nil {
+			return fmt.Errorf("no longitude provided")
+		}
+
 		if loc.Name == "" {
 			lp.name = "That location"
 		} else {
 			lp.name = loc.Name
 		}
-		lp.target = LLACoords{Latitude: loc.Latitude, Longitude: loc.Longitude, Altitude: loc.Altitude}
+		lp.target = LLACoords{Latitude: *loc.Latitude, Longitude: *loc.Longitude, Altitude: loc.Altitude}
 	}
 	return err
 }

@@ -22,17 +22,17 @@ var conversationalAhead = map[bool]string{true: "", false: " dead ahead"}
 
 func Phrase(name string, bearing AERCoords, isFirstTrack bool) string {
 	if isFirstTrack {
-		return fmt.Sprintf("Turn to face%s, and look%s. %.0fkm that way, you'll find %s.",
+		return fmt.Sprintf("Turn to face%s, and look%s. %s that way, you'll find %s.",
 			compassHeading(bearing.Azimuth),
 			elevation(bearing.Elevation, false),
-			bearing.Range/1000,
+			Distance(bearing.Range),
 			name)
 	} else {
-		return fmt.Sprintf("%s is now%s%s, %.0fkm away.",
+		return fmt.Sprintf("%s is now%s%s, %s away.",
 			name,
 			compassHeading(bearing.Azimuth),
 			elevation(bearing.Elevation, true),
-			bearing.Range/1000)
+			Distance(bearing.Range))
 	}
 }
 

@@ -19,10 +19,7 @@ type serviceResponse struct {
 
 type locationProvider struct{}
 
-func NewLocationProvider() *locationProvider {
-	return &locationProvider{}
-}
-
+func NewLocationProvider() *locationProvider                        { return &locationProvider{} }
 func (_ *locationProvider) SetParams(func(interface{}) error) error { return nil }
 
 func (_ *locationProvider) Location() (math.LLACoords, string, bool) {

@@ -1,5 +1,7 @@
 package math
 
+const AstronomicalUnitInMeters = 149597870000
+
 type Degrees float64
 type Radians float64
 type ArcSeconds float64
@@ -35,5 +37,5 @@ type ECEFCoords struct {
 }
 
 func (au AstronomicalUnits) Meters() Meters {
-	return Meters(au * 149597870000)
+	return Meters(au * AstronomicalUnitInMeters)
 }
