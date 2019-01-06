@@ -1,4 +1,4 @@
-// +build tts
+// +build libasound2
 
 package main
 
@@ -18,6 +18,8 @@ func init() {
 		}
 
 		callbacks = append(callbacks, tts.TrackedCallback(ttsEngine))
-		fmt.Println("Tracking with text-to-speech engine")
+		fmt.Println("TTS tracking: on")
+	} else {
+		fmt.Println("TTS tracking: off")
 	}
 }

@@ -2,6 +2,8 @@ package lla
 
 import (
 	"fmt"
+
+	"github.com/jphastings/corviator/pkg/locator/common"
 	. "github.com/jphastings/corviator/pkg/math"
 )
 
@@ -19,7 +21,7 @@ type params struct {
 	Altitude  Meters   `json:"alt"`
 }
 
-func NewLocationProvider() *locationProvider { return &locationProvider{} }
+func Load() { common.Providers[TYPE] = func() common.LocationProvider { return &locationProvider{} } }
 
 func (lp *locationProvider) SetParams(decodeInto func(interface{}) error) error {
 	loc := &params{}

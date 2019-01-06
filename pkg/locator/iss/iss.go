@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/jphastings/corviator/pkg/locator/common"
 	"github.com/jphastings/corviator/pkg/math"
 )
 
@@ -19,7 +20,7 @@ type serviceResponse struct {
 
 type locationProvider struct{}
 
-func NewLocationProvider() *locationProvider                        { return &locationProvider{} }
+func Load()                                                         { common.Providers[TYPE] = func() common.LocationProvider { return &locationProvider{} } }
 func (_ *locationProvider) SetParams(func(interface{}) error) error { return nil }
 
 func (_ *locationProvider) Location() (math.LLACoords, string, bool) {

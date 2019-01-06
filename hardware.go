@@ -30,6 +30,8 @@ func init() {
 			environment.Heading,
 		)
 		callbacks = append(callbacks, sphereConfig.TrackerCallback)
-		fmt.Println("Tracking with stepper motors")
+		fmt.Println("Stepper motor tracking: on")
+	} else {
+		fmt.Println("Stepper motor tracking: off")
 	}
 }

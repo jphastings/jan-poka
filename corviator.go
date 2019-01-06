@@ -24,7 +24,9 @@ func init() {
 func main() {
 	if environment.UseLog {
 		callbacks = append(callbacks, l10n.TrackerCallback)
-		fmt.Println("Tracking with log")
+		fmt.Println("Debug log tracking: on")
+	} else {
+		fmt.Println("Debug log tracking: off")
 	}
 
 	track := tracker.New(environment.Home, callbacks...)
