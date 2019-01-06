@@ -26,3 +26,7 @@ func (p Future) Fail(err error) {
 func (p Future) Bubble(r Result) {
 	p <- r
 }
+
+func (p Future) Result() Result {
+	return <-p
+}
