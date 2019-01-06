@@ -1,6 +1,7 @@
 package tracker
 
 import (
+	"fmt"
 	"github.com/jphastings/corviator/pkg/future"
 	"github.com/jphastings/corviator/pkg/locator"
 	"github.com/jphastings/corviator/pkg/math"
@@ -44,7 +45,10 @@ func (track *Config) Track() {
 			for _, callback := range track.callbacks {
 				wg.Add(1)
 				go func(cb OnTracked) {
-					<-cb(details.Name, bearing, isFirstTrack)
+					result := <-cb(details.Name, bearing, isFirstTrack)
+					if !result.IsOK() {
+						fmt.Printf("could not present location: %v\n", result.Err)
+					}
 					wg.Done()
 				}(callback)
 			}
