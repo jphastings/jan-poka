@@ -65,7 +65,9 @@ func (s *Config) StepToDirection(bearing AERCoords) future.Future {
 		if bearing.Azimuth == s.currentAzimuth {
 			theta = s.currentTheta - theta
 		} else {
-			if result := <-s.stepHome(); !result.IsOK() {
+			result := <-s.stepHome()
+			fmt.Printf("step home gave us this: %v\n", result)
+			if !result.IsOK() {
 				s.powerSaver.PowerOff()
 				f.Bubble(result)
 				return
