@@ -1,7 +1,6 @@
 package sphere
 
 import (
-	"fmt"
 	"github.com/jphastings/corviator/pkg/future"
 	"github.com/jphastings/corviator/pkg/hardware/motor"
 	. "github.com/jphastings/corviator/pkg/math"
@@ -51,7 +50,6 @@ func New(
 
 func (s *Config) StepToDirection(bearing AERCoords) future.Future {
 	f := future.New()
-	fmt.Println("Entering StepToDirection")
 
 	go func() {
 		if err := s.powerSaver.PowerOn(); err != nil {
@@ -79,13 +77,11 @@ func (s *Config) StepToDirection(bearing AERCoords) future.Future {
 		f.Succeed()
 	}()
 
-	fmt.Println("Leaving StepToDirection")
 	return f
 }
 
-// Home is at Θ = 0 (straight up)
+// Home is at Theta = 0 (straight up)
 func (s *Config) stepHome() {
-	fmt.Println("Entering stepHome")
 	oppositeHeading := 180 + s.currentAzimuth
 	if oppositeHeading >= 360 {
 		oppositeHeading -= 360
@@ -101,9 +97,7 @@ func (s *Config) stepToTheta(heading, theta Degrees) {
 	}
 
 	maxSteps := float64(theta) * float64(s.sphereRotationSteps) / 360
-	fmt.Println("Maximum steps is", maxSteps)
 	travelTime := time.Duration(maxSteps) * s.minStepInterval
-	fmt.Println("Travel time is", travelTime.String())
 	if travelTime < 0 {
 		travelTime = -travelTime
 	}
