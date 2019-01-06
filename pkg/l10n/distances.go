@@ -18,7 +18,7 @@ const (
 
 var distanceUnits = []rangedDistance{
 	{"km", 1000},
-	{"au", AstronomicalUnitInMeters},
+	{"AU", AstronomicalUnitInMeters},
 }
 
 type numberRepresentation struct {

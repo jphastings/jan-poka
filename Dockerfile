@@ -8,7 +8,7 @@ WORKDIR /go/src/github.com/jphastings/corviator
 # RUN apt-get update && apt-get install -y libnova
 
 COPY . .
-RUN go install -a -ldflags '-extldflags "-static"'
+RUN go install -a -ldflags '-extldflags "-static"' -tags 'rpi'
 
 FROM balenalib/raspberry-pi
 

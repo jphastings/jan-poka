@@ -3,6 +3,7 @@ package locator
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/jphastings/corviator/pkg/locator/celestial"
 	"time"
 
 	"github.com/jphastings/corviator/pkg/locator/iss"
@@ -42,8 +43,8 @@ func provider(decider string) (locationProvider, error) {
 		return lla.NewLocationProvider(), nil
 	case iss.TYPE:
 		return iss.NewLocationProvider(), nil
-	//case celestial.TYPE:
-	//	return celestial.NewLocationProvider(), nil
+	case celestial.TYPE:
+		return celestial.NewLocationProvider(), nil
 	default:
 		return nil, fmt.Errorf("unknown provider: %s", decider)
 	}
