@@ -101,9 +101,11 @@ func (s *Config) stepHome() future.Future {
 		oppositeHeading -= 360
 	}
 
-	ret := s.stepToTheta(oppositeHeading, s.currentTheta)
+	result := <-s.stepToTheta(oppositeHeading, s.currentTheta)
 	fmt.Println("Leaving stepHome")
-	return ret
+	f := future.New()
+	f.Bubble(result)
+	return f
 }
 
 func (s *Config) stepToTheta(heading, theta Degrees) future.Future {
