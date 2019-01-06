@@ -1,6 +1,7 @@
 package motor
 
 import (
+	"fmt"
 	. "github.com/jphastings/corviator/pkg/math"
 	"periph.io/x/periph/conn/gpio"
 	"time"
@@ -43,11 +44,11 @@ func (m *Motor) move(name string) {
 				if err := m.stepPin.Out(gpio.High); err == nil {
 					<-time.NewTimer(pulsePeriod).C
 					if err := m.stepPin.Out(gpio.Low); err != nil {
-						// TODO: What happens with an error?
+						fmt.Printf("could not turn stepper controller %s low: %v\n", name, err)
 					}
 				}
 			} else {
-				// TODO: What happens with an error?
+				fmt.Printf("could not turn stepper controller %s high: %v\n", name, err)
 			}
 		}
 	}
