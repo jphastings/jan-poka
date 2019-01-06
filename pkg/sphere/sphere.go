@@ -101,10 +101,8 @@ func (s *Config) stepHome() future.Future {
 		oppositeHeading -= 360
 	}
 
-	result := <-s.stepToTheta(oppositeHeading, s.currentTheta)
+	f := s.stepToTheta(oppositeHeading, s.currentTheta)
 	fmt.Println("Leaving stepHome")
-	f := future.New()
-	f.Bubble(result)
 	return f
 }
 
@@ -112,10 +110,10 @@ func (s *Config) stepToTheta(heading, theta Degrees) future.Future {
 	f := future.New()
 	fmt.Println("Entering stepToTheta", theta)
 
-	if theta == 0 {
-		f.Succeed()
-		return f
-	}
+	//if theta == 0 {
+	//	f.Succeed()
+	//	return f
+	//}
 
 	maxSteps := float64(theta) * float64(s.sphereRotationSteps) / 360
 	fmt.Println("Maximum steps is", maxSteps)
