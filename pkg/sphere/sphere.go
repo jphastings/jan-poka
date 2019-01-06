@@ -65,22 +65,11 @@ func (s *Config) StepToDirection(bearing AERCoords) future.Future {
 		if bearing.Azimuth == s.currentAzimuth {
 			theta = s.currentTheta - theta
 		} else {
-			result := s.stepHome().Result()
-			fmt.Printf("step home gave us this: %v\n", result)
-			if !result.IsOK() {
-				s.powerSaver.PowerOff()
-				f.Bubble(result)
-				return
-			}
+			s.stepHome()
 		}
 
 		if theta != 0 {
-			result := s.stepToTheta(bearing.Azimuth, theta).Result()
-			if !result.IsOK() {
-				s.powerSaver.PowerOff()
-				f.Bubble(result)
-				return
-			}
+			s.stepToTheta(bearing.Azimuth, theta)
 		}
 
 		s.powerSaver.PowerOff()
@@ -95,26 +84,20 @@ func (s *Config) StepToDirection(bearing AERCoords) future.Future {
 }
 
 // Home is at Θ = 0 (straight up)
-func (s *Config) stepHome() future.Future {
+func (s *Config) stepHome() {
 	fmt.Println("Entering stepHome")
 	oppositeHeading := 180 + s.currentAzimuth
 	if oppositeHeading >= 360 {
 		oppositeHeading -= 360
 	}
 
-	f := s.stepToTheta(oppositeHeading, s.currentTheta)
-	fmt.Println("Leaving stepHome")
-	return f
+	s.stepToTheta(oppositeHeading, s.currentTheta)
+	return
 }
 
-func (s *Config) stepToTheta(heading, theta Degrees) future.Future {
-	f := future.New()
-	fmt.Println("Entering stepToTheta", theta)
-
+func (s *Config) stepToTheta(heading, theta Degrees) {
 	if theta == 0 {
-		f.Succeed()
-		fmt.Println("succeed delivered")
-		return f
+		return
 	}
 
 	maxSteps := float64(theta) * float64(s.sphereRotationSteps) / 360
@@ -138,8 +121,7 @@ func (s *Config) stepToTheta(heading, theta Degrees) future.Future {
 
 	wg.Wait()
 
-	f.Succeed()
-	return f
+	return
 }
 
 func travelMotor(t time.Duration, m *motor.Motor, s int) {

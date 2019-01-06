@@ -22,11 +22,3 @@ func (p Future) Succeed() {
 func (p Future) Fail(err error) {
 	p <- Result{ok: false, Err: err}
 }
-
-func (p Future) Bubble(r Result) {
-	p <- r
-}
-
-func (p Future) Result() Result {
-	return <-p
-}
