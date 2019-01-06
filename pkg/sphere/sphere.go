@@ -99,12 +99,14 @@ func (s *Config) stepHome() future.Future {
 		oppositeHeading -= 360
 	}
 
-	return s.stepToTheta(oppositeHeading, s.currentTheta)
+	ret := s.stepToTheta(oppositeHeading, s.currentTheta)
+	fmt.Println("Leaving stepHome")
+	return ret
 }
 
 func (s *Config) stepToTheta(heading, theta Degrees) future.Future {
 	f := future.New()
-	fmt.Println("leaving stepHome")
+	fmt.Println("Entering stepToTheta", theta)
 
 	if theta == 0 {
 		f.Succeed()
