@@ -27,6 +27,6 @@ func (mps *PowerSaver) PowerOn() error {
 }
 
 func (mps *PowerSaver) PowerOff() error {
-	fmt.Println("Powering up motors")
+	fmt.Println("Powering down motors")
 	return mps.pin.Out(gpio.Low)
 }
