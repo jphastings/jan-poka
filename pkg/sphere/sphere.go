@@ -110,10 +110,11 @@ func (s *Config) stepToTheta(heading, theta Degrees) future.Future {
 	f := future.New()
 	fmt.Println("Entering stepToTheta", theta)
 
-	//if theta == 0 {
-	//	f.Succeed()
-	//	return f
-	//}
+	if theta == 0 {
+		f.Succeed()
+		fmt.Println("succeed delivered")
+		return f
+	}
 
 	maxSteps := float64(theta) * float64(s.sphereRotationSteps) / 360
 	fmt.Println("Maximum steps is", maxSteps)
