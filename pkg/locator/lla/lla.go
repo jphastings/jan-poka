@@ -3,8 +3,8 @@ package lla
 import (
 	"fmt"
 
-	"github.com/jphastings/corviator/pkg/locator/common"
-	. "github.com/jphastings/corviator/pkg/math"
+	"github.com/jphastings/jan-poka/pkg/locator/common"
+	. "github.com/jphastings/jan-poka/pkg/math"
 )
 
 const TYPE = "lla"

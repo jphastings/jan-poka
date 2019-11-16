@@ -1,12 +1,12 @@
 package http
 
 import (
-	"github.com/jphastings/corviator/pkg/tracker"
+	"github.com/jphastings/jan-poka/pkg/tracker"
 	"io/ioutil"
 	"log"
 	"net/http"
 
-	"github.com/jphastings/corviator/pkg/locator"
+	"github.com/jphastings/jan-poka/pkg/locator"
 )
 
 func handleFocus(track *tracker.Config) http.Handler {

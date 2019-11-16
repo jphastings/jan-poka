@@ -19,7 +19,7 @@ import "C"
 import (
 	"time"
 
-	. "github.com/jphastings/corviator/pkg/math"
+	. "github.com/jphastings/jan-poka/pkg/math"
 )
 
 type Julian C.double

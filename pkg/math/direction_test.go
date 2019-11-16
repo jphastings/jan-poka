@@ -3,7 +3,7 @@ package math_test
 import (
 	"testing"
 
-	. "github.com/jphastings/corviator/pkg/math"
+	. "github.com/jphastings/jan-poka/pkg/math"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"

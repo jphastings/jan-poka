@@ -3,7 +3,7 @@ package googletts
 import (
 	"bytes"
 	"context"
-	"github.com/jphastings/corviator/pkg/tts/common"
+	"github.com/jphastings/jan-poka/pkg/tts/common"
 	"io/ioutil"
 
 	"cloud.google.com/go/texttospeech/apiv1"

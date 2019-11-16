@@ -2,7 +2,7 @@ package l10n
 
 import (
 	"fmt"
-	. "github.com/jphastings/corviator/pkg/math"
+	. "github.com/jphastings/jan-poka/pkg/math"
 	"math"
 )
 
@@ -17,8 +17,9 @@ const (
 )
 
 var distanceUnits = []rangedDistance{
-	{"km", 1000},
-	{"AU", AstronomicalUnitInMeters},
+	{"hours' walk away", 5040},     // meters per hour
+	{"hours' drive away", 72420},   // meters per hour
+	{"hours' flight away", 885139}, // meters per hour
 }
 
 type numberRepresentation struct {
@@ -27,13 +28,13 @@ type numberRepresentation struct {
 }
 
 func Distance(m Meters) string {
-	oldRep := roundSigFigs(float64(m))
-	r := rangedDistance{"m", oldRep.amount}
+	var oldRep numberRepresentation
+	var r rangedDistance
 
-	for _, conversion := range distanceUnits {
+	for i, conversion := range distanceUnits {
 		newRep := roundSigFigs(float64(m) / conversion.amount)
 
-		if isBetter(newRep, oldRep) {
+		if i == 0 || isBetter(newRep, oldRep) {
 			r.unit = conversion.unit
 			r.amount = newRep.amount
 			oldRep.accuracy = newRep.accuracy
@@ -62,12 +63,17 @@ func Distance(m Meters) string {
 		}
 	}
 
-	return fmt.Sprintf("%.0f%s%s", r.amount, frac, r.unit)
+	return fmt.Sprintf("%.0f%s %s", r.amount, frac, r.unit)
 }
 
 func isBetter(newRep numberRepresentation, oldRep numberRepresentation) bool {
-	return newRep.amount >= 0.5 && (oldRep.amount > jumpFactor || newRep.accuracy >= oldRep.accuracy)
+	return oldRep.amount < 20 && newRep.amount > 1
 }
+
+// Uses a heuristic for SI units for jumps
+//func isBetter(newRep numberRepresentation, oldRep numberRepresentation) bool {
+//	return newRep.amount >= 0.5 && (oldRep.amount > jumpFactor || newRep.accuracy >= oldRep.accuracy)
+//}
 
 func roundSigFigs(num float64) numberRepresentation {
 	oldNum := num

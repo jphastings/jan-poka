@@ -5,7 +5,7 @@ import (
 
 	"github.com/kelseyhightower/envconfig"
 
-	. "github.com/jphastings/corviator/pkg/math"
+	. "github.com/jphastings/jan-poka/pkg/math"
 )
 
 type Config struct {
@@ -31,7 +31,7 @@ type Config struct {
 
 func ParseEnv() (Config, error) {
 	var env Config
-	err := envconfig.Process("corviator", &env)
+	err := envconfig.Process("jan-poka", &env)
 	if err != nil {
 		return env, err
 	}

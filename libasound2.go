@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/jphastings/corviator/pkg/tts"
-	"github.com/jphastings/corviator/pkg/tts/googletts"
+	"github.com/jphastings/jan-poka/pkg/tts"
+	"github.com/jphastings/jan-poka/pkg/tts/googletts"
 )
 
 func init() {

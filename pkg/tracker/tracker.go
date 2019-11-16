@@ -2,10 +2,9 @@ package tracker
 
 import (
 	"fmt"
-	"github.com/jphastings/corviator/pkg/future"
-	"github.com/jphastings/corviator/pkg/locator"
-	"github.com/jphastings/corviator/pkg/math"
-	. "github.com/jphastings/corviator/pkg/math"
+	"github.com/jphastings/jan-poka/pkg/future"
+	"github.com/jphastings/jan-poka/pkg/locator"
+	"github.com/jphastings/jan-poka/pkg/math"
 	"sync"
 )
 
@@ -15,7 +14,7 @@ type Config struct {
 	Targets   chan *locator.TargetInstructions
 }
 
-type OnTracked func(string, AERCoords, bool) future.Future
+type OnTracked func(string, math.AERCoords, math.Meters, bool) future.Future
 
 func New(home math.LLACoords, callbacks ...OnTracked) *Config {
 	return &Config{
@@ -39,13 +38,14 @@ func (track *Config) Track() {
 			tracker = target.Poll()
 		case details := <-tracker:
 			bearing := track.home.DirectionTo(details.Coords, 0)
+			distance := track.home.GreatCircleDistance(details.Coords)
 
 			var wg sync.WaitGroup
 
 			for _, callback := range track.callbacks {
 				wg.Add(1)
 				go func(cb OnTracked) {
-					result := <-cb(details.Name, bearing, isFirstTrack)
+					result := <-cb(details.Name, bearing, distance, isFirstTrack)
 					if !result.IsOK() {
 						fmt.Printf("could not present location: %v\n", result.Err)
 					}

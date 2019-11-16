@@ -3,12 +3,13 @@ package locator
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/jphastings/corviator/pkg/locator/common"
-	"github.com/jphastings/corviator/pkg/locator/iss"
-	"github.com/jphastings/corviator/pkg/locator/lla"
+	"github.com/jphastings/jan-poka/pkg/locator/common"
+	"github.com/jphastings/jan-poka/pkg/locator/instagram"
+	"github.com/jphastings/jan-poka/pkg/locator/iss"
+	"github.com/jphastings/jan-poka/pkg/locator/lla"
 	"time"
 
-	"github.com/jphastings/corviator/pkg/math"
+	"github.com/jphastings/jan-poka/pkg/math"
 )
 
 type targetJSON struct {
@@ -34,6 +35,7 @@ func init() {
 	// Load locators that have no external dependencies
 	lla.Load()
 	iss.Load()
+	instagram.Load()
 }
 
 func DecodeJSON(givenJSON []byte) (*TargetInstructions, error) {

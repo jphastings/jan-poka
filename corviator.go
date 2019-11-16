@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/jphastings/corviator/pkg/env"
-	"github.com/jphastings/corviator/pkg/http"
-	"github.com/jphastings/corviator/pkg/l10n"
-	"github.com/jphastings/corviator/pkg/tracker"
+	"github.com/jphastings/jan-poka/pkg/env"
+	"github.com/jphastings/jan-poka/pkg/http"
+	"github.com/jphastings/jan-poka/pkg/l10n"
+	"github.com/jphastings/jan-poka/pkg/tracker"
 )
 
 var callbacks []tracker.OnTracked

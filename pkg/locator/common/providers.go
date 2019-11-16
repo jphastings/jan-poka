@@ -1,6 +1,6 @@
 package common
 
-import "github.com/jphastings/corviator/pkg/math"
+import "github.com/jphastings/jan-poka/pkg/math"
 
 type LocationProvider interface {
 	// SetParams provides you with a function that will populate the given (json annotated) struct pointer with the JSON params. May return error if JSON does not match. Should validate given parameters and return error if unusable.

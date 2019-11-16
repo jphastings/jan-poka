@@ -9,8 +9,8 @@ import (
 	"periph.io/x/periph/host"
 	"periph.io/x/periph/host/rpi"
 
-	"github.com/jphastings/corviator/pkg/hardware/motor"
-	"github.com/jphastings/corviator/pkg/sphere"
+	"github.com/jphastings/jan-poka/pkg/hardware/motor"
+	"github.com/jphastings/jan-poka/pkg/sphere"
 )
 
 func init() {

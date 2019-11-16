@@ -1,10 +1,10 @@
 package l10n_test
 
 import (
-	"github.com/jphastings/corviator/pkg/l10n"
+	"github.com/jphastings/jan-poka/pkg/l10n"
 	"testing"
 
-	. "github.com/jphastings/corviator/pkg/math"
+	. "github.com/jphastings/jan-poka/pkg/math"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"

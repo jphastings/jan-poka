@@ -2,7 +2,7 @@ package l10n
 
 import (
 	"fmt"
-	. "github.com/jphastings/corviator/pkg/math"
+	. "github.com/jphastings/jan-poka/pkg/math"
 	"math"
 )
 
@@ -20,19 +20,19 @@ var conversationalElevation = map[bool]string{true: ", and %d degrees %s the hor
 var conversationalDir = map[bool]map[bool]string{true: aboveBelow, false: upDown}
 var conversationalAhead = map[bool]string{true: "", false: " dead ahead"}
 
-func Phrase(name string, bearing AERCoords, isFirstTrack bool) string {
+func Phrase(name string, bearing AERCoords, distance Meters, isFirstTrack bool) string {
 	if isFirstTrack {
 		return fmt.Sprintf("Turn to face%s, and look%s. %s that way, you'll find %s.",
 			compassHeading(bearing.Azimuth),
 			elevation(bearing.Elevation, false),
-			Distance(bearing.Range),
+			Distance(distance),
 			name)
 	} else {
-		return fmt.Sprintf("%s is now%s%s, %s away.",
+		return fmt.Sprintf("%s is now%s%s, %s.",
 			name,
 			compassHeading(bearing.Azimuth),
 			elevation(bearing.Elevation, true),
-			Distance(bearing.Range))
+			Distance(distance))
 	}
 }
 

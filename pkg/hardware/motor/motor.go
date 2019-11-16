@@ -2,7 +2,7 @@ package motor
 
 import (
 	"fmt"
-	. "github.com/jphastings/corviator/pkg/math"
+	. "github.com/jphastings/jan-poka/pkg/math"
 	"periph.io/x/periph/conn/gpio"
 	"time"
 )

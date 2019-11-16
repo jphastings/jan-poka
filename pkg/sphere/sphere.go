@@ -1,9 +1,9 @@
 package sphere
 
 import (
-	"github.com/jphastings/corviator/pkg/future"
-	"github.com/jphastings/corviator/pkg/hardware/motor"
-	. "github.com/jphastings/corviator/pkg/math"
+	"github.com/jphastings/jan-poka/pkg/future"
+	"github.com/jphastings/jan-poka/pkg/hardware/motor"
+	. "github.com/jphastings/jan-poka/pkg/math"
 	"math"
 	"periph.io/x/periph/conn/gpio"
 	"sync"

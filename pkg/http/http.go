@@ -2,7 +2,7 @@ package http
 
 import (
 	"fmt"
-	"github.com/jphastings/corviator/pkg/tracker"
+	"github.com/jphastings/jan-poka/pkg/tracker"
 	"net/http"
 	"time"
 )

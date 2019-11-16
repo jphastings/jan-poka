@@ -2,7 +2,7 @@
 
 package locator
 
-import "github.com/jphastings/corviator/pkg/locator/celestial"
+import "github.com/jphastings/jan-poka/pkg/locator/celestial"
 
 func init() {
 	celestial.Load()
