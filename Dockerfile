@@ -1,4 +1,4 @@
-FROM balenalib/raspberry-pi-golang:1.11 as builder
+FROM balenalib/raspberry-pi-golang:1.13 as builder
 WORKDIR /go/src/github.com/jphastings/corviator
 
 # getting "/usr/bin/ld: cannot find -lasound" here :(
@@ -14,10 +14,10 @@ FROM balenalib/raspberry-pi
 
 ENV INITSYSTEM on
 
-COPY --from=builder /go/bin/corviator /corviator
+COPY --from=builder /go/bin/jan-poka /jan-poka
 COPY --from=builder /etc/ssl/certs/ /etc/ssl/certs
 
 ENV CORVIATOR_PORT 80
 EXPOSE 80
 
-CMD ["/corviator"]
+CMD ["/jan-poka"]

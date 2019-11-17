@@ -1,4 +1,8 @@
-# Corviator
+# Jan Poka
+
+A device for bringing your distant friends a little nearer.
+
+
 
 ## Build tags
 

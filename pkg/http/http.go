@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func CorviatorAPI(port uint16, track *tracker.Config) {
+func WebAPI(port uint16, track *tracker.Config) {
 	router := http.NewServeMux()
 
 	router.Handle("/focus", handleFocus(track))

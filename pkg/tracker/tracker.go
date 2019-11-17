@@ -14,7 +14,7 @@ type Config struct {
 	Targets   chan *locator.TargetInstructions
 }
 
-type OnTracked func(string, math.AERCoords, math.Meters, bool) future.Future
+type OnTracked func(name string, bearing math.AERCoords, distance math.Meters, isFirstTrack bool) future.Future
 
 func New(home math.LLACoords, callbacks ...OnTracked) *Config {
 	return &Config{

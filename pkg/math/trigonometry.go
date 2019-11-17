@@ -1,11 +1,18 @@
 package math
 
-import m "math"
+import (
+	m "math"
+	"periph.io/x/periph/conn/physic"
+)
 
 const Pi = m.Pi
 
 func (deg Degrees) Radians() Radians {
 	return Radians(deg * Pi / 180.0)
+}
+
+func (deg Degrees) Angle() physic.Angle {
+	return physic.Angle(int64(deg * Degrees(physic.Degree)))
 }
 
 func (rad Radians) Degrees() Degrees {

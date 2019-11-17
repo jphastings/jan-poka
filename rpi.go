@@ -3,14 +3,12 @@
 package main
 
 import (
-	"fmt"
+	"github.com/jphastings/jan-poka/pkg/pointer/tower"
+	"github.com/jphastings/jan-poka/pkg/tracker"
 	"log"
 
+	"periph.io/x/periph/conn/i2c/i2creg"
 	"periph.io/x/periph/host"
-	"periph.io/x/periph/host/rpi"
-
-	"github.com/jphastings/jan-poka/pkg/hardware/motor"
-	"github.com/jphastings/jan-poka/pkg/sphere"
 )
 
 func init() {
@@ -18,20 +16,20 @@ func init() {
 		log.Fatal(err)
 	}
 
-	if environment.UseSteppers {
-		sphereConfig := sphere.New(
-			[]*motor.Motor{
-				motor.New(0, rpi.P1_7, rpi.P1_11),
-			},
-			rpi.P1_13, environment.MotorAutoSleepLeeway,
-			environment.MotorSteps,
-			float64(environment.SphereDiameter/environment.OmniwheelDiameter),
-			environment.MinStepInterval,
-			environment.Heading,
-		)
-		callbacks = append(callbacks, sphereConfig.TrackerCallback)
-		fmt.Println("Stepper motor tracking: on")
-	} else {
-		fmt.Println("Stepper motor tracking: off")
+	configurables = append(configurables, configurable{
+		"Tower tracking",
+		func() bool { return environment.UseTower },
+		configureTower,
+	})
+}
+
+func configureTower() (tracker.OnTracked, error) {
+	bus, err := i2creg.Open("")
+
+	towerConfig, err := tower.New(bus, environment.Facing)
+	if err != nil {
+		return nil, err
 	}
+
+	return towerConfig.TrackerCallback(), nil
 }
