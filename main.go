@@ -52,12 +52,12 @@ func configureModules() (callbacks []tracker.OnTracked) {
 
 			if err == nil {
 				callbacks = append(callbacks, callback)
-				log.Printf("%s: on\n", conf.name)
+				log.Printf("✅ %s\n", conf.name)
 			} else {
-				log.Fatalf("%s: failed\n%v", conf.name, err)
+				log.Fatalf("🛑 %s: \n%v", conf.name, err)
 			}
 		} else {
-			log.Printf("%s: off\n", conf.name)
+			log.Printf("✋ %s\n", conf.name)
 		}
 	}
 	return callbacks

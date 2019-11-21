@@ -1,55 +1,66 @@
 package tower
 
 import (
+	"github.com/jphastings/jan-poka/pkg/hardware/stepper"
 	"github.com/jphastings/jan-poka/pkg/math"
-	"log"
-	"periph.io/x/periph/conn/i2c"
-	"periph.io/x/periph/conn/physic"
-	"periph.io/x/periph/experimental/devices/pca9685"
+	"sync"
 )
 
 type Config struct {
 	facing math.Degrees
 
 	// The tower is expected to be facing the face of the device when turned on
-	thetaServo *pca9685.Servo
+	thetaServo *stepper.Stepper
 	// The arrow is expected to be pointing directly downwards when turned on
-	phiServo *pca9685.Servo
+	phiServo *stepper.Stepper
 	// The needle is expected to be pointing to zero when turned on
-	distanceNumeral *pca9685.Servo
+	distanceNumeral *stepper.Stepper
 	// The multiplier is intended to be pointing at "by foot" when turned on
-	distanceScale *pca9685.Servo
+	distanceScale *stepper.Stepper
 }
 
-// Expects the Adafruit Servo controller board: https://learn.adafruit.com/16-channel-pwm-servo-driver/overview
-func New(bus i2c.Bus, facing math.Degrees) (*Config, error) {
-	dev, err := pca9685.NewI2C(bus, pca9685.I2CAddr)
-	if err != nil {
-		return nil, err
-	}
+func New(facing math.Degrees) (*Config, error) {
+	steppers := stepper.Pi2Quad(stepper.Motors["28BYJ-48"])
 
-	if err := dev.SetPwmFreq(50 * physic.Hertz); err != nil {
-		log.Fatal(err)
-	}
-	if err := dev.SetAllPwm(0, 0); err != nil {
-		log.Fatal(err)
-	}
-
-	servos := pca9685.NewServoGroup(dev, 50, 650, -360, +360)
+	steppers[0].SetSpeed(20)
+	steppers[1].SetSpeed(20)
+	steppers[2].SetSpeed(20)
+	steppers[3].SetSpeed(20)
 
 	config := &Config{
-		thetaServo:      servos.GetServo(0),
-		phiServo:        servos.GetServo(1),
-		distanceNumeral: servos.GetServo(2),
-		distanceScale:   servos.GetServo(3),
+		thetaServo:      steppers[0],
+		phiServo:        steppers[1],
+		distanceNumeral: steppers[2],
+		distanceScale:   steppers[3],
 
 		facing: facing,
 	}
 
-	config.thetaServo.SetMinMaxAngle(-180, +180)
-	config.distanceNumeral.SetMinMaxAngle(-90, +90)
-
 	return config, nil
+}
+
+func (s *Config) Shutdown() {
+	var wg sync.WaitGroup
+
+	go func() {
+		wg.Add(1)
+		s.thetaServo.SetAngle(0)
+		s.thetaServo.Off()
+		s.phiServo.SetAngle(0)
+		s.phiServo.Off()
+		wg.Done()
+	}()
+
+	go func() {
+		wg.Add(1)
+		s.distanceNumeral.SetAngle(0)
+		s.distanceNumeral.Off()
+		s.distanceScale.SetAngle(0)
+		s.distanceScale.Off()
+		wg.Done()
+	}()
+
+	wg.Wait()
 }
 
 func (s *Config) setDirection(bearing math.AERCoords) error {
@@ -59,18 +70,21 @@ func (s *Config) setDirection(bearing math.AERCoords) error {
 	var err error
 	if degreesFromAhead <= 90 {
 		arrowRight = true
-		err = s.thetaServo.SetAngle((90 - degreesFromAhead).Angle())
+		err = s.thetaServo.SetAngle(90 - degreesFromAhead)
 	} else if degreesFromAhead <= 180 {
 		arrowRight = true
-		err = s.thetaServo.SetAngle((degreesFromAhead - 90).Angle())
+		err = s.thetaServo.SetAngle(degreesFromAhead - 90)
 	} else if degreesFromAhead <= 270 {
 		arrowRight = false
-		err = s.thetaServo.SetAngle((270 - degreesFromAhead).Angle())
+		err = s.thetaServo.SetAngle(270 - degreesFromAhead)
 	} else {
 		arrowRight = false
-		err = s.thetaServo.SetAngle((degreesFromAhead - 270).Angle())
+		err = s.thetaServo.SetAngle(degreesFromAhead - 270)
 	}
 	if err != nil {
+		return err
+	}
+	if err := s.thetaServo.Off(); err != nil {
 		return err
 	}
 
@@ -79,7 +93,10 @@ func (s *Config) setDirection(bearing math.AERCoords) error {
 		phi *= -1
 	}
 
-	if err := s.phiServo.SetAngle(phi.Angle()); err != nil {
+	if err := s.phiServo.SetAngle(phi); err != nil {
+		return err
+	}
+	if err := s.phiServo.Off(); err != nil {
 		return err
 	}
 
@@ -90,27 +107,33 @@ const maxNumeral = 15
 
 func (s *Config) setDistance(distance math.Meters) error {
 	numeral, scale := math.Scaled(distance)
-
 	var err error
-	switch scale {
-	case math.ByFoot:
-		err = s.distanceScale.SetAngle(0 * physic.Degree)
-	case math.ByCar:
-		err = s.distanceScale.SetAngle(120 * physic.Degree)
-	case math.ByPlane:
-		err = s.distanceScale.SetAngle(240 * physic.Degree)
-	}
-	if err != nil {
-		return err
-	}
 
 	angle := (numeral / maxNumeral) * 180
 	if angle > 180 {
 		angle = 180
 	}
 
-	err = s.distanceScale.SetAngle(physic.Angle(angle) * physic.Degree)
+	err = s.distanceNumeral.SetAngle(math.Degrees(angle))
 	if err != nil {
+		return err
+	}
+	if err := s.distanceNumeral.Off(); err != nil {
+		return err
+	}
+
+	switch scale {
+	case math.ByFoot:
+		err = s.distanceScale.SetAngle(0)
+	case math.ByCar:
+		err = s.distanceScale.SetAngle(120)
+	case math.ByPlane:
+		err = s.distanceScale.SetAngle(240)
+	}
+	if err != nil {
+		return err
+	}
+	if err := s.distanceScale.Off(); err != nil {
 		return err
 	}
 

@@ -2,17 +2,12 @@ package math
 
 import (
 	m "math"
-	"periph.io/x/periph/conn/physic"
 )
 
 const Pi = m.Pi
 
 func (deg Degrees) Radians() Radians {
 	return Radians(deg * Pi / 180.0)
-}
-
-func (deg Degrees) Angle() physic.Angle {
-	return physic.Angle(int64(deg * Degrees(physic.Degree)))
 }
 
 func (rad Radians) Degrees() Degrees {
@@ -33,11 +28,15 @@ func Sqrt(a Meters) Meters { return Meters(m.Sqrt(float64(a))) }
 
 // ModDeg wraps the given number of degrees to be within 0 and 360
 func ModDeg(deg Degrees) Degrees {
+	multiplier := int(deg / 360)
 	if deg < 0 {
-		deg += 360
+		multiplier -= 1
 	}
-	if deg >= 360 {
-		deg -= 360
+
+	deg = deg - (Degrees(multiplier) * 360)
+	// To catch -360 becoming 360; detecting other ways is harder
+	if deg == 360 {
+		deg = 0
 	}
 	return deg
 }

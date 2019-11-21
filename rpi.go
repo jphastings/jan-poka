@@ -6,9 +6,11 @@ import (
 	"github.com/jphastings/jan-poka/pkg/pointer/tower"
 	"github.com/jphastings/jan-poka/pkg/tracker"
 	"log"
+	"os"
+	"os/signal"
 
-	"periph.io/x/periph/conn/i2c/i2creg"
 	"periph.io/x/periph/host"
+	_ "periph.io/x/periph/host/rpi"
 )
 
 func init() {
@@ -24,12 +26,19 @@ func init() {
 }
 
 func configureTower() (tracker.OnTracked, error) {
-	bus, err := i2creg.Open("")
-
-	towerConfig, err := tower.New(bus, environment.Facing)
+	towerConfig, err := tower.New(environment.Facing)
 	if err != nil {
 		return nil, err
 	}
 
-	return towerConfig.TrackerCallback(), nil
+	// Hack. Fix this.
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	go func() {
+		<-c
+		towerConfig.Shutdown()
+		os.Exit(0)
+	}()
+
+	return towerConfig.TrackerCallback, nil
 }

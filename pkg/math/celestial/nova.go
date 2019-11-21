@@ -1,3 +1,4 @@
+// +build libnova
 package celestial
 
 /*
