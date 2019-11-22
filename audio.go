@@ -1,5 +1,3 @@
-// +build libasound2
-
 package main
 
 import (

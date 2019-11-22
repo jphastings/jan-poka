@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"github.com/jphastings/jan-poka/pkg/tts/common"
+	"google.golang.org/api/option"
 	"io/ioutil"
 
 	"cloud.google.com/go/texttospeech/apiv1"
@@ -17,7 +18,7 @@ type googleTTS struct {
 
 func New() (*googleTTS, error) {
 	ctx := context.Background()
-	client, err := texttospeech.NewClient(ctx)
+	client, err := texttospeech.NewClient(ctx, option.WithCredentialsFile("google.json"))
 	if err != nil {
 		return nil, err
 	}

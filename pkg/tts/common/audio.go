@@ -13,7 +13,10 @@ func Play(wavdata io.ReadCloser) error {
 		return err
 	}
 
-	speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
+	err = speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
+	if err != nil {
+		return err
+	}
 	speaker.Play(s)
 
 	return nil
