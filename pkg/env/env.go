@@ -16,7 +16,7 @@ type Config struct {
 
 	UseLog   bool `default:"true"`
 	UseTower bool `default:"false"`
-	UseTTS   bool `default:"false"`
+	UseAudio bool `default:"false"`
 
 	Home LLACoords `ignored:"true"`
 }
