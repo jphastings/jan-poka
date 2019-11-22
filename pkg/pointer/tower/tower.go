@@ -64,36 +64,16 @@ func (s *Config) Shutdown() {
 }
 
 func (s *Config) setDirection(bearing math.AERCoords) error {
-	degreesFromAhead := math.ModDeg(bearing.Azimuth - s.facing)
-	var arrowRight bool
+	base, arm := Pointer(math.ModDeg(bearing.Azimuth-s.facing), bearing.Elevation+90)
 
-	var err error
-	if degreesFromAhead <= 90 {
-		arrowRight = true
-		err = s.thetaServo.SetAngle(90 - degreesFromAhead)
-	} else if degreesFromAhead <= 180 {
-		arrowRight = true
-		err = s.thetaServo.SetAngle(degreesFromAhead - 90)
-	} else if degreesFromAhead <= 270 {
-		arrowRight = false
-		err = s.thetaServo.SetAngle(270 - degreesFromAhead)
-	} else {
-		arrowRight = false
-		err = s.thetaServo.SetAngle(degreesFromAhead - 270)
-	}
-	if err != nil {
+	if err := s.thetaServo.SetAngle(base); err != nil {
 		return err
 	}
 	if err := s.thetaServo.Off(); err != nil {
 		return err
 	}
 
-	phi := bearing.Elevation + 90
-	if arrowRight {
-		phi *= -1
-	}
-
-	if err := s.phiServo.SetAngle(phi); err != nil {
+	if err := s.phiServo.SetAngle(arm); err != nil {
 		return err
 	}
 	if err := s.phiServo.Off(); err != nil {

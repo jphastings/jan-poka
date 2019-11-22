@@ -2,6 +2,7 @@ package stepper
 
 import (
 	"github.com/jphastings/jan-poka/pkg/math"
+	"log"
 	"periph.io/x/periph/conn/gpio"
 	"periph.io/x/periph/host/rpi"
 	"time"
@@ -32,6 +33,8 @@ type stepperPins struct {
 }
 
 type Stepper struct {
+	Name string
+
 	CurrentAngle math.Degrees
 	anglePerStep math.Degrees
 	currentStep  int
@@ -46,15 +49,17 @@ type Stepper struct {
 
 func Pi2Quad(anglePerStep math.Degrees) []*Stepper {
 	return []*Stepper{
-		New(rpi.P1_11, rpi.P1_12, rpi.P1_13, rpi.P1_15, 0, anglePerStep),
-		New(rpi.P1_16, rpi.P1_18, rpi.P1_22, rpi.P1_7, 0, anglePerStep),
-		New(rpi.P1_33, rpi.P1_32, rpi.P1_31, rpi.P1_29, 0, anglePerStep),
-		New(rpi.P1_38, rpi.P1_37, rpi.P1_36, rpi.P1_35, 0, anglePerStep),
+		New("M0", rpi.P1_11, rpi.P1_12, rpi.P1_13, rpi.P1_15, 0, anglePerStep),
+		New("M1", rpi.P1_16, rpi.P1_18, rpi.P1_22, rpi.P1_7, 0, anglePerStep),
+		New("M2", rpi.P1_33, rpi.P1_32, rpi.P1_31, rpi.P1_29, 0, anglePerStep),
+		New("M3", rpi.P1_38, rpi.P1_37, rpi.P1_36, rpi.P1_35, 0, anglePerStep),
 	}
 }
 
-func New(p0, p1, p2, p3 gpio.PinOut, startAngle, anglePerStep math.Degrees) *Stepper {
+func New(name string, p0, p1, p2, p3 gpio.PinOut, startAngle, anglePerStep math.Degrees) *Stepper {
 	return &Stepper{
+		Name: name,
+
 		CurrentAngle: startAngle,
 		anglePerStep: anglePerStep,
 
@@ -83,6 +88,7 @@ func (s *Stepper) SetAngle(angle math.Degrees) error {
 		angleChange = angleChange - 360
 	}
 
+	log.Printf("%s travelling to %.2fº which is %.2f\n", s.Name, angle, angleChange)
 	steps := int(angleChange / s.anglePerStep)
 	return s.Step(steps)
 }
@@ -97,6 +103,7 @@ func (s *Stepper) Step(steps int) error {
 		steps *= -1
 	}
 
+	log.Printf("%s stepping %d steps\n", s.Name, steps)
 	for i := 0; i < steps; i++ {
 		s.currentStep = (s.currentStep + stepUnit + seqLen) % seqLen
 		if err := s.applyStep(stepSeq[s.currentStep]); err != nil {

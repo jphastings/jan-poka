@@ -18,7 +18,7 @@ func main() {
 
 	steppers := stepper.Pi2Quad(stepper.Motors["28BYJ-48"])
 	s := steppers[0]
-	s.SetSpeed(30)
+	s.SetSpeed(20)
 
 	s.Off()
 	log.Println("Off")
