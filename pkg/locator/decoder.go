@@ -4,12 +4,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/jphastings/jan-poka/pkg/locator/common"
-	"github.com/jphastings/jan-poka/pkg/locator/instagram"
-	"github.com/jphastings/jan-poka/pkg/locator/iss"
-	"github.com/jphastings/jan-poka/pkg/locator/lla"
 	"time"
 
 	"github.com/jphastings/jan-poka/pkg/math"
+
+	_ "github.com/jphastings/jan-poka/pkg/locator/ads-b"
+	_ "github.com/jphastings/jan-poka/pkg/locator/celestial"
+	//_ "github.com/jphastings/jan-poka/pkg/locator/instagram"
+	_ "github.com/jphastings/jan-poka/pkg/locator/iss"
+	_ "github.com/jphastings/jan-poka/pkg/locator/lla"
 )
 
 type targetJSON struct {
@@ -29,13 +32,6 @@ type TargetDetails struct {
 type TargetInstructions struct {
 	pollTicker *time.Ticker
 	sequence   []func() (TargetDetails, bool)
-}
-
-func init() {
-	// Load locators that have no external dependencies
-	lla.Load()
-	iss.Load()
-	instagram.Load()
 }
 
 func DecodeJSON(givenJSON []byte) (*TargetInstructions, error) {

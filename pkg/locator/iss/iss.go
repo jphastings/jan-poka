@@ -2,6 +2,7 @@ package iss
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -20,7 +21,11 @@ type serviceResponse struct {
 
 type locationProvider struct{}
 
-func Load()                                                         { common.Providers[TYPE] = func() common.LocationProvider { return &locationProvider{} } }
+func init() {
+	common.Providers[TYPE] = func() common.LocationProvider { return &locationProvider{} }
+	log.Println("✅ Provider: International Space Station positions available.")
+}
+
 func (_ *locationProvider) SetParams(func(interface{}) error) error { return nil }
 
 func (_ *locationProvider) Location() (math.LLACoords, string, bool) {

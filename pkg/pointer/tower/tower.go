@@ -10,9 +10,9 @@ type Config struct {
 	facing math.Degrees
 
 	// The tower is expected to be facing the face of the device when turned on
-	thetaServo *stepper.Stepper
+	baseServo *stepper.Stepper
 	// The arrow is expected to be pointing directly downwards when turned on
-	phiServo *stepper.Stepper
+	armServo *stepper.Stepper
 	// The needle is expected to be pointing to zero when turned on
 	distanceNumeral *stepper.Stepper
 	// The multiplier is intended to be pointing at "by foot" when turned on
@@ -28,8 +28,8 @@ func New(facing math.Degrees) (*Config, error) {
 	steppers[3].SetSpeed(20)
 
 	config := &Config{
-		thetaServo:      steppers[0],
-		phiServo:        steppers[1],
+		baseServo:       steppers[0],
+		armServo:        steppers[1],
 		distanceNumeral: steppers[2],
 		distanceScale:   steppers[3],
 
@@ -44,10 +44,10 @@ func (s *Config) Shutdown() {
 
 	go func() {
 		wg.Add(1)
-		s.thetaServo.SetAngle(0)
-		s.thetaServo.Off()
-		s.phiServo.SetAngle(0)
-		s.phiServo.Off()
+		s.baseServo.SetAngle(0)
+		s.baseServo.Off()
+		s.armServo.SetAngle(0)
+		s.armServo.Off()
 		wg.Done()
 	}()
 
@@ -64,19 +64,19 @@ func (s *Config) Shutdown() {
 }
 
 func (s *Config) setDirection(bearing math.AERCoords) error {
-	base, arm := Pointer(math.ModDeg(bearing.Azimuth-s.facing), bearing.Elevation+90)
+	base, arm := Pointer(math.ModDeg(bearing.Azimuth-s.facing), 90-bearing.Elevation)
 
-	if err := s.thetaServo.SetAngle(base); err != nil {
+	if err := s.baseServo.SetAngle(base); err != nil {
 		return err
 	}
-	if err := s.thetaServo.Off(); err != nil {
+	if err := s.baseServo.Off(); err != nil {
 		return err
 	}
 
-	if err := s.phiServo.SetAngle(arm); err != nil {
+	if err := s.armServo.SetAngle(arm); err != nil {
 		return err
 	}
-	if err := s.phiServo.Off(); err != nil {
+	if err := s.armServo.Off(); err != nil {
 		return err
 	}
 

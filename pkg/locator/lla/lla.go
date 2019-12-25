@@ -2,6 +2,7 @@ package lla
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/jphastings/jan-poka/pkg/locator/common"
 	. "github.com/jphastings/jan-poka/pkg/math"
@@ -21,27 +22,32 @@ type params struct {
 	Altitude  Meters   `json:"alt"`
 }
 
-func Load() { common.Providers[TYPE] = func() common.LocationProvider { return &locationProvider{} } }
+func init() {
+	common.Providers[TYPE] = func() common.LocationProvider { return &locationProvider{} }
+	log.Println("✅ Provider: Latitude/Longitude positions available.")
+}
 
 func (lp *locationProvider) SetParams(decodeInto func(interface{}) error) error {
 	loc := &params{}
 	err := decodeInto(loc)
-	if err == nil {
-		if loc.Latitude == nil {
-			return fmt.Errorf("no latitude provided")
-		}
-		if loc.Longitude == nil {
-			return fmt.Errorf("no longitude provided")
-		}
-
-		if loc.Name == "" {
-			lp.name = "That location"
-		} else {
-			lp.name = loc.Name
-		}
-		lp.target = LLACoords{Latitude: *loc.Latitude, Longitude: *loc.Longitude, Altitude: loc.Altitude}
+	if err != nil {
+		return err
 	}
-	return err
+
+	if loc.Latitude == nil {
+		return fmt.Errorf("no latitude provided")
+	}
+	if loc.Longitude == nil {
+		return fmt.Errorf("no longitude provided")
+	}
+
+	if loc.Name == "" {
+		lp.name = "That location"
+	} else {
+		lp.name = loc.Name
+	}
+	lp.target = LLACoords{Latitude: *loc.Latitude, Longitude: *loc.Longitude, Altitude: loc.Altitude}
+	return nil
 }
 
 func (lp *locationProvider) Location() (LLACoords, string, bool) {

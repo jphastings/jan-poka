@@ -1,12 +1,10 @@
 package instagram
 
 import (
-	"fmt"
 	"github.com/ahmdrz/goinsta"
-	"time"
-
 	"github.com/jphastings/jan-poka/pkg/locator/common"
 	. "github.com/jphastings/jan-poka/pkg/math"
+	"log"
 )
 
 const TYPE = "instagram"
@@ -14,27 +12,25 @@ const TYPE = "instagram"
 type locationProvider struct {
 	Name      string   `json:"name"`
 	Username  string   `json:"username"`
-	Freshness Duration `json:"freshness"`
 }
 
 var insta *goinsta.Instagram
 
-// TODO: Could this be replaced by init()?
-func Load() {
+func init() {
 	insta = goinsta.New("pilenticular", "e3Qp3yE4WgCpKvmeuF")
-	insta.Login()
+	err := insta.Login()
+	if err != nil {
+		log.Println("❌ Provider: Instagram could not log in.")
+		return
+	}
 
 	common.Providers[TYPE] = func() common.LocationProvider { return &locationProvider{} }
+	log.Println("✅ Provider: Instagram post positions available.")
 }
 
 func (lp *locationProvider) SetParams(decodeInto func(interface{}) error) error {
-	lp.Freshness = Duration{time.Duration(24) * time.Hour}
 	if err := decodeInto(lp); err != nil {
 		return err
-	}
-
-	if lp.Name == "" {
-		lp.Name = lp.Username
 	}
 
 	user, err := insta.Profiles.ByName(lp.Username)
@@ -42,14 +38,18 @@ func (lp *locationProvider) SetParams(decodeInto func(interface{}) error) error 
 		return err
 	}
 
-	fmt.Println(user)
-
-	feed := user.Feed() // time.Now().Add(lp.Freshness.Duration * time.Duration(-1)).String()
-
-	fmt.Println(feed)
-	for _, item := range feed.Items {
-		fmt.Println(item.Lat, item.Lng)
+	if lp.Name == "" {
+		lp.Name = user.FullName
 	}
+
+	if lp.Name == "" {
+		lp.Name = lp.Username
+	}
+
+	//fmt.Println(feed)
+	//for _, item := range feed.Items {
+	//	fmt.Println(item.Lat, item.Lng)
+	//}
 
 	return nil
 }
