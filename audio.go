@@ -1,3 +1,5 @@
+// +build audio
+
 package main
 
 import (

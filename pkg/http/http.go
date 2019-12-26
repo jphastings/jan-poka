@@ -21,5 +21,7 @@ func WebAPI(port uint16, track *tracker.Config) {
 		IdleTimeout:  15 * time.Second,
 	}
 
+	// TODO: Handle errors here
+	announce(int(port))
 	webserver.ListenAndServe()
 }

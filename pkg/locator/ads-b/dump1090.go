@@ -13,8 +13,8 @@ import (
 	"strings"
 )
 
-type locationProvider struct{
-	host string
+type locationProvider struct {
+	host        string
 	focusFlight string
 }
 
@@ -22,11 +22,10 @@ func init() {
 	positionQuery, err := newClient("127.0.0.1:8090")
 	if err != nil {
 		log.Printf("❌ Provider: ADS-B unavailable, %s\n", err.Error())
-		return
+	} else {
+		common.Providers[TYPE] = func() common.LocationProvider { return positionQuery }
+		log.Println("✅ Provider: ADS-B airplane positions available.")
 	}
-
-	common.Providers[TYPE] = func() common.LocationProvider { return positionQuery }
-	log.Println("✅ Provider: ADS-B airplane positions available.")
 }
 
 func (lp *locationProvider) SetParams(decodeInto func(interface{}) error) error {
@@ -66,10 +65,10 @@ func (lp *locationProvider) Location() (math.LLACoords, string, bool) {
 		flights = append(flights, f)
 		if f == lp.focusFlight {
 			return math.LLACoords{
-				Altitude: math.Meters(flight.Altitude * 0.3048),
-				Latitude: math.Degrees(flight.Lat),
+				Altitude:  math.Meters(flight.Altitude * 0.3048),
+				Latitude:  math.Degrees(flight.Lat),
 				Longitude: math.Degrees(flight.Lon),
-			}, "Flight "+f, true
+			}, "Flight " + f, true
 		}
 	}
 
@@ -79,9 +78,9 @@ func (lp *locationProvider) Location() (math.LLACoords, string, bool) {
 }
 
 type dataLine struct {
-	Flight string `json:"flight"`
-	Lat float64 `json:"lat"`
-	Lon float64 `json:"lon"`
+	Flight   string  `json:"flight"`
+	Lat      float64 `json:"lat"`
+	Lon      float64 `json:"lon"`
 	Altitude float64 `json:"altitude"`
 }
 

@@ -1,4 +1,5 @@
 // +build sbs
+
 package ads_b
 
 import (
@@ -27,7 +28,7 @@ import (
 
 var positionCache *sbsLocationProvider
 
-type sbsLocationProvider struct{
+type sbsLocationProvider struct {
 	dataCache    map[uint32]planeData
 	focusAddress uint32
 	name         string
@@ -77,27 +78,27 @@ func (lp *sbsLocationProvider) SetParams(decodeInto func(interface{}) error) err
 func (lp *sbsLocationProvider) Location() (math.LLACoords, string, bool) {
 	pd, ok := lp.dataCache[lp.focusAddress]
 	if !ok {
-		return math.LLACoords{}, "Flight "+lp.name, false
+		return math.LLACoords{}, "Flight " + lp.name, false
 	}
 
 	emergency := ""
 	if pd.emergency != "" {
-		emergency = ", indicating "+pd.emergency
+		emergency = ", indicating " + pd.emergency
 	}
 
-	return pd.loc, "Flight "+lp.name+emergency, true
+	return pd.loc, "Flight " + lp.name + emergency, true
 }
 
 type planeData struct {
-	ident string
-	loc math.LLACoords
+	ident              string
+	loc                math.LLACoords
 	lastWrittenWasEven bool
-	evenWritten bool
-	evenCPRLat uint32
-	evenCPRLon uint32
-	oddWritten bool
-	oddCPRLat uint32
-	oddCPRLon uint32
+	evenWritten        bool
+	evenCPRLat         uint32
+	evenCPRLon         uint32
+	oddWritten         bool
+	oddCPRLat          uint32
+	oddCPRLon          uint32
 
 	emergency string
 }
@@ -119,7 +120,7 @@ func (lp *sbsLocationProvider) connectDecoder(host string) error {
 					continue
 				}
 
-				binaryData, err := hex.DecodeString(rawLine[1:lineLen-1])
+				binaryData, err := hex.DecodeString(rawLine[1 : lineLen-1])
 				if err != nil {
 					log.Println(err)
 					continue
@@ -159,7 +160,7 @@ func (lp *sbsLocationProvider) connectDecoder(host string) error {
 				case *messages.Format12V2:
 					pd = updateLocation(pd, typedMessage.Altitude.AltitudeInFeet, typedMessage.CPRFormat, typedMessage.EncodedLatitude, typedMessage.EncodedLongitude)
 				default:
-					fmt.Printf("-- %T --\n%s\n",typedMessage, typedMessage.ToString())
+					fmt.Printf("-- %T --\n%s\n", typedMessage, typedMessage.ToString())
 				}
 
 				lp.dataCache[address] = pd
@@ -181,7 +182,7 @@ func updateLocation(pd planeData, alt int, cpr fields.CompactPositionReportingFo
 		pd.evenCPRLon = uint32(cprLon)
 		pd.evenWritten = true
 		pd.lastWrittenWasEven = true
-	} else  {
+	} else {
 		pd.oddCPRLat = uint32(cprLat)
 		pd.oddCPRLon = uint32(cprLon)
 		pd.oddWritten = true

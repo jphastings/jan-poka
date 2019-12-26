@@ -1,6 +1,7 @@
 package tower
 
 import (
+	"fmt"
 	"github.com/jphastings/jan-poka/pkg/hardware/stepper"
 	"github.com/jphastings/jan-poka/pkg/math"
 	"sync"
@@ -66,21 +67,39 @@ func (s *Config) Shutdown() {
 func (s *Config) setDirection(bearing math.AERCoords) error {
 	base, arm := Pointer(math.ModDeg(bearing.Azimuth-s.facing), 90-bearing.Elevation)
 
-	if err := s.baseServo.SetAngle(base); err != nil {
-		return err
-	}
-	if err := s.baseServo.Off(); err != nil {
-		return err
-	}
+	var wg sync.WaitGroup
+	errs := make(chan error, 4)
 
-	if err := s.armServo.SetAngle(arm); err != nil {
-		return err
-	}
-	if err := s.armServo.Off(); err != nil {
-		return err
-	}
+	go func(errs chan<- error) {
+		wg.Add(1)
+		if err := s.baseServo.SetAngle(base); err != nil {
+			errs <- err
+		}
+		if err := s.baseServo.Off(); err != nil {
+			errs <- err
+		}
+		wg.Done()
+	}(errs)
 
-	return nil
+	go func(errs chan<- error) {
+		wg.Add(1)
+		if err := s.armServo.SetAngle(arm); err != nil {
+			errs <- err
+		}
+		if err := s.armServo.Off(); err != nil {
+			errs <- err
+		}
+		wg.Done()
+	}(errs)
+
+	wg.Wait()
+
+	select {
+	case err := <-errs:
+		return err
+	default:
+		return nil
+	}
 }
 
 const maxNumeral = 15

@@ -6,4 +6,4 @@
 /.balena-sync.yml
 # Remove this for now
 /pkg/locator/celestial
-/dist/
+/dist/jan-poka

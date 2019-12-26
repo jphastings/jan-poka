@@ -12,8 +12,8 @@ func Pointer(theta, phi math.Degrees) (math.Degrees, math.Degrees) {
 		base = theta - 270
 	}
 
-	arm := phi
-	if !clockwise {
+	arm := 180 - phi
+	if clockwise {
 		arm *= -1
 	}
 

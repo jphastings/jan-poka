@@ -2,7 +2,6 @@ package stepper
 
 import (
 	"github.com/jphastings/jan-poka/pkg/math"
-	"log"
 	"periph.io/x/periph/conn/gpio"
 	"periph.io/x/periph/host/rpi"
 	"time"
@@ -88,7 +87,6 @@ func (s *Stepper) SetAngle(angle math.Degrees) error {
 		angleChange = angleChange - 360
 	}
 
-	log.Printf("%s travelling to %.2fº which is %.2f\n", s.Name, angle, angleChange)
 	steps := int(angleChange / s.anglePerStep)
 	return s.Step(steps)
 }
@@ -103,7 +101,6 @@ func (s *Stepper) Step(steps int) error {
 		steps *= -1
 	}
 
-	log.Printf("%s stepping %d steps\n", s.Name, steps)
 	for i := 0; i < steps; i++ {
 		s.currentStep = (s.currentStep + stepUnit + seqLen) % seqLen
 		if err := s.applyStep(stepSeq[s.currentStep]); err != nil {
