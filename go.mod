@@ -4,10 +4,11 @@ go 1.13
 
 require (
 	cloud.google.com/go v0.50.0
+	github.com/ahmdrz/goinsta/v2 v2.4.5
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
+	github.com/eclipse/paho.mqtt.golang v1.3.3
 	github.com/erikstmartin/go-testdb v0.0.0-20160219214506-8d10e4a1bae5 // indirect
 	github.com/faiface/beep v1.0.2
-	github.com/golang/protobuf v1.3.2
 	github.com/grandcat/zeroconf v0.0.0-20190424104450-85eadb44205c
 	github.com/kellydunn/golang-geo v0.7.0
 	github.com/kelseyhightower/envconfig v1.4.0

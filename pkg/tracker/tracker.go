@@ -14,7 +14,7 @@ type Config struct {
 	Targets   chan *locator.TargetInstructions
 }
 
-type OnTracked func(name string, bearing math.AERCoords, distance math.Meters, isFirstTrack bool) future.Future
+type OnTracked func(name string, target math.LLACoords, bearing math.AERCoords, surfaceDistance math.Meters, isFirstTrack bool) future.Future
 
 func New(home math.LLACoords, callbacks ...OnTracked) *Config {
 	return &Config{
@@ -38,14 +38,14 @@ func (track *Config) Track() {
 			tracker = target.Poll()
 		case details := <-tracker:
 			bearing := track.home.DirectionTo(details.Coords, 0)
-			distance := track.home.GreatCircleDistance(details.Coords)
+			surfaceDistance := track.home.GreatCircleDistance(details.Coords)
 
 			var wg sync.WaitGroup
 
 			for _, callback := range track.callbacks {
 				wg.Add(1)
 				go func(cb OnTracked) {
-					result := <-cb(details.Name, bearing, distance, isFirstTrack)
+					result := <-cb(details.Name, details.Coords, bearing, surfaceDistance, isFirstTrack)
 					if !result.IsOK() {
 						fmt.Printf("could not present location: %v\n", result.Err)
 					}

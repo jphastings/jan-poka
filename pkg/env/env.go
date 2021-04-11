@@ -2,6 +2,7 @@ package env
 
 import (
 	"github.com/kelseyhightower/envconfig"
+	"time"
 
 	. "github.com/jphastings/jan-poka/pkg/math"
 )
@@ -17,8 +18,19 @@ type Config struct {
 	UseLog   bool `default:"true"`
 	UseTower bool `default:"false"`
 	UseAudio bool `default:"false"`
+	UseMQTT  bool `default:"true"`
 
 	TowerStatePath string `default:"/run/jan-poka/"`
+
+	MQTTBroker   string `default:"mqtt.local:1883"`
+	MQTTUsername string `default:"jan-poka"`
+	MQTTPassword string `default:""`
+	MQTTTopic    string `default:"home/geo/target"`
+
+	TCPTimeout time.Duration `default:"1s"`
+
+	InstagramUsername string
+	InstagramPassword string
 
 	Home LLACoords `ignored:"true"`
 }

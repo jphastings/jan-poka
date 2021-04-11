@@ -10,13 +10,18 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"strings"
+	"time"
 )
 
 type locationProvider struct {
-	host        string
+	httpClient  *http.Client
+	endpoint    string
 	focusFlight string
 }
+
+const dataEndpoint = "/dump1090/data.json"
 
 func init() {
 	positionQuery, err := newClient("192.168.86.137:8090")
@@ -39,7 +44,7 @@ func (lp *locationProvider) SetParams(decodeInto func(interface{}) error) error 
 }
 
 func (lp *locationProvider) Location() (math.LLACoords, string, bool) {
-	resp, err := http.Get(fmt.Sprintf("http://%s/dump1090/data.json", lp.host))
+	resp, err := http.Get(lp.endpoint)
 	if err != nil {
 		return math.LLACoords{}, "", false
 	}
@@ -85,5 +90,18 @@ type dataLine struct {
 }
 
 func newClient(host string) (*locationProvider, error) {
-	return &locationProvider{host: host}, nil
+	return nil, fmt.Errorf("can't easily detect unavailability - forcing off for now")
+
+	u := (&url.URL{
+		Scheme: "http",
+		Host:   host,
+		Path:   dataEndpoint,
+	}).String()
+
+	client := &http.Client{Timeout: time.Second}
+	_, err := http.Head(u)
+	if err != nil {
+		return nil, err
+	}
+	return &locationProvider{endpoint: u, httpClient: client}, nil
 }

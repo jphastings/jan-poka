@@ -6,11 +6,9 @@ import (
 	"github.com/jphastings/jan-poka/pkg/math"
 )
 
-func TrackerCallback(name string, bearing math.AERCoords, distance math.Meters, _ bool) future.Future {
+func TrackerCallback(name string, _ math.LLACoords, bearing math.AERCoords, distance math.Meters, _ bool) future.Future {
+	fmt.Println(Phrase(name, bearing, distance, false))
 	f := future.New()
-	go func() {
-		fmt.Println(Phrase(name, bearing, distance, false))
-		f.Succeed()
-	}()
+	f.Succeed()
 	return f
 }
