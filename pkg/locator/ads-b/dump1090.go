@@ -5,7 +5,7 @@ package ads_b
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/jphastings/jan-poka/pkg/locator/common"
+	"github.com/jphastings/jan-poka/pkg/common"
 	"github.com/jphastings/jan-poka/pkg/math"
 	"io/ioutil"
 	"log"

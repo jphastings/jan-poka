@@ -3,7 +3,7 @@
 package main
 
 import (
-	"github.com/jphastings/jan-poka/pkg/tracker"
+	"github.com/jphastings/jan-poka/pkg/locator/common"
 	"github.com/jphastings/jan-poka/pkg/tts"
 	"github.com/jphastings/jan-poka/pkg/tts/googletts"
 )
@@ -16,7 +16,7 @@ func init() {
 	})
 }
 
-func configureAudio() (tracker.OnTracked, error) {
+func configureAudio() (common.OnTracked, error) {
 	ttsEngine, err := googletts.New()
 	if err != nil {
 		return nil, err

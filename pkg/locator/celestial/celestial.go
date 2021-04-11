@@ -4,11 +4,11 @@ package celestial
 
 import (
 	"fmt"
-	log "log"
+	"log"
 	"strings"
 	"time"
 
-	"github.com/jphastings/jan-poka/pkg/locator/common"
+	"github.com/jphastings/jan-poka/pkg/common"
 	. "github.com/jphastings/jan-poka/pkg/math"
 )
 
@@ -46,7 +46,7 @@ func (lp *locationProvider) SetParams(decodeInto func(interface{}) error) error 
 func (lp *locationProvider) Location() (LLACoords, time.Time, string, bool) {
 	name := strings.Title(string(lp.target))
 	if lp.target == Moon || lp.target == Sun {
-		name = "the " + name
+		name = "The " + name
 	}
 	at := time.Now()
 	loc, err := GeocentricCoordinates(lp.target, at)

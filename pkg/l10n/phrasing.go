@@ -28,7 +28,7 @@ func Phrase(name string, bearing AERCoords, distance Meters, isFirstTrack bool) 
 			Distance(distance),
 			name)
 	} else {
-		return fmt.Sprintf("%s is now%s%s, %s.",
+		return fmt.Sprintf("%s is%s%s, %s.",
 			name,
 			compassHeading(bearing.Azimuth),
 			elevation(bearing.Elevation, true),
@@ -37,7 +37,7 @@ func Phrase(name string, bearing AERCoords, distance Meters, isFirstTrack bool) 
 }
 
 func compassHeading(azimuth Degrees) string {
-	approxDir := int((azimuth + 11.25) / 22.5) % len(compassPoints)
+	approxDir := int((azimuth+11.25)/22.5) % len(compassPoints)
 	compassPoint := compassPoints[approxDir]
 
 	accuracy := ModDeg(Degrees(math.Abs(float64(approxDir)*22.5 - float64(azimuth))))

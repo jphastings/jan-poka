@@ -1,8 +1,8 @@
 package main
 
 import (
+	"github.com/jphastings/jan-poka/pkg/common"
 	"github.com/jphastings/jan-poka/pkg/pointer/mqtt"
-	"github.com/jphastings/jan-poka/pkg/tracker"
 )
 
 func init() {
@@ -13,7 +13,7 @@ func init() {
 	})
 }
 
-func configureMQTT() (tracker.OnTracked, error) {
+func configureMQTT() (common.OnTracked, error) {
 	pub, err := mqtt.New(
 		environment.MQTTBroker,
 		environment.MQTTUsername,

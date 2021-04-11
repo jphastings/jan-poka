@@ -2,21 +2,22 @@ package tracker
 
 import (
 	"fmt"
-	"github.com/jphastings/jan-poka/pkg/future"
+	"github.com/jphastings/jan-poka/pkg/common"
 	"github.com/jphastings/jan-poka/pkg/locator"
 	"github.com/jphastings/jan-poka/pkg/math"
 	"sync"
+	"time"
 )
+
+const presenterTimeout = 1 * time.Second
 
 type Config struct {
 	home      math.LLACoords
-	callbacks []OnTracked
+	callbacks map[string]common.OnTracked
 	Targets   chan *locator.TargetInstructions
 }
 
-type OnTracked func(name string, target math.LLACoords, bearing math.AERCoords, surfaceDistance math.Meters, isFirstTrack bool) future.Future
-
-func New(home math.LLACoords, callbacks ...OnTracked) *Config {
+func New(home math.LLACoords, callbacks map[string]common.OnTracked) *Config {
 	return &Config{
 		home:      home,
 		callbacks: callbacks,
@@ -38,19 +39,39 @@ func (track *Config) Track() {
 			tracker = target.Poll()
 		case details := <-tracker:
 			bearing := track.home.DirectionTo(details.Coords, 0)
-			surfaceDistance := track.home.GreatCircleDistance(details.Coords)
+			unobstructedDistance := track.home.GreatCircleDistance(details.Coords)
+			trackedDetails := common.TrackedDetails{
+				Name:                 details.Name,
+				AccurateAt:           details.AccurateAt,
+				Target:               details.Coords,
+				Bearing:              bearing,
+				UnobstructedDistance: unobstructedDistance,
+				IsFirstTrack:         isFirstTrack,
+			}
+
+			callbacks := make(map[string]common.OnTracked)
+			for name, callback := range track.callbacks {
+				callbacks[name] = callback
+			}
+			if target.Requester != nil {
+				callbacks["Requester"] = target.Requester
+			}
 
 			var wg sync.WaitGroup
-
-			for _, callback := range track.callbacks {
+			for presenter, callback := range callbacks {
 				wg.Add(1)
-				go func(cb OnTracked) {
-					result := <-cb(details.Name, details.Coords, bearing, surfaceDistance, isFirstTrack)
-					if !result.IsOK() {
-						fmt.Printf("could not present location: %v\n", result.Err)
+				go func(presenter string, callback common.OnTracked, trackedDetails common.TrackedDetails) {
+					select {
+					case <-time.After(presenterTimeout):
+						fmt.Printf("⚠️ timed out while trying to present to %s\n", presenter)
+					case result := <-callback(trackedDetails):
+						if !result.IsOK() {
+							fmt.Printf("⚠️ could not present location with %s: %v\n", presenter, result.Err)
+						}
 					}
+
 					wg.Done()
-				}(callback)
+				}(presenter, callback, trackedDetails)
 			}
 
 			wg.Wait()

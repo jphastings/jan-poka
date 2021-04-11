@@ -1,8 +1,8 @@
 package main
 
 import (
+	"github.com/jphastings/jan-poka/pkg/common"
 	"github.com/jphastings/jan-poka/pkg/locator/instagram"
-	"github.com/jphastings/jan-poka/pkg/tracker"
 )
 
 func init() {
@@ -13,6 +13,6 @@ func init() {
 	})
 }
 
-func configureInstagram() (tracker.OnTracked, error) {
+func configureInstagram() (common.OnTracked, error) {
 	return nil, instagram.Login(environment.InstagramUsername, environment.InstagramPassword)
 }

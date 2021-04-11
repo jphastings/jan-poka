@@ -3,7 +3,7 @@ package locator
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/jphastings/jan-poka/pkg/locator/common"
+	"github.com/jphastings/jan-poka/pkg/common"
 	"time"
 
 	"github.com/jphastings/jan-poka/pkg/math"
@@ -33,6 +33,7 @@ type TargetDetails struct {
 type TargetInstructions struct {
 	pollTicker *time.Ticker
 	sequence   []func() (TargetDetails, bool)
+	Requester  common.OnTracked
 }
 
 func DecodeJSON(givenJSON []byte) (*TargetInstructions, error) {

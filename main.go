@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/jphastings/jan-poka/pkg/common"
 	"github.com/jphastings/jan-poka/pkg/l10n"
 	"log"
 
@@ -10,13 +11,13 @@ import (
 	"github.com/jphastings/jan-poka/pkg/tracker"
 )
 
-var callbacks []tracker.OnTracked
+var callbacks []common.OnTracked
 var environment env.Config
 
 type configurable struct {
 	name      string
 	toggle    func() bool
-	configure func() (tracker.OnTracked, error)
+	configure func() (common.OnTracked, error)
 }
 
 var configurables = []configurable{
@@ -33,7 +34,7 @@ func init() {
 
 func main() {
 	callbacks := configureModules()
-	track := tracker.New(environment.Home, callbacks...)
+	track := tracker.New(environment.Home, callbacks)
 
 	go track.Track()
 
@@ -41,18 +42,19 @@ func main() {
 	http.WebAPI(environment.Port, track)
 }
 
-func loggingCallback() (tracker.OnTracked, error) {
+func loggingCallback() (common.OnTracked, error) {
 	return l10n.TrackerCallback, nil
 }
 
-func configureModules() (callbacks []tracker.OnTracked) {
+func configureModules() map[string]common.OnTracked {
+	callbacks := make(map[string]common.OnTracked)
 	for _, conf := range configurables {
 		if conf.toggle() {
 			callback, err := conf.configure()
 
 			if err == nil {
 				if callback != nil {
-					callbacks = append(callbacks, callback)
+					callbacks[conf.name] = callback
 				}
 				log.Printf("✅ %s\n", conf.name)
 			} else {

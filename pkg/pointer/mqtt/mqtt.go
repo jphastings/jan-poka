@@ -3,8 +3,8 @@ package mqtt
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/jphastings/jan-poka/pkg/common"
 	"github.com/jphastings/jan-poka/pkg/future"
-	"github.com/jphastings/jan-poka/pkg/math"
 	"log"
 	"time"
 
@@ -54,16 +54,16 @@ func (s *Config) tokenOk(token mqtt.Token) error {
 	return nil
 }
 
-func (s *Config) TrackerCallback(_ string, target math.LLACoords, bearing math.AERCoords, surfaceDistance math.Meters, _ bool) future.Future {
+func (s *Config) TrackerCallback(details common.TrackedDetails) future.Future {
 	return future.Exec(func() error {
 		msg := Message{
-			TargetLatitude:            float32(target.Latitude),
-			TargetLongitude:           float32(target.Longitude),
-			TargetAltitude:            float32(target.Altitude),
-			CalculatedAzimuth:         float32(bearing.Azimuth),
-			CalculatedElevation:       float32(bearing.Elevation),
-			CalculatedRange:           float32(bearing.Range),
-			CalculatedSurfaceDistance: float32(surfaceDistance),
+			TargetLatitude:            float32(details.Target.Latitude),
+			TargetLongitude:           float32(details.Target.Longitude),
+			TargetAltitude:            float32(details.Target.Altitude),
+			CalculatedAzimuth:         float32(details.Bearing.Azimuth),
+			CalculatedElevation:       float32(details.Bearing.Elevation),
+			CalculatedRange:           float32(details.Bearing.Range),
+			CalculatedSurfaceDistance: float32(details.UnobstructedDistance),
 		}
 		enc, err := json.Marshal(msg)
 		if err != nil {

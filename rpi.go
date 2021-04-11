@@ -4,8 +4,8 @@ package main
 
 import (
 	"github.com/jphastings/jan-poka/pkg/hardware/stepper"
+	"github.com/jphastings/jan-poka/pkg/locator/common"
 	"github.com/jphastings/jan-poka/pkg/pointer/tower"
-	"github.com/jphastings/jan-poka/pkg/tracker"
 	"log"
 	"os"
 	"os/signal"
@@ -27,7 +27,7 @@ func init() {
 	})
 }
 
-func configureTower() (tracker.OnTracked, error) {
+func configureTower() (common.OnTracked, error) {
 	stepper.SetStateDir(environment.TowerStatePath)
 	towerConfig, err := tower.New(environment.Facing)
 	if err != nil {

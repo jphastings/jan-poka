@@ -1,7 +1,7 @@
 package instagram
 
 import (
-	"github.com/jphastings/jan-poka/pkg/locator/common"
+	"github.com/jphastings/jan-poka/pkg/common"
 	. "github.com/jphastings/jan-poka/pkg/math"
 	"time"
 
