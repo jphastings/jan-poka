@@ -16,12 +16,6 @@ int BOOTING   = 2;  // D4
 
 int MAX_SPEED = 9000;
 
-struct AERCoords {
-  double azimuth;
-  double elevation;
-  double range;
-};
-
 WiFiClient wifiClient;
 PubSubClient mqttClient(wifiClient);
 String mqttUsername;
@@ -109,12 +103,16 @@ void goTo(double azimuth, double elevation) {
   inner.moveTo(innerRotation);
   outer.moveTo(outerRotation);
 
-  // This should be setting the speeds such that they both arrive at the same time - but I've buggered it up
-  //double ratio = (stepsForInner == 0 || stepsForOuter == 0) ? 1 : stepsForInner / stepsForOuter;
-  double ratio = 1;
-  inner.setSpeed(MAX_SPEED * ratio);
-  outer.setSpeed(MAX_SPEED / ratio);
-  
+  double innerSpeed = MAX_SPEED;
+  double outerSpeed = MAX_SPEED;
+  if (stepsForInner > stepsForOuter) {
+    outerSpeed = innerSpeed * stepsForInner / stepsForOuter;
+  } else {
+    innerSpeed = outerSpeed * stepsForOuter / stepsForInner;
+  }
+
+  inner.setSpeed(innerSpeed);
+  outer.setSpeed(outerSpeed);
 }
 
 void loop() {
