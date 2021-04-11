@@ -54,10 +54,8 @@ func (c *config) SetParams(decodeInto func(interface{}) error) error {
 }
 
 func (c *config) Location() (LLACoords, time.Time, string, bool) {
-	// TODO: What format for the timestamp argument?
 	feed := c.user.Feed()
-	// TODO: Call next first?
-	// Not paginating
+	// If a location isn't in the first page, assume it'd be too old
 	feed.Next(false)
 
 	for _, item := range feed.Items {
