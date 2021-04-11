@@ -18,6 +18,8 @@ type Config struct {
 	UseTower bool `default:"false"`
 	UseAudio bool `default:"false"`
 
+	TowerStatePath string `default:"/run/jan-poka/"`
+
 	Home LLACoords `ignored:"true"`
 }
 

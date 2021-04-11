@@ -3,9 +3,6 @@ package http
 import (
 	"github.com/grandcat/zeroconf"
 	"log"
-	"os"
-	"os/signal"
-	"syscall"
 )
 
 func announce(port int) {
@@ -13,11 +10,13 @@ func announce(port int) {
 	if err != nil {
 		log.Printf("✋ Bonjour could not start: %v\n", err.Error())
 	}
+	_ = announceSrv
 
-	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
-	select {
-	case <-sig:
-		announceSrv.Shutdown()
-	}
+	// TODO: Ensure the Bonjour annouce is ended when the app closes
+	//sig := make(chan os.Signal, 1)
+	//signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
+	//select {
+	//case <-sig:
+	//	announceSrv.Shutdown()
+	//}
 }

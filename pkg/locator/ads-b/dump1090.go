@@ -19,7 +19,7 @@ type locationProvider struct {
 }
 
 func init() {
-	positionQuery, err := newClient("127.0.0.1:8090")
+	positionQuery, err := newClient("192.168.86.137:8090")
 	if err != nil {
 		log.Printf("❌ Provider: ADS-B unavailable, %s\n", err.Error())
 	} else {

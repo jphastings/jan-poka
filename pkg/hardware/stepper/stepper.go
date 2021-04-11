@@ -1,12 +1,18 @@
 package stepper
 
 import (
+	"fmt"
 	"github.com/jphastings/jan-poka/pkg/math"
+	"io/ioutil"
+	"os"
+	"path"
 	"periph.io/x/periph/conn/gpio"
 	"periph.io/x/periph/host/rpi"
+	"strconv"
 	"time"
 )
 
+var stateDir string = "/run/jan-poka/"
 var Motors = map[string]math.Degrees{
 	"28BYJ-48": 45 / 256.0,
 }
@@ -32,7 +38,8 @@ type stepperPins struct {
 }
 
 type Stepper struct {
-	Name string
+	Name      string
+	stateFile string
 
 	CurrentAngle math.Degrees
 	anglePerStep math.Degrees
@@ -46,6 +53,15 @@ type Stepper struct {
 	stepSpacing time.Duration
 }
 
+func SetStateDir(path string) error {
+	err := os.Mkdir(path, os.ModeDir)
+	if err != nil {
+		return err
+	}
+	stateDir = path
+	return nil
+}
+
 func Pi2Quad(anglePerStep math.Degrees) []*Stepper {
 	return []*Stepper{
 		New("M0", rpi.P1_11, rpi.P1_12, rpi.P1_13, rpi.P1_15, 0, anglePerStep),
@@ -56,8 +72,9 @@ func Pi2Quad(anglePerStep math.Degrees) []*Stepper {
 }
 
 func New(name string, p0, p1, p2, p3 gpio.PinOut, startAngle, anglePerStep math.Degrees) *Stepper {
-	return &Stepper{
-		Name: name,
+	s := &Stepper{
+		Name:      name,
+		stateFile: path.Join(stateDir, name),
 
 		CurrentAngle: startAngle,
 		anglePerStep: anglePerStep,
@@ -70,6 +87,8 @@ func New(name string, p0, p1, p2, p3 gpio.PinOut, startAngle, anglePerStep math.
 
 		stepSpacing: 1 * time.Millisecond,
 	}
+	_ = s.readFromState()
+	return s
 }
 
 func (s *Stepper) SetSpeed(rpm float64) {
@@ -78,7 +97,11 @@ func (s *Stepper) SetSpeed(rpm float64) {
 }
 
 func (s *Stepper) Off() error {
-	return s.applyStep(stepOff)
+	err := s.applyStep(stepOff)
+	if err != nil {
+		return err
+	}
+	return s.writeToState()
 }
 
 func (s *Stepper) SetAngle(angle math.Degrees) error {
@@ -126,4 +149,21 @@ func (s *Stepper) applyStep(seq stepperPins) error {
 		return err
 	}
 	return nil
+}
+
+func (s *Stepper) readFromState() error {
+	data, err := ioutil.ReadFile(s.stateFile)
+	if err != nil {
+		return err
+	}
+	degs, err := strconv.ParseFloat(string(data), 64)
+	if err != nil {
+		return err
+	}
+	s.CurrentAngle = math.Degrees(degs)
+	return nil
+}
+
+func (s *Stepper) writeToState() error {
+	return ioutil.WriteFile(s.stateFile, []byte(fmt.Sprintf("%f", s.CurrentAngle)), 0644)
 }

@@ -22,6 +22,6 @@ func WebAPI(port uint16, track *tracker.Config) {
 	}
 
 	// TODO: Handle errors here
-	announce(int(port))
+	go announce(int(port))
 	webserver.ListenAndServe()
 }

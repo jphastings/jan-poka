@@ -1,7 +1,6 @@
 package tower
 
 import (
-	"fmt"
 	"github.com/jphastings/jan-poka/pkg/hardware/stepper"
 	"github.com/jphastings/jan-poka/pkg/math"
 	"sync"

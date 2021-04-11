@@ -1,8 +1,0 @@
-syntax = "proto3";
-
-option go_package = "pb";
-
-message DeliverooConfig {
-    string refresh_token = 1;
-    string access_token = 2;
-}
