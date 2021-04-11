@@ -6,7 +6,7 @@ import (
 	"bufio"
 	"encoding/hex"
 	"fmt"
-	"github.com/jphastings/jan-poka/pkg/locator/common"
+	"github.com/jphastings/jan-poka/pkg/common"
 	"github.com/jphastings/jan-poka/pkg/math"
 	"github.com/twuillemin/modes/pkg/bds/adsb"
 	"github.com/twuillemin/modes/pkg/bds/bds05/fields"

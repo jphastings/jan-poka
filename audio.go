@@ -3,7 +3,7 @@
 package main
 
 import (
-	"github.com/jphastings/jan-poka/pkg/locator/common"
+	"github.com/jphastings/jan-poka/pkg/common"
 	"github.com/jphastings/jan-poka/pkg/tts"
 	"github.com/jphastings/jan-poka/pkg/tts/googletts"
 )

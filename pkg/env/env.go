@@ -31,6 +31,8 @@ type Config struct {
 	InstagramUsername string
 	InstagramPassword string
 
+	GoogleMapsAPIKey string
+
 	Home LLACoords `ignored:"true"`
 }
 

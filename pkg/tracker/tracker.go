@@ -9,7 +9,10 @@ import (
 	"time"
 )
 
-const presenterTimeout = 1 * time.Second
+const (
+	presenterTimeout              = 1 * time.Second
+	greatCircleCutoff math.Meters = 5000
+)
 
 type Config struct {
 	home      math.LLACoords
@@ -39,7 +42,12 @@ func (track *Config) Track() {
 			tracker = target.Poll()
 		case details := <-tracker:
 			bearing := track.home.DirectionTo(details.Coords, 0)
-			unobstructedDistance := track.home.GreatCircleDistance(details.Coords)
+
+			unobstructedDistance := bearing.Range
+			if details.Coords.Altitude < greatCircleCutoff {
+				unobstructedDistance = track.home.GreatCircleDistance(details.Coords)
+			}
+
 			trackedDetails := common.TrackedDetails{
 				Name:                 details.Name,
 				AccurateAt:           details.AccurateAt,

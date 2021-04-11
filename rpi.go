@@ -3,8 +3,8 @@
 package main
 
 import (
+	"github.com/jphastings/jan-poka/pkg/common"
 	"github.com/jphastings/jan-poka/pkg/hardware/stepper"
-	"github.com/jphastings/jan-poka/pkg/locator/common"
 	"github.com/jphastings/jan-poka/pkg/pointer/tower"
 	"log"
 	"os"

@@ -21,5 +21,6 @@ require (
 	github.com/ziutek/mymysql v1.5.4 // indirect
 	google.golang.org/api v0.15.0
 	google.golang.org/genproto v0.0.0-20191223191004-3caeed10a8bf
+	googlemaps.github.io/maps v1.3.2
 	periph.io/x/periph v3.6.2+incompatible
 )
