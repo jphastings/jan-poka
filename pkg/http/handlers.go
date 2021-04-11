@@ -58,12 +58,12 @@ func handleFocus(track *tracker.Config) http.Handler {
 }
 
 type trackedResponse struct {
-	Name                 string    `json:"Name"`
+	Name                 string    `json:"name"`
 	Latitude             float64   `json:"latitude"`
 	Longitude            float64   `json:"longitude"`
 	Altitude             float64   `json:"altitude"`
-	UnobstructedDistance float64   `json:"unobstructed_distance"`
-	AccurateAt           time.Time `json:"accurate_at"`
+	UnobstructedDistance float64   `json:"unobstructedDistance"`
+	AccurateAt           time.Time `json:"accurateAt"`
 	Summary              string    `json:"summary"`
 }
 
