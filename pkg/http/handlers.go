@@ -19,14 +19,14 @@ func handleFocus(track *tracker.Config) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
+			w.WriteHeader(http.StatusInternalServerError)
 			log.Println(err)
 			return
 		}
 		target, err := locator.DecodeJSON(body)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			log.Println(err)
+			w.WriteHeader(http.StatusUnsupportedMediaType)
+			_, _ = w.Write([]byte(`{"error":"couldn't decode JSON request"}`))
 			return
 		}
 
@@ -38,15 +38,16 @@ func handleFocus(track *tracker.Config) http.Handler {
 			select {
 			case <-time.After(resultTimeout):
 				w.WriteHeader(http.StatusAccepted)
+				_, _ = w.Write([]byte(`{"message":"Location calculation took a while, calculating in the background"}`))
 			case loc := <-onTracked:
 				enc, err := json.Marshal(loc)
 				if err != nil {
 					w.WriteHeader(http.StatusAccepted)
-					return
+					_, _ = w.Write([]byte(`{"message":"Location couldn't be encoded for response, but succeeded."}`))
+				} else {
+					w.WriteHeader(http.StatusOK)
+					_, _ = w.Write(enc)
 				}
-
-				w.WriteHeader(http.StatusOK)
-				_, _ = w.Write(enc)
 			}
 
 		default:
