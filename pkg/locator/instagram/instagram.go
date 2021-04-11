@@ -1,49 +1,56 @@
 package instagram
 
 import (
-	"github.com/ahmdrz/goinsta"
+	"fmt"
+	"github.com/jphastings/jan-poka/pkg/env"
 	"github.com/jphastings/jan-poka/pkg/locator/common"
 	. "github.com/jphastings/jan-poka/pkg/math"
 	"log"
+
+	"github.com/ahmdrz/goinsta/v2"
 )
 
 const TYPE = "instagram"
 
-type locationProvider struct {
-	Name      string   `json:"name"`
-	Username  string   `json:"username"`
+type config struct {
+	client *goinsta.Instagram
+	target request
 }
 
-var insta *goinsta.Instagram
+type request struct {
+	Name     string `json:"name"`
+	Username string `json:"username"`
+}
 
-func init() {
-	insta = goinsta.New("pilenticular", "e3Qp3yE4WgCpKvmeuF")
-	err := insta.Login()
-	if err != nil {
+func Login(environment env.Config) {
+	c := &config{
+		client: goinsta.New(environment.InstagramUsername, environment.InstagramPassword),
+	}
+	if err := c.client.Login(); err != nil {
 		log.Println("❌ Provider: Instagram could not log in.")
 		return
 	}
 
-	common.Providers[TYPE] = func() common.LocationProvider { return &locationProvider{} }
+	common.Providers[TYPE] = func() common.LocationProvider { return c }
 	log.Println("✅ Provider: Instagram post positions available.")
 }
 
-func (lp *locationProvider) SetParams(decodeInto func(interface{}) error) error {
-	if err := decodeInto(lp); err != nil {
+func (c *config) SetParams(decodeInto func(interface{}) error) error {
+	if err := decodeInto(&c.target); err != nil {
 		return err
 	}
 
-	user, err := insta.Profiles.ByName(lp.Username)
+	user, err := c.client.Profiles.ByName(c.target.Username)
 	if err != nil {
 		return err
 	}
 
-	if lp.Name == "" {
-		lp.Name = user.FullName
+	if c.target.Name == "" {
+		c.target.Name = user.FullName
 	}
 
-	if lp.Name == "" {
-		lp.Name = lp.Username
+	if c.target.Name == "" {
+		c.target.Name = c.target.Username
 	}
 
 	//fmt.Println(feed)
@@ -51,13 +58,14 @@ func (lp *locationProvider) SetParams(decodeInto func(interface{}) error) error 
 	//	fmt.Println(item.Lat, item.Lng)
 	//}
 
-	return nil
+	// Haven't currently figured out how to extract lat/long
+	return fmt.Errorf("not implemented")
 }
 
-func (lp *locationProvider) Location() (LLACoords, string, bool) {
+func (c *config) Location() (LLACoords, string, bool) {
 	return LLACoords{
 		Latitude:  0,
 		Longitude: 0,
 		Altitude:  0,
-	}, lp.Username, true
+	}, c.target.Name, true
 }
