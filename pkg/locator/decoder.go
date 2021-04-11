@@ -10,7 +10,7 @@ import (
 
 	_ "github.com/jphastings/jan-poka/pkg/locator/ads-b"
 	_ "github.com/jphastings/jan-poka/pkg/locator/celestial"
-	//_ "github.com/jphastings/jan-poka/pkg/locator/instagram"
+	_ "github.com/jphastings/jan-poka/pkg/locator/instagram"
 	_ "github.com/jphastings/jan-poka/pkg/locator/iss"
 	_ "github.com/jphastings/jan-poka/pkg/locator/lla"
 )
@@ -25,8 +25,9 @@ type deciderLocationSpec struct {
 }
 
 type TargetDetails struct {
-	Name   string
-	Coords math.LLACoords
+	Name       string
+	Coords     math.LLACoords
+	AccurateAt time.Time
 }
 
 type TargetInstructions struct {
@@ -71,8 +72,8 @@ func DecodeJSON(givenJSON []byte) (*TargetInstructions, error) {
 		}
 
 		ti.sequence = append(ti.sequence, func() (TargetDetails, bool) {
-			coords, name, isUsable := prov.Location()
-			return TargetDetails{Name: name, Coords: coords}, isUsable
+			coords, accurateAt, name, isUsable := prov.Location()
+			return TargetDetails{Name: name, Coords: coords, AccurateAt: accurateAt}, isUsable
 		})
 	}
 

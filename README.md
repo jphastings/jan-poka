@@ -25,7 +25,6 @@ A device for bringing your distant friends a little nearer.
 | $JP_HOMEALTITUDE | - | The altitude of where the device is. |
 | $JP_USETOWER | A physical tower device | Physically points to the specified locations. |
 | $JP_USEAUDIO | libasound2 | On mac, no dependencies. On linux, [libasound2-dev](https://packages.debian.org/sid/libasound2-dev) library | Allows audio playing (used by text-to-speech) |
-| $JP_USEMQTT | - | Publish calculated locations to MQTT. |
 | $JP_MQTTBROKER | - | The MQTT broker to publish to (host and port). |
 | $JP_MQTTUSERNAME | - | The MQTT username to use. |
 | $JP_MQTTPASSWORD | - | The MQTT password to use. |

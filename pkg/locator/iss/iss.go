@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/jphastings/jan-poka/pkg/locator/common"
 	"github.com/jphastings/jan-poka/pkg/math"
@@ -19,6 +20,8 @@ type serviceResponse struct {
 	} `json:"iss_position"`
 }
 
+var _ common.LocationProvider = (*locationProvider)(nil)
+
 type locationProvider struct{}
 
 func init() {
@@ -28,14 +31,14 @@ func init() {
 
 func (_ *locationProvider) SetParams(func(interface{}) error) error { return nil }
 
-func (_ *locationProvider) Location() (math.LLACoords, string, bool) {
+func (_ *locationProvider) Location() (math.LLACoords, time.Time, string, bool) {
 	client := &http.Client{}
 
 	req, _ := http.NewRequest("GET", "http://api.open-notify.org/iss-now.json", nil)
 	req.Header.Add("Accept", "application/json")
 	res, err := client.Do(req)
 	if err != nil {
-		return math.LLACoords{}, "", false
+		return math.LLACoords{}, time.Time{}, "", false
 	}
 
 	defer res.Body.Close()
@@ -43,21 +46,21 @@ func (_ *locationProvider) Location() (math.LLACoords, string, bool) {
 	var response serviceResponse
 	err = decoder.Decode(&response)
 	if err != nil {
-		return math.LLACoords{}, "", false
+		return math.LLACoords{}, time.Time{}, "", false
 	}
 
 	latitude, err := strconv.ParseFloat(response.Position.Latitude, 64)
 	if err != nil {
-		return math.LLACoords{}, "", false
+		return math.LLACoords{}, time.Time{}, "", false
 	}
 	longitude, err := strconv.ParseFloat(response.Position.Longitude, 64)
 	if err != nil {
-		return math.LLACoords{}, "", false
+		return math.LLACoords{}, time.Time{}, "", false
 	}
 
 	return math.LLACoords{
 		Latitude:  math.Degrees(latitude),
 		Longitude: math.Degrees(longitude),
 		Altitude:  408000,
-	}, "The International Space Station", true
+	}, time.Now(), "The International Space Station", true
 }

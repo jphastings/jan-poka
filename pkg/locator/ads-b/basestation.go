@@ -26,6 +26,8 @@ import (
 	"strings"
 )
 
+var _ common.LocationProvider = (*sbsLocationProvider)(nil)
+
 var positionCache *sbsLocationProvider
 
 type sbsLocationProvider struct {
@@ -75,7 +77,7 @@ func (lp *sbsLocationProvider) SetParams(decodeInto func(interface{}) error) err
 	return nil
 }
 
-func (lp *sbsLocationProvider) Location() (math.LLACoords, string, bool) {
+func (lp *sbsLocationProvider) Location() (math.LLACoords, time.Time, string, bool) {
 	pd, ok := lp.dataCache[lp.focusAddress]
 	if !ok {
 		return math.LLACoords{}, "Flight " + lp.name, false
@@ -86,12 +88,13 @@ func (lp *sbsLocationProvider) Location() (math.LLACoords, string, bool) {
 		emergency = ", indicating " + pd.emergency
 	}
 
-	return pd.loc, "Flight " + lp.name + emergency, true
+	return pd.loc, pd.updatedAt, "Flight " + lp.name + emergency, true
 }
 
 type planeData struct {
 	ident              string
 	loc                math.LLACoords
+	updatedAt          time.Time
 	lastWrittenWasEven bool
 	evenWritten        bool
 	evenCPRLat         uint32
@@ -194,6 +197,7 @@ func updateLocation(pd planeData, alt int, cpr fields.CompactPositionReportingFo
 		if err == nil {
 			pd.loc.Latitude = math.Degrees(lat)
 			pd.loc.Longitude = math.Degrees(lon)
+			pd.updatedAt = time.Now()
 		}
 	}
 	return pd

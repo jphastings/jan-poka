@@ -15,6 +15,8 @@ import (
 	"time"
 )
 
+var _ common.LocationProvider = (*locationProvider)(nil)
+
 type locationProvider struct {
 	httpClient  *http.Client
 	endpoint    string
@@ -43,22 +45,22 @@ func (lp *locationProvider) SetParams(decodeInto func(interface{}) error) error 
 	return nil
 }
 
-func (lp *locationProvider) Location() (math.LLACoords, string, bool) {
+func (lp *locationProvider) Location() (math.LLACoords, time.Time, string, bool) {
 	resp, err := http.Get(lp.endpoint)
 	if err != nil {
-		return math.LLACoords{}, "", false
+		return math.LLACoords{}, time.Time{}, "", false
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return math.LLACoords{}, "", false
+		return math.LLACoords{}, time.Time{}, "", false
 	}
 
 	var results []dataLine
 	err = json.Unmarshal(body, &results)
 	if err != nil {
 		panic(err)
-		return math.LLACoords{}, "", false
+		return math.LLACoords{}, time.Time{}, "", false
 	}
 
 	var flights []string
@@ -69,17 +71,18 @@ func (lp *locationProvider) Location() (math.LLACoords, string, bool) {
 		f := strings.Trim(flight.Flight, " ")
 		flights = append(flights, f)
 		if f == lp.focusFlight {
+			// TODO: Can I get a more accurate time reading?
 			return math.LLACoords{
 				Altitude:  math.Meters(flight.Altitude * 0.3048),
 				Latitude:  math.Degrees(flight.Lat),
 				Longitude: math.Degrees(flight.Lon),
-			}, "Flight " + f, true
+			}, time.Now(), "Flight " + f, true
 		}
 	}
 
 	fmt.Println(strings.Join(flights, ", "))
 
-	return math.LLACoords{}, "", false
+	return math.LLACoords{}, time.Time{}, "", false
 }
 
 type dataLine struct {

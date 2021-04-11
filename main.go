@@ -51,7 +51,9 @@ func configureModules() (callbacks []tracker.OnTracked) {
 			callback, err := conf.configure()
 
 			if err == nil {
-				callbacks = append(callbacks, callback)
+				if callback != nil {
+					callbacks = append(callbacks, callback)
+				}
 				log.Printf("✅ %s\n", conf.name)
 			} else {
 				log.Fatalf("🛑 %s: \n%v", conf.name, err)

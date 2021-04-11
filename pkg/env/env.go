@@ -18,7 +18,6 @@ type Config struct {
 	UseLog   bool `default:"true"`
 	UseTower bool `default:"false"`
 	UseAudio bool `default:"false"`
-	UseMQTT  bool `default:"true"`
 
 	TowerStatePath string `default:"/run/jan-poka/"`
 

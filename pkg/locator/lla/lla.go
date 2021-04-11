@@ -3,12 +3,15 @@ package lla
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/jphastings/jan-poka/pkg/locator/common"
 	. "github.com/jphastings/jan-poka/pkg/math"
 )
 
 const TYPE = "lla"
+
+var _ common.LocationProvider = (*locationProvider)(nil)
 
 type locationProvider struct {
 	name   string
@@ -50,6 +53,6 @@ func (lp *locationProvider) SetParams(decodeInto func(interface{}) error) error 
 	return nil
 }
 
-func (lp *locationProvider) Location() (LLACoords, string, bool) {
-	return lp.target, lp.name, true
+func (lp *locationProvider) Location() (LLACoords, time.Time, string, bool) {
+	return lp.target, time.Now(), lp.name, true
 }

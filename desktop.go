@@ -7,8 +7,8 @@ import (
 
 func init() {
 	configurables = append(configurables, configurable{
-		"Use MQTT publishing",
-		func() bool { return environment.UseMQTT },
+		"Publishing to MQTT",
+		func() bool { return environment.MQTTBroker != "" && environment.MQTTTopic != "" },
 		configureMQTT,
 	})
 }
