@@ -5,6 +5,7 @@ go 1.13
 require (
 	cloud.google.com/go v0.50.0
 	github.com/ahmdrz/goinsta/v2 v2.4.5
+	github.com/axvq/tile38-client v0.9.4
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
 	github.com/eclipse/paho.mqtt.golang v1.3.3
 	github.com/erikstmartin/go-testdb v0.0.0-20160219214506-8d10e4a1bae5 // indirect
@@ -17,7 +18,11 @@ require (
 	github.com/miekg/dns v1.1.26 // indirect
 	github.com/onsi/ginkgo v1.11.0
 	github.com/onsi/gomega v1.8.1
+	github.com/paulmach/go.geojson v1.4.0 // indirect
+	github.com/tidwall/buntdb v1.2.3 // indirect
+	github.com/tidwall/rtree v0.0.0-20201027154624-32188eeb08a8 // indirect
 	github.com/twuillemin/modes v0.4.0
+	github.com/valyala/tsvreader v1.0.0 // indirect
 	github.com/ziutek/mymysql v1.5.4 // indirect
 	google.golang.org/api v0.15.0
 	google.golang.org/genproto v0.0.0-20191223191004-3caeed10a8bf
