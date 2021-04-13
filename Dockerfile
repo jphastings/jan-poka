@@ -1,16 +1,19 @@
 FROM golang:1.16-buster as builder
 WORKDIR /go/src/github.com/jphastings/jan-poka
 
-#RUN apt-get update && apt-get install -y libnova
+RUN apt-get update && apt-get install -y libnova-dev
+
+COPY go.mod .
+COPY go.sum .
+RUN go mod download
 
 COPY . .
-RUN go install -a -ldflags '-extldflags "-static"' -tags '' github.com/jphastings/jan-poka/cmd/...
+RUN go install -tags 'libnova' github.com/jphastings/jan-poka/cmd/...
 
-FROM scratch
-
-COPY --from=builder /go/bin/controller /jp-controller
+#FROM scratch
+#COPY --from=builder /go/bin/controller /bin/controller
 
 ENV JP_PORT 80
 EXPOSE 80
 
-CMD ["/jp-controller"]
+CMD ["/go/bin/controller"]
