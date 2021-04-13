@@ -26,7 +26,7 @@ func handleFocus(track *tracker.Config) http.Handler {
 		target, err := locator.DecodeJSON(body)
 		if err != nil {
 			w.WriteHeader(http.StatusUnsupportedMediaType)
-			_, _ = w.Write([]byte(`{"error":"couldn't decode JSON request"}`))
+			_, _ = w.Write([]byte(`{"message":"couldn't decode JSON request"}`))
 			return
 		}
 
