@@ -13,7 +13,7 @@ RUN go install -tags 'libnova' github.com/jphastings/jan-poka/cmd/...
 #FROM scratch
 #COPY --from=builder /go/bin/controller /bin/controller
 
-ENV JP_PORT 80
-EXPOSE 80
+ENV JP_PORT 2678
+EXPOSE 2678
 
 CMD ["/go/bin/controller"]
