@@ -3,6 +3,7 @@
 #include <AccelStepper.h>
 #include <ArduinoJson.h>
 #include <math.h>
+#include "vars.h";
 
 #define APP_NAME "concentric-gear-pointer"
 #define ONE_ROTATION_STEPS 8192
@@ -18,39 +19,18 @@ int MAX_SPEED = 9000;
 
 WiFiClient wifiClient;
 PubSubClient mqttClient(wifiClient);
-String mqttUsername;
-String mqttPassword;
-String mqttTopic;
 
 AccelStepper inner = AccelStepper(AccelStepper::DRIVER, INNER_STP, INNER_DIR);
 AccelStepper outer = AccelStepper(AccelStepper::DRIVER, OUTER_STP, OUTER_DIR);
 
 void setup() {
+  Serial.begin(115200);
   pinMode(BOOTING, OUTPUT);
   digitalWrite(BOOTING, HIGH);
   pinMode(DISABLE, OUTPUT);
   digitalWrite(DISABLE, HIGH);
 
-  WiFiManager wifiManager;
-  WiFiManagerParameter custom_mqtt_host("host", "MQTT Host", "mqtt.local", 64);
-  wifiManager.addParameter(&custom_mqtt_host);
-  WiFiManagerParameter custom_mqtt_port("port", "MQTT Port", "1883", 5);
-  wifiManager.addParameter(&custom_mqtt_port);
-  WiFiManagerParameter custom_mqtt_username("username", "MQTT Username", "jan-poka", 32);
-  wifiManager.addParameter(&custom_mqtt_username);
-  WiFiManagerParameter custom_mqtt_password("password", "MQTT Password", "", 32);
-  wifiManager.addParameter(&custom_mqtt_password);
-  WiFiManagerParameter custom_mqtt_topic("topic", "MQTT Topic", "home/geo/target", 32);
-  wifiManager.addParameter(&custom_mqtt_topic);
-
-  wifiManager.autoConnect(APP_NAME);
-
-  mqttClient.setServer(custom_mqtt_host.getValue(), custom_mqtt_port.getValue().toInt());
-  strcpy(mqttUsername, custom_mqtt_username.getValue());
-  strcpy(mqttPassword, custom_mqtt_password.getValue());
-  strcpy(mqttTopic, custom_mqtt_topic.getValue());
-
-  Serial.begin(115200);
+  mqttClient.setServer(MQTT_HOST, MQTT_PORT);
 
   inner.setMaxSpeed(MAX_SPEED);
   outer.setMaxSpeed(MAX_SPEED);
@@ -62,24 +42,34 @@ void setup() {
 
 void mqttConnectionLoop() {
   if (!mqttClient.connected()) {
-    if (!mqttClient.connect(APP_NAME, mqttUsername, mqttPassword)) {
+    if (!mqttClient.connect(APP_NAME, MQTT_USER, MQTT_PASS)) {
       Serial.println("Failed to connect to MQTT broker");
       // TODO: Backoff
-      return
+      return;
     }
     Serial.println("MQTT connected");
     mqttClient.setCallback(handleGeoTarget);
-    mqttClient.subscribe(mqttTopic);
+    mqttClient.subscribe(MQTT_TOPIC);
   }
   mqttClient.loop();
 }
 
-void handleGeoTarget(const char[] topic, byte* payloadPtr, unsigned int length) {
-  String payload;
-  // Ugh. There's definitely a better way than this, but I can't test right now, so TODO.
-  for (int i = 0; i < length; i++) {
-    payload += (char)payloadPtr[i];
+void handleGeoTarget(char* topic, byte* payload, unsigned int length) {
+  /* Copied from EspMQTTClient: https://github.com/plapointe6/EspMQTTClient/blob/master/src/EspMQTTClient.cpp#L649 */
+  // Convert the payload into a String
+  // First, We ensure that we dont bypass the maximum size of the PubSubClient library buffer that originated the payload
+  // This buffer has a maximum length of _mqttClient.getBufferSize() and the payload begin at "headerSize + topicLength + 1"
+  unsigned int strTerminationPos;
+  if (strlen(topic) + length + 9 >= mqttClient.getBufferSize()) {
+    strTerminationPos = length - 1;
+  } else {
+    strTerminationPos = length;
   }
+  
+  // Second, we add the string termination code at the end of the payload and we convert it to a String object
+  payload[strTerminationPos] = '\0';
+  String payloadStr((char*)payload);
+  /* end */
 
   StaticJsonDocument<512> jsonDoc;
   DeserializationError err = deserializeJson(jsonDoc, payload);
