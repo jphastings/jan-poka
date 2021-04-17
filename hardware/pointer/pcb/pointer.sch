@@ -1,0 +1,274 @@
+EESchema Schematic File Version 4
+EELAYER 30 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 1 1
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L RF_Module:ESP-12E U1
+U 1 1 6078A808
+P 2200 2400
+F 0 "U1" H 2200 3381 50  0000 C CNN
+F 1 "ESP-12E" H 2200 3290 50  0000 C CNN
+F 2 "RF_Module:ESP-12E" H 2200 2400 50  0001 C CNN
+F 3 "http://wiki.ai-thinker.com/_media/esp8266/esp8266_series_modules_user_manual_v1.1.pdf" H 1850 2500 50  0001 C CNN
+	1    2200 2400
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:Conn_01x06_Male J1
+U 1 1 6078C1DC
+P 4350 1650
+F 0 "J1" H 4322 1532 50  0000 R CNN
+F 1 "Outer Motor" H 4322 1623 50  0000 R CNN
+F 2 "Connector_JST:JST_PH_B6B-PH-K_1x06_P2.00mm_Vertical" H 4322 1669 50  0001 R CNN
+F 3 "~" H 4350 1650 50  0001 C CNN
+	1    4350 1650
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	2800 2600 3500 2600
+Wire Wire Line
+	3500 2600 3500 2700
+Wire Wire Line
+	3500 2700 4150 2700
+Wire Wire Line
+	2800 2400 3600 2400
+Wire Wire Line
+	3600 2400 3600 2600
+Wire Wire Line
+	3600 2600 4150 2600
+Wire Wire Line
+	4000 2500 4150 2500
+Wire Wire Line
+	4150 1650 4000 1650
+Wire Wire Line
+	4000 1650 4000 2500
+Connection ~ 4000 2500
+$Comp
+L power:GND #PWR0102
+U 1 1 6079B1DA
+P 3700 3400
+F 0 "#PWR0102" H 3700 3150 50  0001 C CNN
+F 1 "GND" H 3705 3227 50  0000 C CNN
+F 2 "" H 3700 3400 50  0001 C CNN
+F 3 "" H 3700 3400 50  0001 C CNN
+	1    3700 3400
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2200 3100 2200 3250
+Wire Wire Line
+	3700 3250 3700 3400
+Wire Wire Line
+	3700 2400 4150 2400
+Wire Wire Line
+	3700 1550 4150 1550
+Connection ~ 3700 2400
+Wire Wire Line
+	3900 1000 3900 900 
+Wire Wire Line
+	4150 1450 3800 1450
+Connection ~ 3900 1000
+Wire Wire Line
+	3800 1450 3800 2100
+Wire Wire Line
+	3800 2300 4150 2300
+Wire Wire Line
+	4150 2200 3900 2200
+Wire Wire Line
+	3700 2400 3700 1950
+Wire Wire Line
+	4150 1850 3600 1850
+Wire Wire Line
+	3600 1850 3600 2300
+Wire Wire Line
+	3600 2300 2800 2300
+Wire Wire Line
+	2800 2200 3500 2200
+Wire Wire Line
+	3500 2200 3500 1750
+Wire Wire Line
+	3500 1750 4150 1750
+Connection ~ 3700 3250
+Wire Wire Line
+	3700 2400 3700 3250
+Wire Wire Line
+	2200 3250 3350 3250
+$Comp
+L Connector:Conn_01x06_Male J2
+U 1 1 6078D4A5
+P 4350 2500
+F 0 "J2" H 4322 2382 50  0000 R CNN
+F 1 "Inner motor" H 4322 2473 50  0000 R CNN
+F 2 "Connector_JST:JST_PH_B6B-PH-K_1x06_P2.00mm_Vertical" H 4350 2500 50  0001 C CNN
+F 3 "~" H 4350 2500 50  0001 C CNN
+	1    4350 2500
+	-1   0    0    1   
+$EndComp
+$Comp
+L power:+3.3V #PWR0103
+U 1 1 607A6472
+P 3900 900
+F 0 "#PWR0103" H 3900 750 50  0001 C CNN
+F 1 "+3.3V" H 3915 1073 50  0000 C CNN
+F 2 "" H 3900 900 50  0001 C CNN
+F 3 "" H 3900 900 50  0001 C CNN
+	1    3900 900 
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4000 2500 4000 2800
+Wire Wire Line
+	3900 1000 3900 1350
+Connection ~ 3900 1350
+Wire Wire Line
+	3900 1350 3900 2200
+Wire Wire Line
+	3900 1350 4150 1350
+Wire Wire Line
+	2800 2800 4000 2800
+$Comp
+L Connector_Generic:Conn_02x03_Odd_Even J3
+U 1 1 607C5FEF
+P 3200 1300
+F 0 "J3" H 3250 1617 50  0000 C CNN
+F 1 "Program" H 3250 1526 50  0000 C CNN
+F 2 "Connector_IDC:IDC-Header_2x03_P2.54mm_Vertical" H 3200 1300 50  0001 C CNN
+F 3 "~" H 3200 1300 50  0001 C CNN
+	1    3200 1300
+	1    0    0    -1  
+$EndComp
+Connection ~ 2200 1300
+Wire Wire Line
+	2200 1300 2200 1000
+$Comp
+L Device:R R3
+U 1 1 607E2B45
+P 1650 1300
+F 0 "R3" V 1857 1300 50  0000 C CNN
+F 1 "10k" V 1766 1300 50  0000 C CNN
+F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" V 1580 1300 50  0001 C CNN
+F 3 "~" H 1650 1300 50  0001 C CNN
+	1    1650 1300
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	1500 2000 1600 2000
+$Comp
+L Device:R R1
+U 1 1 607E5A47
+P 3350 2850
+F 0 "R1" H 3280 2804 50  0000 R CNN
+F 1 "10k" H 3280 2895 50  0000 R CNN
+F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" V 3280 2850 50  0001 C CNN
+F 3 "~" H 3350 2850 50  0001 C CNN
+	1    3350 2850
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	2800 2700 3350 2700
+Wire Wire Line
+	3350 3000 3350 3250
+Connection ~ 3350 3250
+Wire Wire Line
+	3350 3250 3700 3250
+Wire Wire Line
+	1800 1300 2200 1300
+Wire Wire Line
+	2200 1300 2200 1600
+Wire Wire Line
+	1500 1300 1500 2000
+Wire Wire Line
+	2800 1900 3000 1900
+Wire Wire Line
+	3000 1900 3000 1400
+Wire Wire Line
+	2800 2100 3400 2100
+Wire Wire Line
+	3400 2100 3400 1650
+Wire Wire Line
+	3400 1650 3500 1650
+Wire Wire Line
+	3500 1650 3500 1400
+Wire Wire Line
+	2500 1300 2200 1300
+Wire Wire Line
+	2800 1300 2800 1800
+$Comp
+L Device:R R2
+U 1 1 607D22FA
+P 2650 1300
+F 0 "R2" V 2443 1300 50  0000 C CNN
+F 1 "10k" V 2534 1300 50  0000 C CNN
+F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" V 2580 1300 50  0001 C CNN
+F 3 "~" H 2650 1300 50  0001 C CNN
+	1    2650 1300
+	0    1    1    0   
+$EndComp
+Connection ~ 3000 1000
+Wire Wire Line
+	3000 1000 3900 1000
+Wire Wire Line
+	3000 1200 3000 1000
+Connection ~ 3700 1550
+$Comp
+L Switch:SW_Push SW1
+U 1 1 60872A08
+P 3200 800
+F 0 "SW1" H 3200 1085 50  0000 C CNN
+F 1 "Flash" H 3200 994 50  0000 C CNN
+F 2 "Button_Switch_THT:SW_PUSH_6mm_H4.3mm" H 3200 1000 50  0001 C CNN
+F 3 "~" H 3200 1000 50  0001 C CNN
+	1    3200 800 
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2200 1000 3000 1000
+Wire Wire Line
+	3500 1200 3700 1200
+Wire Wire Line
+	3700 1200 3700 800 
+Wire Wire Line
+	3700 800  3400 800 
+Connection ~ 3700 1200
+Wire Wire Line
+	2800 1300 2800 800 
+Connection ~ 2800 1300
+Wire Wire Line
+	2800 800  3000 800 
+Wire Wire Line
+	3700 1200 3700 1550
+$Comp
+L Connector:Barrel_Jack DC1
+U 1 1 608877F7
+P 5400 2050
+F 0 "DC1" H 5170 2008 50  0000 R CNN
+F 1 "12V" H 5170 2099 50  0000 R CNN
+F 2 "Connector_BarrelJack:BarrelJack_Horizontal" H 5450 2010 50  0001 C CNN
+F 3 "~" H 5450 2010 50  0001 C CNN
+	1    5400 2050
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	5100 2100 3800 2100
+Connection ~ 3800 2100
+Wire Wire Line
+	3800 2100 3800 2300
+Wire Wire Line
+	5100 1950 3700 1950
+Connection ~ 3700 1950
+Wire Wire Line
+	3700 1950 3700 1550
+Wire Wire Line
+	5100 2100 5100 2150
+$EndSCHEMATC
