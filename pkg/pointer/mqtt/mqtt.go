@@ -3,6 +3,7 @@ package mqtt
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/denisbrodbeck/machineid"
 	"github.com/jphastings/jan-poka/pkg/common"
 	"github.com/jphastings/jan-poka/pkg/future"
 	"log"
@@ -32,7 +33,7 @@ type Config struct {
 func New(broker, username, password, topic string, timeout time.Duration) (*Config, error) {
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(fmt.Sprintf("tcp://%s", broker))
-	opts.SetClientID("jan-poka:publisher")
+	opts.SetClientID(clientID())
 	opts.SetUsername(username)
 	opts.SetPassword(password)
 
@@ -47,6 +48,16 @@ func New(broker, username, password, topic string, timeout time.Duration) (*Conf
 	}
 	return s, s.tokenOk(client.Connect())
 }
+
+// clientID generates a unique ID for MQTT to use (as only one client of each name can exist on a server at once)
+func clientID() string {
+	uid, err := machineid.ID()
+	if err != nil {
+		uid = "unknown-machine-id"
+	}
+	return fmt.Sprintf("jan-poka:publisher:%s", uid)
+}
+
 func (s *Config) tokenOk(token mqtt.Token) error {
 	if token.WaitTimeout(s.timeout) && token.Error() != nil {
 		return token.Error()
