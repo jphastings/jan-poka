@@ -1,10 +1,11 @@
 package env
 
 import (
-	"github.com/kelseyhightower/envconfig"
 	"time"
 
 	. "github.com/jphastings/jan-poka/pkg/math"
+
+	"github.com/kelseyhightower/envconfig"
 )
 
 type Config struct {
@@ -16,10 +17,7 @@ type Config struct {
 	HomeAltitude  Meters  `required:"true"`
 
 	UseLog   bool `default:"true"`
-	UseTower bool `default:"false"`
 	UseAudio bool `default:"false"`
-
-	TowerStatePath string `default:"/run/jan-poka/"`
 
 	MQTTBroker   string `default:"mqtt.local:1883"`
 	MQTTUsername string `default:"jan-poka"`

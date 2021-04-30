@@ -6,6 +6,7 @@ require (
 	cloud.google.com/go v0.50.0
 	github.com/ahmdrz/goinsta/v2 v2.4.5
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
+	github.com/denisbrodbeck/machineid v1.0.1 // indirect
 	github.com/eclipse/paho.mqtt.golang v1.3.3
 	github.com/erikstmartin/go-testdb v0.0.0-20160219214506-8d10e4a1bae5 // indirect
 	github.com/faiface/beep v1.0.2
@@ -22,5 +23,5 @@ require (
 	google.golang.org/api v0.15.0
 	google.golang.org/genproto v0.0.0-20191223191004-3caeed10a8bf
 	googlemaps.github.io/maps v1.3.2
-	periph.io/x/periph v3.6.2+incompatible
+	periph.io/x/periph v3.6.2+incompatible // indirect
 )

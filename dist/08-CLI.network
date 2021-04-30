@@ -1,5 +1,0 @@
-# /etc/systemd/network/08-CLI.network
-[Match]
-Name=wlan0
-[Network]
-DHCP=yes
