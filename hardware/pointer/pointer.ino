@@ -5,7 +5,7 @@
 #include <math.h>
 #include "vars.h";
 
-#define APP_NAME "concentric-gear-pointer"
+#define APP_NAME "jan-poka:pointer"
 #define ONE_ROTATION_STEPS 8192
 
 int INNER_DIR = 14; // D5

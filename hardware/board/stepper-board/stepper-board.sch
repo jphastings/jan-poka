@@ -1,0 +1,226 @@
+EESchema Schematic File Version 4
+EELAYER 30 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 1 1
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L Connector:Barrel_Jack J1
+U 1 1 60848EBE
+P 1400 3300
+F 0 "J1" H 1457 3625 50  0000 C CNN
+F 1 "12V" H 1457 3534 50  0000 C CNN
+F 2 "" H 1450 3260 50  0001 C CNN
+F 3 "~" H 1450 3260 50  0001 C CNN
+	1    1400 3300
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	1700 3200 1950 3200
+$Comp
+L pspice:DIODE D1
+U 1 1 6084A601
+P 2200 2700
+F 0 "D1" H 2200 2965 50  0000 C CNN
+F 1 "IN4001" H 2200 2874 50  0000 C CNN
+F 2 "" H 2200 2700 50  0001 C CNN
+F 3 "~" H 2200 2700 50  0001 C CNN
+	1    2200 2700
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	1950 3200 1950 2700
+Wire Wire Line
+	1950 2700 2000 2700
+$Comp
+L Connector:Conn_01x03_Female J2
+U 1 1 6084CA40
+P 3150 2500
+F 0 "J2" V 3088 2312 50  0000 R CNN
+F 1 "Buck" V 2997 2312 50  0000 R CNN
+F 2 "" H 3150 2500 50  0001 C CNN
+F 3 "~" H 3150 2500 50  0001 C CNN
+	1    3150 2500
+	0    -1   -1   0   
+$EndComp
+$Comp
+L Device:CP C1
+U 1 1 6084F7EC
+P 2650 2850
+F 0 "C1" H 2768 2896 50  0000 L CNN
+F 1 "CP" H 2768 2805 50  0000 L CNN
+F 2 "" H 2688 2700 50  0001 C CNN
+F 3 "~" H 2650 2850 50  0001 C CNN
+	1    2650 2850
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2400 2700 2650 2700
+Wire Wire Line
+	2650 2700 3050 2700
+Connection ~ 2650 2700
+Wire Wire Line
+	1700 3400 3150 3400
+Wire Wire Line
+	3150 3000 2900 3000
+Wire Wire Line
+	3150 2700 3150 3000
+Connection ~ 3150 3000
+$Comp
+L Device:R R1
+U 1 1 608515F5
+P 3450 3200
+F 0 "R1" V 3243 3200 50  0000 C CNN
+F 1 "300R" V 3334 3200 50  0000 C CNN
+F 2 "" V 3380 3200 50  0001 C CNN
+F 3 "~" H 3450 3200 50  0001 C CNN
+	1    3450 3200
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	3300 3200 1950 3200
+Connection ~ 1950 3200
+Wire Wire Line
+	3150 3400 3150 3000
+$Comp
+L RF_Module:ESP-12E U1
+U 1 1 6085AE1E
+P 5750 4400
+F 0 "U1" H 5750 5381 50  0000 C CNN
+F 1 "ESP-12E" H 5750 5290 50  0000 C CNN
+F 2 "RF_Module:ESP-12E" H 5750 4400 50  0001 C CNN
+F 3 "http://wiki.ai-thinker.com/_media/esp8266/esp8266_series_modules_user_manual_v1.1.pdf" H 5400 4500 50  0001 C CNN
+	1    5750 4400
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5750 3600 5750 2700
+Wire Wire Line
+	5750 5100 5750 5250
+Wire Wire Line
+	5750 5250 3150 5250
+Connection ~ 3150 3400
+$Comp
+L Connector:Conn_01x06_Male J3
+U 1 1 6085D107
+P 4000 700
+F 0 "J3" V 4062 944 50  0000 L CNN
+F 1 "MotorA" V 4153 944 50  0000 L CNN
+F 2 "" H 4000 700 50  0001 C CNN
+F 3 "~" H 4000 700 50  0001 C CNN
+	1    4000 700 
+	0    1    1    0   
+$EndComp
+$Comp
+L Connector:Conn_01x06_Male J4
+U 1 1 60865590
+P 4000 1200
+F 0 "J4" V 4062 1444 50  0000 L CNN
+F 1 "MotorB" V 4153 1444 50  0000 L CNN
+F 2 "" H 4000 1200 50  0001 C CNN
+F 3 "~" H 4000 1200 50  0001 C CNN
+	1    4000 1200
+	0    1    1    0   
+$EndComp
+$Comp
+L Connector:Conn_01x06_Male J5
+U 1 1 6086626A
+P 4000 1750
+F 0 "J5" V 4062 1994 50  0000 L CNN
+F 1 "MotorC" V 4153 1994 50  0000 L CNN
+F 2 "" H 4000 1750 50  0001 C CNN
+F 3 "~" H 4000 1750 50  0001 C CNN
+	1    4000 1750
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	3700 900  1950 900 
+Wire Wire Line
+	1950 900  1950 1400
+Connection ~ 1950 2700
+Wire Wire Line
+	3700 1400 1950 1400
+Connection ~ 1950 1400
+Wire Wire Line
+	1950 1400 1950 1950
+Wire Wire Line
+	3700 1950 1950 1950
+Connection ~ 1950 1950
+Wire Wire Line
+	1950 1950 1950 2700
+Wire Wire Line
+	2900 3000 2900 2150
+Wire Wire Line
+	2900 1100 3900 1100
+Wire Wire Line
+	3900 1100 3900 900 
+Connection ~ 2900 3000
+Wire Wire Line
+	2900 3000 2650 3000
+Wire Wire Line
+	3900 1400 3900 1600
+Wire Wire Line
+	3900 1600 2900 1600
+Connection ~ 2900 1600
+Wire Wire Line
+	2900 1600 2900 1100
+Wire Wire Line
+	3900 1950 3900 2150
+Wire Wire Line
+	3900 2150 2900 2150
+Connection ~ 2900 2150
+Wire Wire Line
+	2900 2150 2900 1600
+Wire Wire Line
+	3650 3200 3600 3200
+$Comp
+L Transistor_BJT:2N2219 Q1
+U 1 1 60846963
+P 3850 3200
+F 0 "Q1" H 4040 3246 50  0000 L CNN
+F 1 "2N2222" H 4040 3155 50  0000 L CNN
+F 2 "Package_TO_SOT_THT:TO-92" H 4050 3125 50  0001 L CIN
+F 3 "http://www.onsemi.com/pub_link/Collateral/2N2219-D.PDF" H 3850 3200 50  0001 L CNN
+	1    3850 3200
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3800 900  3800 1000
+Wire Wire Line
+	3800 1000 3550 1000
+Wire Wire Line
+	3550 1000 3550 1500
+Wire Wire Line
+	3550 2400 4200 2400
+Wire Wire Line
+	3800 1400 3800 1500
+Wire Wire Line
+	3800 1500 3550 1500
+Connection ~ 3550 1500
+Wire Wire Line
+	3550 1500 3550 2050
+Wire Wire Line
+	3800 1950 3800 2050
+Wire Wire Line
+	3800 2050 3550 2050
+Connection ~ 3550 2050
+Wire Wire Line
+	3550 2050 3550 2400
+Wire Wire Line
+	5150 4600 4800 4600
+Wire Wire Line
+	4800 4600 4800 3500
+Wire Wire Line
+	3250 2700 5750 2700
+Wire Wire Line
+	3150 3400 3150 5250
+$EndSCHEMATC

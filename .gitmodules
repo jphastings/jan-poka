@@ -1,0 +1,3 @@
+[submodule "vendor/openscad/MCAD"]
+	path = vendor/openscad/MCAD
+	url = git@github.com:openscad/MCAD.git
