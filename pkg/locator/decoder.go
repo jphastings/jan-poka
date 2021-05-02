@@ -3,7 +3,7 @@ package locator
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/jphastings/jan-poka/pkg/common"
+	. "github.com/jphastings/jan-poka/pkg/common"
 	"time"
 
 	_ "github.com/jphastings/jan-poka/pkg/locator/ads-b"
@@ -25,8 +25,8 @@ type deciderLocationSpec struct {
 
 type TargetInstructions struct {
 	pollTicker *time.Ticker
-	sequence   []func() (common.TargetDetails, bool)
-	Requester  common.OnTracked
+	sequence   []func() (TargetDetails, bool, error)
+	Requester  OnTracked
 }
 
 func DecodeJSON(givenJSON []byte) (*TargetInstructions, error) {
@@ -37,7 +37,7 @@ func DecodeJSON(givenJSON []byte) (*TargetInstructions, error) {
 	}
 
 	ti := &TargetInstructions{
-		sequence: []func() (common.TargetDetails, bool){},
+		sequence: []func() (TargetDetails, bool, error){},
 	}
 
 	if target.PollSeconds > 0 {
@@ -51,7 +51,7 @@ func DecodeJSON(givenJSON []byte) (*TargetInstructions, error) {
 			return nil, err
 		}
 
-		init, ok := common.Providers[decider.Type]
+		init, ok := Providers[decider.Type]
 		if !ok {
 			return nil, fmt.Errorf("unknown provider: %s", decider)
 		}
@@ -65,28 +65,38 @@ func DecodeJSON(givenJSON []byte) (*TargetInstructions, error) {
 			return nil, err
 		}
 
-		ti.sequence = append(ti.sequence, func() (common.TargetDetails, bool) {
-			details, retry, err := prov.Location()
-			_ = retry // TODO: Stop trying on subsequents if false && err
-			return details, err == nil
-		})
+		ti.sequence = append(ti.sequence, prov.Location)
 	}
 
 	return ti, nil
 }
 
-func (ti *TargetInstructions) Poll() <-chan common.TargetDetails {
-	locationsChan := make(chan common.TargetDetails)
+func (ti *TargetInstructions) Poll() <-chan TargetDetails {
+	locationsChan := make(chan TargetDetails)
 	go func() {
 		for {
+			i := 0
 			for _, locationRetriever := range ti.sequence {
-				target, ok := locationRetriever()
-				if ok {
+				target, retry, err := locationRetriever()
+				if retry {
+					ti.sequence[i] = locationRetriever
+					i++
+				}
+
+				if err == nil {
 					locationsChan <- target
 					break
 				}
 			}
-			if ti.pollTicker == nil {
+
+			// Unset all erased items
+			for j := i; j < len(ti.sequence); j++ {
+				ti.sequence[j] = nil
+			}
+			ti.sequence = ti.sequence[:i]
+
+			// Do the next tick, if there's something to poll
+			if ti.pollTicker == nil || len(ti.sequence) == 0 {
 				break
 			}
 			<-ti.pollTicker.C

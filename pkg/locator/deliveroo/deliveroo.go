@@ -82,7 +82,9 @@ func (c *config) SetParams(decodeInto func(interface{}) error) error {
 type status struct {
 	Data struct {
 		Attributes struct {
-			Message string `json:"message"`
+			Message     string `json:"message"`
+			IsCompleted bool   `json:"is_completed"`
+			IsFailed    bool   `json:"is_failed"`
 		} `json:"attributes"`
 	} `json:"data"`
 	Included []struct {
@@ -116,6 +118,10 @@ func (c *config) Location() (TargetDetails, bool, error) {
 		return TargetDetails{}, false, err
 	}
 
+	if s.Data.Attributes.IsCompleted || s.Data.Attributes.IsFailed {
+		return TargetDetails{}, false, fmt.Errorf("order is no longer active")
+	}
+
 	for _, i := range s.Included {
 		if i.Type != "location" || i.Attributes.Type != "RIDER" {
 			continue
@@ -133,5 +139,5 @@ func (c *config) Location() (TargetDetails, bool, error) {
 		return details, true, nil
 	}
 
-	return TargetDetails{}, false, nil
+	return TargetDetails{}, true, fmt.Errorf("rider has not picked up order yet")
 }
