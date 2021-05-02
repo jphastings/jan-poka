@@ -5,17 +5,18 @@ import (
 	"log"
 	"time"
 
-	"github.com/jphastings/jan-poka/pkg/common"
+	. "github.com/jphastings/jan-poka/pkg/common"
 	. "github.com/jphastings/jan-poka/pkg/math"
 )
 
 const TYPE = "lla"
 
-var _ common.LocationProvider = (*locationProvider)(nil)
+var _ LocationProvider = (*locationProvider)(nil)
 
 type locationProvider struct {
 	name   string
 	target LLACoords
+	time   time.Time
 }
 
 type params struct {
@@ -26,7 +27,7 @@ type params struct {
 }
 
 func init() {
-	common.Providers[TYPE] = func() common.LocationProvider { return &locationProvider{} }
+	Providers[TYPE] = func() LocationProvider { return &locationProvider{} }
 	log.Println("✅ Provider: Latitude/Longitude positions")
 }
 
@@ -50,9 +51,14 @@ func (lp *locationProvider) SetParams(decodeInto func(interface{}) error) error 
 		lp.name = loc.Name
 	}
 	lp.target = LLACoords{Latitude: *loc.Latitude, Longitude: *loc.Longitude, Altitude: loc.Altitude}
+	lp.time = time.Now()
 	return nil
 }
 
-func (lp *locationProvider) Location() (LLACoords, time.Time, string, bool) {
-	return lp.target, time.Now(), lp.name, true
+func (lp *locationProvider) Location() (TargetDetails, bool, error) {
+	return TargetDetails{
+		Name:       lp.name,
+		Coords:     lp.target,
+		AccurateAt: lp.time,
+	}, false, nil
 }

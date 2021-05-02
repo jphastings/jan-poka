@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/jphastings/jan-poka/pkg/common"
-	. "github.com/jphastings/jan-poka/pkg/math"
 )
 
 const TYPE = "celestial"
@@ -43,12 +42,18 @@ func (lp *locationProvider) SetParams(decodeInto func(interface{}) error) error 
 	return nil
 }
 
-func (lp *locationProvider) Location() (LLACoords, time.Time, string, bool) {
+func (lp *locationProvider) Location() (common.TargetDetails, bool, error) {
 	name := strings.Title(string(lp.target))
 	if lp.target == Moon || lp.target == Sun {
 		name = "The " + name
 	}
+
 	at := time.Now()
 	loc, err := GeocentricCoordinates(lp.target, at)
-	return loc, at, name, err == nil
+
+	return common.TargetDetails{
+		Name:       name,
+		Coords:     loc,
+		AccurateAt: at,
+	}, true, err
 }

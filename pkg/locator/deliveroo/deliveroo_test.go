@@ -37,11 +37,11 @@ func MockClient(t *testing.T, testURL string, response *http.Response) *http.Cli
 
 func Test_config_Location(t *testing.T) {
 	tests := []struct {
-		name        string
-		response    *http.Response
-		wantLLA     math.LLACoords
-		wantName    string
-		wantSuccess bool
+		name      string
+		response  *http.Response
+		wantLLA   math.LLACoords
+		wantName  string
+		wantRetry bool
 	}{
 		{"Arriving order", orderArriving, math.LLACoords{Latitude: 51.5, Longitude: -0.1}, "Thales is nearby", true},
 		{"Delivered order", orderDelivered, math.LLACoords{}, "", false},
@@ -54,15 +54,15 @@ func Test_config_Location(t *testing.T) {
 				orderStatusURL: queryURL,
 			}
 
-			gotLLA, _, gotName, gotSuccess := c.Location()
-			if !reflect.DeepEqual(gotLLA, tt.wantLLA) {
-				t.Errorf("Location() got = %v, want %v", gotLLA, tt.wantLLA)
+			details, retry, _ := c.Location()
+			if !reflect.DeepEqual(details.Coords, tt.wantLLA) {
+				t.Errorf("Location() got = %v, want %v", details.Coords, tt.wantLLA)
 			}
-			if gotName != tt.wantName {
-				t.Errorf("Location() got = %v, want %v", gotName, tt.wantName)
+			if details.Name != tt.wantName {
+				t.Errorf("Location() got = %v, want %v", details.Name, tt.wantName)
 			}
-			if gotSuccess != tt.wantSuccess {
-				t.Errorf("Location() got = %v, want %v", gotSuccess, tt.wantSuccess)
+			if retry != tt.wantRetry {
+				t.Errorf("Location() got = %v, want %v", retry, tt.wantRetry)
 			}
 		})
 	}

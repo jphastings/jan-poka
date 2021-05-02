@@ -6,8 +6,6 @@ import (
 	"github.com/jphastings/jan-poka/pkg/common"
 	"time"
 
-	"github.com/jphastings/jan-poka/pkg/math"
-
 	_ "github.com/jphastings/jan-poka/pkg/locator/ads-b"
 	_ "github.com/jphastings/jan-poka/pkg/locator/celestial"
 	_ "github.com/jphastings/jan-poka/pkg/locator/deliveroo"
@@ -25,15 +23,9 @@ type deciderLocationSpec struct {
 	Type string `json:"type"`
 }
 
-type TargetDetails struct {
-	Name       string
-	Coords     math.LLACoords
-	AccurateAt time.Time
-}
-
 type TargetInstructions struct {
 	pollTicker *time.Ticker
-	sequence   []func() (TargetDetails, bool)
+	sequence   []func() (common.TargetDetails, bool)
 	Requester  common.OnTracked
 }
 
@@ -45,7 +37,7 @@ func DecodeJSON(givenJSON []byte) (*TargetInstructions, error) {
 	}
 
 	ti := &TargetInstructions{
-		sequence: []func() (TargetDetails, bool){},
+		sequence: []func() (common.TargetDetails, bool){},
 	}
 
 	if target.PollSeconds > 0 {
@@ -73,17 +65,18 @@ func DecodeJSON(givenJSON []byte) (*TargetInstructions, error) {
 			return nil, err
 		}
 
-		ti.sequence = append(ti.sequence, func() (TargetDetails, bool) {
-			coords, accurateAt, name, isUsable := prov.Location()
-			return TargetDetails{Name: name, Coords: coords, AccurateAt: accurateAt}, isUsable
+		ti.sequence = append(ti.sequence, func() (common.TargetDetails, bool) {
+			details, retry, err := prov.Location()
+			_ = retry // TODO: Stop trying on subsequents if false && err
+			return details, err == nil
 		})
 	}
 
 	return ti, nil
 }
 
-func (ti *TargetInstructions) Poll() <-chan TargetDetails {
-	locationsChan := make(chan TargetDetails)
+func (ti *TargetInstructions) Poll() <-chan common.TargetDetails {
+	locationsChan := make(chan common.TargetDetails)
 	go func() {
 		for {
 			for _, locationRetriever := range ti.sequence {

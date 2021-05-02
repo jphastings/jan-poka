@@ -1,7 +1,7 @@
 package instagram
 
 import (
-	"github.com/jphastings/jan-poka/pkg/common"
+	. "github.com/jphastings/jan-poka/pkg/common"
 	. "github.com/jphastings/jan-poka/pkg/math"
 	"time"
 
@@ -27,7 +27,7 @@ func Login(username, password string) error {
 		return err
 	}
 
-	common.Providers[TYPE] = func() common.LocationProvider { return c }
+	Providers[TYPE] = func() LocationProvider { return c }
 	return nil
 }
 
@@ -53,26 +53,27 @@ func (c *config) SetParams(decodeInto func(interface{}) error) error {
 	return nil
 }
 
-func (c *config) Location() (LLACoords, time.Time, string, bool) {
+func (c *config) Location() (TargetDetails, bool, error) {
 	feed := c.user.Feed()
 	// If a location isn't in the first page, assume it'd be too old
 	feed.Next(false)
 
 	for _, item := range feed.Items {
 		// Imported photos aren't recent, so ignore them
-		// goinsta doesn't specify if there's no lat/long, so assume that no-one will ever post at 0,0
+		// goinsta doesn't specify if there's no lat/long, so assume that no-one will ever legitimately post at 0,0
 		if item.ImportedTakenAt == 0 || item.Lat == 0 && item.Lng == 0 {
 			continue
 		}
 
-		accurateAt := time.Unix(item.TakenAt, 0)
-
-		return LLACoords{
-			Latitude:  Degrees(item.Lat),
-			Longitude: Degrees(item.Lng),
-			Altitude:  0,
-		}, accurateAt, c.target.Name, true
+		return TargetDetails{
+			Name: c.target.Name,
+			Coords: LLACoords{
+				Latitude:  Degrees(item.Lat),
+				Longitude: Degrees(item.Lng),
+			},
+			AccurateAt: time.Unix(item.TakenAt, 0),
+		}, true, nil
 	}
 
-	return LLACoords{}, time.Time{}, "", false
+	return TargetDetails{}, true, nil
 }

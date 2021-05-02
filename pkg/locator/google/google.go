@@ -3,11 +3,10 @@ package google
 import (
 	"context"
 	"fmt"
-	"github.com/jphastings/jan-poka/pkg/common"
+	. "github.com/jphastings/jan-poka/pkg/common"
 	"github.com/jphastings/jan-poka/pkg/math"
-	"time"
-
 	"googlemaps.github.io/maps"
+	"time"
 )
 
 const TYPE = "google"
@@ -29,7 +28,7 @@ func Login(apiKey string) error {
 	}
 	c := &config{client: client}
 
-	common.Providers[TYPE] = func() common.LocationProvider { return c }
+	Providers[TYPE] = func() LocationProvider { return c }
 	return nil
 }
 
@@ -37,7 +36,7 @@ func (c *config) SetParams(decodeInto func(interface{}) error) error {
 	return decodeInto(&c.target)
 }
 
-func (c *config) Location() (math.LLACoords, time.Time, string, bool) {
+func (c *config) Location() (TargetDetails, bool, error) {
 	ctx := context.Background()
 
 	fields := []maps.PlaceSearchFieldMask{maps.PlaceSearchFieldMaskGeometryLocation}
@@ -50,8 +49,11 @@ func (c *config) Location() (math.LLACoords, time.Time, string, bool) {
 		InputType: maps.FindPlaceFromTextInputTypeTextQuery,
 		Fields:    fields,
 	})
-	if err != nil || len(places.Candidates) == 0 {
-		return math.LLACoords{}, time.Time{}, "", false
+	if err != nil {
+		return TargetDetails{}, false, err
+	}
+	if len(places.Candidates) == 0 {
+		return TargetDetails{}, false, fmt.Errorf("no search results")
 	}
 
 	place := places.Candidates[0]
@@ -65,7 +67,11 @@ func (c *config) Location() (math.LLACoords, time.Time, string, bool) {
 		Longitude: math.Degrees(place.Geometry.Location.Lng),
 	}
 	_ = c.GuessElevation(&lla)
-	return lla, time.Now(), name, true
+	return TargetDetails{
+		Name:       name,
+		Coords:     lla,
+		AccurateAt: time.Now(),
+	}, false, err
 }
 
 func (c *config) GuessElevation(lla *math.LLACoords) error {

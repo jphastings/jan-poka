@@ -31,7 +31,7 @@ func New(home math.LLACoords, callbacks map[string]common.OnTracked) *Config {
 func (track *Config) Track() {
 	var (
 		target       *locator.TargetInstructions
-		tracker      <-chan locator.TargetDetails
+		tracker      <-chan common.TargetDetails
 		isFirstTrack bool
 	)
 

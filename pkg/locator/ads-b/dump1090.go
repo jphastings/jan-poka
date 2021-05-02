@@ -5,7 +5,7 @@ package ads_b
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/jphastings/jan-poka/pkg/common"
+	. "github.com/jphastings/jan-poka/pkg/common"
 	"github.com/jphastings/jan-poka/pkg/math"
 	"io/ioutil"
 	"log"
@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-var _ common.LocationProvider = (*locationProvider)(nil)
+var _ LocationProvider = (*locationProvider)(nil)
 
 type locationProvider struct {
 	httpClient  *http.Client
@@ -30,7 +30,7 @@ func init() {
 	if err != nil {
 		log.Printf("❌ Provider: ADS-B unavailable, %s\n", err.Error())
 	} else {
-		common.Providers[TYPE] = func() common.LocationProvider { return positionQuery }
+		Providers[TYPE] = func() LocationProvider { return positionQuery }
 		log.Println("✅ Provider: ADS-B airplane positions available.")
 	}
 }
@@ -45,22 +45,21 @@ func (lp *locationProvider) SetParams(decodeInto func(interface{}) error) error 
 	return nil
 }
 
-func (lp *locationProvider) Location() (math.LLACoords, time.Time, string, bool) {
+func (lp *locationProvider) Location() (TargetDetails, bool, error) {
 	resp, err := http.Get(lp.endpoint)
 	if err != nil {
-		return math.LLACoords{}, time.Time{}, "", false
+		return TargetDetails{}, false, err
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return math.LLACoords{}, time.Time{}, "", false
+		return TargetDetails{}, false, err
 	}
 
 	var results []dataLine
 	err = json.Unmarshal(body, &results)
 	if err != nil {
-		panic(err)
-		return math.LLACoords{}, time.Time{}, "", false
+		return TargetDetails{}, false, err
 	}
 
 	var flights []string
@@ -71,18 +70,24 @@ func (lp *locationProvider) Location() (math.LLACoords, time.Time, string, bool)
 		f := strings.Trim(flight.Flight, " ")
 		flights = append(flights, f)
 		if f == lp.focusFlight {
-			// TODO: Can I get a more accurate time reading?
-			return math.LLACoords{
-				Altitude:  math.Meters(flight.Altitude * 0.3048),
-				Latitude:  math.Degrees(flight.Lat),
-				Longitude: math.Degrees(flight.Lon),
-			}, time.Now(), "Flight " + f, true
+			details := TargetDetails{
+				Name: "Flight " + f,
+				Coords: math.LLACoords{
+					Altitude:  math.Meters(flight.Altitude * 0.3048),
+					Latitude:  math.Degrees(flight.Lat),
+					Longitude: math.Degrees(flight.Lon),
+				},
+				// TODO: Can I get a more accurate time reading?
+				AccurateAt: time.Now(),
+			}
+
+			return details, true, nil
 		}
 	}
 
 	fmt.Println(strings.Join(flights, ", "))
 
-	return math.LLACoords{}, time.Time{}, "", false
+	return TargetDetails{}, true, err
 }
 
 type dataLine struct {

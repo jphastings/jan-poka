@@ -3,7 +3,7 @@ package deliveroo
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/jphastings/jan-poka/pkg/common"
+	. "github.com/jphastings/jan-poka/pkg/common"
 	"github.com/jphastings/jan-poka/pkg/math"
 	"log"
 	"net/http"
@@ -30,7 +30,7 @@ type request struct {
 }
 
 func init() {
-	common.Providers[TYPE] = func() common.LocationProvider {
+	Providers[TYPE] = func() LocationProvider {
 		return &config{
 			http: &http.Client{
 				// Prevent following redirects
@@ -98,22 +98,22 @@ type status struct {
 	} `json:"included"`
 }
 
-func (c *config) Location() (math.LLACoords, time.Time, string, bool) {
+func (c *config) Location() (TargetDetails, bool, error) {
 	req, err := http.NewRequest("GET", c.orderStatusURL, nil)
 	if err != nil {
-		return math.LLACoords{}, time.Now(), "", false
+		return TargetDetails{}, false, err
 	}
 	req.Header.Set("Accept", "application/json, application/vnd.api+json")
 
 	res, err := c.http.Do(req)
 	if err != nil {
-		return math.LLACoords{}, time.Now(), "", false
+		return TargetDetails{}, true, err
 	}
 
 	var s status
 	dec := json.NewDecoder(res.Body)
 	if err := dec.Decode(&s); err != nil {
-		return math.LLACoords{}, time.Now(), "", false
+		return TargetDetails{}, false, err
 	}
 
 	for _, i := range s.Included {
@@ -121,11 +121,17 @@ func (c *config) Location() (math.LLACoords, time.Time, string, bool) {
 			continue
 		}
 
-		return math.LLACoords{
-			Latitude:  i.Attributes.Latitude,
-			Longitude: i.Attributes.Longitude,
-		}, time.Now(), s.Data.Attributes.Message, true
+		details := TargetDetails{
+			Name: s.Data.Attributes.Message,
+			Coords: math.LLACoords{
+				Latitude:  i.Attributes.Latitude,
+				Longitude: i.Attributes.Longitude,
+			},
+			AccurateAt: time.Now(),
+		}
+
+		return details, true, nil
 	}
 
-	return math.LLACoords{}, time.Now(), "", false
+	return TargetDetails{}, false, nil
 }
