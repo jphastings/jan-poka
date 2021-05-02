@@ -27,7 +27,7 @@ type params struct {
 
 func init() {
 	common.Providers[TYPE] = func() common.LocationProvider { return &locationProvider{} }
-	log.Println("✅ Provider: Latitude/Longitude positions available.")
+	log.Println("✅ Provider: Latitude/Longitude positions")
 }
 
 func (lp *locationProvider) SetParams(decodeInto func(interface{}) error) error {

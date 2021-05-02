@@ -10,6 +10,7 @@ import (
 
 	_ "github.com/jphastings/jan-poka/pkg/locator/ads-b"
 	_ "github.com/jphastings/jan-poka/pkg/locator/celestial"
+	_ "github.com/jphastings/jan-poka/pkg/locator/deliveroo"
 	_ "github.com/jphastings/jan-poka/pkg/locator/instagram"
 	_ "github.com/jphastings/jan-poka/pkg/locator/iss"
 	_ "github.com/jphastings/jan-poka/pkg/locator/lla"
