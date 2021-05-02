@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/jphastings/jan-poka/pkg/common"
-	"github.com/jphastings/jan-poka/pkg/pointer/mqtt"
+	"github.com/jphastings/jan-poka/pkg/mqtt"
 )
 
 func init() {

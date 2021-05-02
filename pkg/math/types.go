@@ -22,7 +22,7 @@ type ENUCoords struct {
 	Up    Meters
 }
 
-// LLACoords represents a position on earth by latitude (Latitude), longitude (Longitude) and altitude above average sea level (Azimuth).
+// LLACoords represents a position on earth with the (WGS84 referenced) latitude (Latitude), longitude (Longitude) and altitude above average sea level (Altitude).
 type LLACoords struct {
 	Latitude  Degrees
 	Longitude Degrees
@@ -34,6 +34,12 @@ type ECEFCoords struct {
 	X Meters
 	Y Meters
 	Z Meters
+}
+
+// MapCoords represents a position on a 2d map projection. The horizontal & vertical directions are unspecified.
+type MapCoords struct {
+	Horizontal float64
+	Vertical   float64
 }
 
 func (au AstronomicalUnits) Meters() Meters {
