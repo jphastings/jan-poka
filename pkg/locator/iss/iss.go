@@ -26,7 +26,7 @@ type locationProvider struct{}
 
 func init() {
 	Providers[TYPE] = func() LocationProvider { return &locationProvider{} }
-	log.Println("✅ Provider: International Space Station positions available.")
+	log.Println("✅ Provider: International Space Station position")
 }
 
 func (_ *locationProvider) SetParams(func(interface{}) error) error { return nil }

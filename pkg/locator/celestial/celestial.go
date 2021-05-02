@@ -25,7 +25,7 @@ type config struct {
 
 func init() {
 	common.Providers[TYPE] = func() common.LocationProvider { return &locationProvider{} }
-	log.Println("✅ Provider: Celestial body positions available.")
+	log.Println("✅ Provider: Celestial body positions")
 }
 
 func (lp *locationProvider) SetParams(decodeInto func(interface{}) error) error {

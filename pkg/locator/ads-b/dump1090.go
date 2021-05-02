@@ -8,7 +8,6 @@ import (
 	. "github.com/jphastings/jan-poka/pkg/common"
 	"github.com/jphastings/jan-poka/pkg/math"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -25,14 +24,13 @@ type locationProvider struct {
 
 const dataEndpoint = "/dump1090/data.json"
 
-func init() {
-	positionQuery, err := newClient("192.168.86.137:8090")
+func Connect(dump1090Host string) error {
+	positionQuery, err := newClient(dump1090Host)
 	if err != nil {
-		log.Printf("❌ Provider: ADS-B unavailable, %s\n", err.Error())
-	} else {
-		Providers[TYPE] = func() LocationProvider { return positionQuery }
-		log.Println("✅ Provider: ADS-B airplane positions available.")
+		return err
 	}
+	Providers[TYPE] = func() LocationProvider { return positionQuery }
+	return nil
 }
 
 func (lp *locationProvider) SetParams(decodeInto func(interface{}) error) error {
@@ -98,8 +96,6 @@ type dataLine struct {
 }
 
 func newClient(host string) (*locationProvider, error) {
-	return nil, fmt.Errorf("can't easily detect unavailability - forcing off for now")
-
 	u := (&url.URL{
 		Scheme: "http",
 		Host:   host,
@@ -107,9 +103,11 @@ func newClient(host string) (*locationProvider, error) {
 	}).String()
 
 	client := &http.Client{Timeout: time.Second}
-	_, err := http.Head(u)
+
+	_, err := client.Head(u)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("the dump1090 server is not running")
 	}
+
 	return &locationProvider{endpoint: u, httpClient: client}, nil
 }

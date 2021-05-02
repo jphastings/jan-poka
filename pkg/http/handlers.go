@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-const resultTimeout = time.Second
+const resultTimeout = 5 * time.Second
 
 func handleFocus(track *tracker.Config) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
