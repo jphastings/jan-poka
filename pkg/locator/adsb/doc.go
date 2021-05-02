@@ -1,4 +1,4 @@
-package ads_b
+package adsb
 
 const TYPE = "ads-b"
 

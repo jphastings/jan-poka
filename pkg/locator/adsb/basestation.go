@@ -1,6 +1,6 @@
 // +build sbs
 
-package ads_b
+package adsb
 
 import (
 	"bufio"

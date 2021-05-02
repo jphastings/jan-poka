@@ -2,9 +2,14 @@ package main
 
 import (
 	. "github.com/jphastings/jan-poka/pkg/common"
-	ads_b "github.com/jphastings/jan-poka/pkg/locator/ads-b"
+
+	"github.com/jphastings/jan-poka/pkg/locator/adsb"
+	_ "github.com/jphastings/jan-poka/pkg/locator/celestial"
+	_ "github.com/jphastings/jan-poka/pkg/locator/deliveroo"
 	"github.com/jphastings/jan-poka/pkg/locator/google"
 	"github.com/jphastings/jan-poka/pkg/locator/instagram"
+	_ "github.com/jphastings/jan-poka/pkg/locator/iss"
+	_ "github.com/jphastings/jan-poka/pkg/locator/lla"
 )
 
 func init() {
@@ -34,5 +39,5 @@ func configureGoogle() (OnTracked, error) {
 }
 
 func configureADSB() (OnTracked, error) {
-	return nil, ads_b.Connect(environment.Dump1090Host)
+	return nil, adsb.Connect(environment.Dump1090Host)
 }
