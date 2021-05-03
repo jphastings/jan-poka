@@ -43,21 +43,21 @@ func (lp *locationProvider) SetParams(decodeInto func(interface{}) error) error 
 	return nil
 }
 
-func (lp *locationProvider) Location() (TargetDetails, bool, error) {
+func (lp *locationProvider) Location() TargetDetails {
 	resp, err := http.Get(lp.endpoint)
 	if err != nil {
-		return TargetDetails{}, false, err
+		return TargetDetails{Final: true, Err: err}
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return TargetDetails{}, false, err
+		return TargetDetails{Final: true, Err: err}
 	}
 
 	var results []dataLine
 	err = json.Unmarshal(body, &results)
 	if err != nil {
-		return TargetDetails{}, false, err
+		return TargetDetails{Final: true, Err: err}
 	}
 
 	var flights []string
@@ -68,7 +68,7 @@ func (lp *locationProvider) Location() (TargetDetails, bool, error) {
 		f := strings.Trim(flight.Flight, " ")
 		flights = append(flights, f)
 		if f == lp.focusFlight {
-			details := TargetDetails{
+			return TargetDetails{
 				Name: "Flight " + f,
 				Coords: math.LLACoords{
 					Altitude:  math.Meters(flight.Altitude * 0.3048),
@@ -77,15 +77,12 @@ func (lp *locationProvider) Location() (TargetDetails, bool, error) {
 				},
 				// TODO: Can I get a more accurate time reading?
 				AccurateAt: time.Now(),
+				Final:      false,
 			}
-
-			return details, true, nil
 		}
 	}
 
-	fmt.Println(strings.Join(flights, ", "))
-
-	return TargetDetails{}, true, err
+	return TargetDetails{Final: false, Err: fmt.Errorf("given flight not in range (only %s)", strings.Join(flights, ", "))}
 }
 
 type dataLine struct {

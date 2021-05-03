@@ -8,12 +8,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/jphastings/jan-poka/pkg/common"
+	. "github.com/jphastings/jan-poka/pkg/common"
 )
 
 const TYPE = "celestial"
 
-var _ common.LocationProvider = (*locationProvider)(nil)
+var _ LocationProvider = (*locationProvider)(nil)
 
 type locationProvider struct {
 	target Body
@@ -24,7 +24,7 @@ type config struct {
 }
 
 func init() {
-	common.Providers[TYPE] = func() common.LocationProvider { return &locationProvider{} }
+	Providers[TYPE] = func() LocationProvider { return &locationProvider{} }
 	log.Println("✅ Provider: Celestial body positions")
 }
 
@@ -42,7 +42,7 @@ func (lp *locationProvider) SetParams(decodeInto func(interface{}) error) error 
 	return nil
 }
 
-func (lp *locationProvider) Location() (common.TargetDetails, bool, error) {
+func (lp *locationProvider) Location() TargetDetails {
 	name := strings.Title(string(lp.target))
 	if lp.target == Moon || lp.target == Sun {
 		name = "The " + name
@@ -51,9 +51,11 @@ func (lp *locationProvider) Location() (common.TargetDetails, bool, error) {
 	at := time.Now()
 	loc, err := GeocentricCoordinates(lp.target, at)
 
-	return common.TargetDetails{
+	return TargetDetails{
 		Name:       name,
 		Coords:     loc,
 		AccurateAt: at,
-	}, true, err
+		Final:      false,
+		Err:        err,
+	}
 }

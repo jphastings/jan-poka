@@ -100,26 +100,26 @@ type status struct {
 	} `json:"included"`
 }
 
-func (c *config) Location() (TargetDetails, bool, error) {
+func (c *config) Location() TargetDetails {
 	req, err := http.NewRequest("GET", c.orderStatusURL, nil)
 	if err != nil {
-		return TargetDetails{}, false, err
+		return TargetDetails{Final: true}
 	}
 	req.Header.Set("Accept", "application/json, application/vnd.api+json")
 
 	res, err := c.http.Do(req)
 	if err != nil {
-		return TargetDetails{}, true, err
+		return TargetDetails{Final: false}
 	}
 
 	var s status
 	dec := json.NewDecoder(res.Body)
 	if err := dec.Decode(&s); err != nil {
-		return TargetDetails{}, false, err
+		return TargetDetails{Final: true}
 	}
 
 	if s.Data.Attributes.IsCompleted || s.Data.Attributes.IsFailed {
-		return TargetDetails{}, false, fmt.Errorf("order is no longer active")
+		return TargetDetails{Final: true, Err: fmt.Errorf("order is no longer active")}
 	}
 
 	for _, i := range s.Included {
@@ -127,17 +127,16 @@ func (c *config) Location() (TargetDetails, bool, error) {
 			continue
 		}
 
-		details := TargetDetails{
-			Name: s.Data.Attributes.Message,
+		return TargetDetails{
+			Name: "Your order",
 			Coords: math.LLACoords{
 				Latitude:  i.Attributes.Latitude,
 				Longitude: i.Attributes.Longitude,
 			},
 			AccurateAt: time.Now(),
+			Final:      false,
 		}
-
-		return details, true, nil
 	}
 
-	return TargetDetails{}, true, fmt.Errorf("rider has not picked up order yet")
+	return TargetDetails{Final: false, Err: fmt.Errorf("rider has not picked up order yet")}
 }

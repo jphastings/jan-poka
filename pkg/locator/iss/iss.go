@@ -8,7 +8,7 @@ import (
 	"time"
 
 	. "github.com/jphastings/jan-poka/pkg/common"
-	"github.com/jphastings/jan-poka/pkg/math"
+	. "github.com/jphastings/jan-poka/pkg/math"
 )
 
 const TYPE = "iss"
@@ -31,14 +31,14 @@ func init() {
 
 func (_ *locationProvider) SetParams(func(interface{}) error) error { return nil }
 
-func (_ *locationProvider) Location() (TargetDetails, bool, error) {
+func (_ *locationProvider) Location() TargetDetails {
 	client := &http.Client{}
 
 	req, _ := http.NewRequest("GET", "http://api.open-notify.org/iss-now.json", nil)
 	req.Header.Add("Accept", "application/json")
 	res, err := client.Do(req)
 	if err != nil {
-		return TargetDetails{}, false, err
+		return TargetDetails{Final: true, Err: err}
 	}
 
 	defer res.Body.Close()
@@ -46,25 +46,26 @@ func (_ *locationProvider) Location() (TargetDetails, bool, error) {
 	var response serviceResponse
 	err = decoder.Decode(&response)
 	if err != nil {
-		return TargetDetails{}, false, err
+		return TargetDetails{Final: true, Err: err}
 	}
 
 	latitude, err := strconv.ParseFloat(response.Position.Latitude, 64)
 	if err != nil {
-		return TargetDetails{}, false, err
+		return TargetDetails{Final: true, Err: err}
 	}
 	longitude, err := strconv.ParseFloat(response.Position.Longitude, 64)
 	if err != nil {
-		return TargetDetails{}, false, err
+		return TargetDetails{Final: true, Err: err}
 	}
 
 	return TargetDetails{
 		Name: "The International Space Station",
-		Coords: math.LLACoords{
-			Latitude:  math.Degrees(latitude),
-			Longitude: math.Degrees(longitude),
+		Coords: LLACoords{
+			Latitude:  Degrees(latitude),
+			Longitude: Degrees(longitude),
 			Altitude:  408000,
 		},
 		AccurateAt: time.Now(),
-	}, true, nil
+		Final:      false,
+	}
 }

@@ -1,6 +1,7 @@
 package instagram
 
 import (
+	"fmt"
 	. "github.com/jphastings/jan-poka/pkg/common"
 	. "github.com/jphastings/jan-poka/pkg/math"
 	"time"
@@ -53,7 +54,7 @@ func (c *config) SetParams(decodeInto func(interface{}) error) error {
 	return nil
 }
 
-func (c *config) Location() (TargetDetails, bool, error) {
+func (c *config) Location() TargetDetails {
 	feed := c.user.Feed()
 	// If a location isn't in the first page, assume it'd be too old
 	feed.Next(false)
@@ -72,8 +73,9 @@ func (c *config) Location() (TargetDetails, bool, error) {
 				Longitude: Degrees(item.Lng),
 			},
 			AccurateAt: time.Unix(item.TakenAt, 0),
-		}, true, nil
+			Final:      false,
+		}
 	}
 
-	return TargetDetails{}, true, nil
+	return TargetDetails{Final: false, Err: fmt.Errorf("no recent location available")}
 }

@@ -18,7 +18,7 @@ type deciderLocationSpec struct {
 
 type TargetInstructions struct {
 	pollTicker *time.Ticker
-	sequence   []func() (TargetDetails, bool, error)
+	sequence   []func() TargetDetails
 	Requester  OnTracked
 }
 
@@ -30,7 +30,7 @@ func DecodeJSON(givenJSON []byte) (*TargetInstructions, error) {
 	}
 
 	ti := &TargetInstructions{
-		sequence: []func() (TargetDetails, bool, error){},
+		sequence: []func() TargetDetails{},
 	}
 
 	if target.PollSeconds > 0 {
@@ -70,13 +70,13 @@ func (ti *TargetInstructions) Poll() <-chan TargetDetails {
 		for {
 			i := 0
 			for _, locationRetriever := range ti.sequence {
-				target, retry, err := locationRetriever()
-				if retry {
+				target := locationRetriever()
+				if !target.Final {
 					ti.sequence[i] = locationRetriever
 					i++
 				}
 
-				if err == nil {
+				if target.Err == nil {
 					locationsChan <- target
 					break
 				}

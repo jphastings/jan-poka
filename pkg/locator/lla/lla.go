@@ -55,10 +55,11 @@ func (lp *locationProvider) SetParams(decodeInto func(interface{}) error) error 
 	return nil
 }
 
-func (lp *locationProvider) Location() (TargetDetails, bool, error) {
+func (lp *locationProvider) Location() TargetDetails {
 	return TargetDetails{
 		Name:       lp.name,
 		Coords:     lp.target,
 		AccurateAt: lp.time,
-	}, false, nil
+		Final:      true,
+	}
 }

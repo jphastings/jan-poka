@@ -36,7 +36,7 @@ func (c *config) SetParams(decodeInto func(interface{}) error) error {
 	return decodeInto(&c.target)
 }
 
-func (c *config) Location() (TargetDetails, bool, error) {
+func (c *config) Location() TargetDetails {
 	ctx := context.Background()
 
 	fields := []maps.PlaceSearchFieldMask{maps.PlaceSearchFieldMaskGeometryLocation}
@@ -50,10 +50,10 @@ func (c *config) Location() (TargetDetails, bool, error) {
 		Fields:    fields,
 	})
 	if err != nil {
-		return TargetDetails{}, false, err
+		return TargetDetails{Final: true, Err: err}
 	}
 	if len(places.Candidates) == 0 {
-		return TargetDetails{}, false, fmt.Errorf("no search results")
+		return TargetDetails{Final: true, Err: fmt.Errorf("no search results")}
 	}
 
 	place := places.Candidates[0]
@@ -71,7 +71,8 @@ func (c *config) Location() (TargetDetails, bool, error) {
 		Name:       name,
 		Coords:     lla,
 		AccurateAt: time.Now(),
-	}, false, err
+		Final:      true,
+	}
 }
 
 func (c *config) GuessElevation(lla *math.LLACoords) error {
