@@ -82,25 +82,32 @@ module joint() {
 
 joint();
 
+// Eyeballed — due to the gear projecting below the horizon
+// h_offset = 0.7813;
+h_offset = 0;
+
+teeth = 48;
 // Eyeballed
-h_offset = 0.7813;
+gear_d = 59.2;
 // Eyeballed, to get the given height
-gear_m = 3.7;
+gear_m = gear_d/teeth;
 // This is guessed for the height needed
-gear_w = 17.39;
+//gear_w = 17.39;
+gear_w = 10;
+
 
 module horizontal_gear() {
   translate([0, 0, bearing_support_h]) difference() {
     union() {
       difference() {
         translate([0, 0, gear_m*h_offset])
-          bevel_pair(w=gear_w, m=gear_m, only=1);
+          bevel_pair(n1=teeth, n2=teeth, w=gear_w, m=gear_m, only=1);
 
         // Space for pulley
-        bearing(outer_gear_timing_belt_d, assumed_max_gear_diameter, belt_w+belt_idler_w);
+        //bearing(outer_gear_timing_belt_d, assumed_max_gear_diameter, belt_w+belt_idler_w);
       }
 
-      GT2(timing_teeth, belt_w, belt_idler_w);
+      //GT2(timing_teeth, belt_w, belt_idler_w);
     }
 
     // Shaft hole
@@ -122,7 +129,7 @@ module vertical_driving_gear() {
   difference() {
     union() {
       translate([0, 0, gear_m*h_offset])
-        bevel_pair(w=gear_w, m=gear_m, only=2);
+        bevel_pair(n1=teeth, n2=teeth, w=gear_w, m=gear_m, only=2);
 
       translate([0, 0, outer_gear_height])
         cylinder(min_grubbable, d = axel_hole_d+2*grub_thickness);
@@ -132,19 +139,20 @@ module vertical_driving_gear() {
     translate([0, 0, outer_gear_height + bearing_h/2])
         // 180/16 cos there are 16 teeth and we want to rotate the grub axel_hole_d
         // half a tooth, so the allen key can fit through a gap
-        rotate([90, 0, 180/16])
+        rotate([90, 0, 180/teeth])
         cylinder(3*grub_thickness, d=grub_d);
   }
 }
 
-translate([-34.5, 0, 34.5])
+translate([-32.5, 0, 34+h_offset])
   rotate([0, 90, 0])
+  rotate([0, 0, 180/teeth])
   vertical_driving_gear();
 
 module vertical_guiding_gear() {
   difference() {
     translate([0, 0, gear_m*h_offset])
-      bevel_pair(w=gear_w, m=gear_m, only=2);
+      bevel_pair(n1=teeth, n2=teeth, w=gear_w, m=gear_m, only=2);
 
     bearing(axel_d, bearing_d+2*tolerance, bearing_h);
     translate([0, 0, outer_gear_height - bearing_h])
