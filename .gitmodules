@@ -4,6 +4,3 @@
 [submodule "vendor/openscad/PolyGear"]
 	path = vendor/openscad/PolyGear
 	url = git@github.com:dpellegr/PolyGear.git
-[submodule "vendor/openscad/parametric-pulley"]
-	path = vendor/openscad/parametric-pulley
-	url = git@github.com:rbuckland/openscad.parametric-pulley.git
