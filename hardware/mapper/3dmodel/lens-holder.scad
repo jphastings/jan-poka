@@ -1,4 +1,4 @@
-use <../../../vendor/openscad/hardware/screws.scad>;
+use <../../../ext/openscad/hardware/screws.scad>;
 
 module lens(diameter, f, max_thick) {
   x_shift = f-max_thick/2;

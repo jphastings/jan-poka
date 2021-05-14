@@ -12,9 +12,8 @@ if (!$preview) {
 
 
 tolerance = 0.1;
-motor_slide = 5;
 nema_depth = 60;
-nema_width = 42.3;
+nema_width = 42;
 nema_shaft_length = 21.5;
 axel_d = 5;
 
@@ -22,7 +21,6 @@ min_grubbable = 5;
 grub_thickness = 3;
 grub_d = 3;
 
-outer_stepper_offset = nema_width + 2;
 bearing_support_w = 5.8;
 bearing_support_h = 2;
 bearing_d = 10.75;
@@ -38,16 +36,47 @@ joint_breadth = bearing_h*3;
 joint_dia = pointer_extension+bearing_d;
 joint_edgevec = [-joint_breadth/2, 0, nema_shaft_length + pointer_extension + joint_dia/2];
 
-module drivers() {
+module stand(top = true) {
+  motor_slide = 5;
+  nema_margin = 2;
+  padding = 6;
   wall_thickness = 2;
 
-  linear_extrude(wall_thickness) stepper_motor_mount(17, 0, true, tolerance);
+  outer_stepper_offset_y = nema_width + 2;
+  outer_stepper_offset_z = timing_pulley_height - nema_shaft_length;
+  sliding_motor_clearance = 3;
 
-  translate([0, outer_stepper_offset, timing_pulley_height - nema_shaft_length])
-    linear_extrude(wall_thickness)
-    stepper_motor_mount(17, motor_slide, true, tolerance);
+  motor_hole_side = nema_width + nema_margin*2;
+  stand_side = (motor_hole_side + padding)/2;
+  plate = motor_hole_side + 2*(padding + wall_thickness);
 
-  translate([0, outer_stepper_offset, 0])
+  support_positions = [
+    [-stand_side, -stand_side],
+    [stand_side, -stand_side],
+    [-stand_side, stand_side + outer_stepper_offset_y + motor_slide],
+    [stand_side, stand_side + outer_stepper_offset_y + motor_slide],
+  ];
+
+  difference() {
+    translate([-plate/2, -plate/2, outer_stepper_offset_z])
+      cube([plate, plate + outer_stepper_offset_y + motor_slide, wall_thickness-outer_stepper_offset_z]);
+
+    translate([-motor_hole_side/2, -motor_hole_side/2, outer_stepper_offset_z])
+      cube([motor_hole_side, motor_hole_side, -outer_stepper_offset_z]);
+
+    linear_extrude(wall_thickness) stepper_motor_mount(17, 0, true, tolerance);
+
+    translate([0, outer_stepper_offset_y, outer_stepper_offset_z])
+      linear_extrude(wall_thickness-outer_stepper_offset_z)
+      stepper_motor_mount(17, motor_slide, true, tolerance);
+
+    for(xy = support_positions) {
+      translate([xy[0], xy[1], outer_stepper_offset_z])
+        cylinder(-outer_stepper_offset_z, d=axel_d+2*tolerance);
+    }
+  }
+
+  translate([0, outer_stepper_offset_y, 0])
     %bearing(axel_d, timing_pulley_top_d, timing_pulley_height);
 }
 
@@ -128,10 +157,46 @@ module bevel(horizontal = true, position = true) {
           cylinder(3*grub_thickness, d=grub_d);
       }
     }
-
 }
 
-drivers();
-joint();
-bevel(horizontal = true);
-bevel(horizontal = false);
+module arrow(d = 5, l = 100, ratio = 0.333333) {
+  module biscuit(d) {
+    rotate_extrude() {
+      translate([d/2, 0])
+        circle(d=d);
+      translate([0, -d/2])
+        square([d/2, d]);
+    };
+  }
+
+  cylinder(l/8, d1=d*3, d2 = 5);
+
+  translate([0, 0, l])
+    hull() {
+      cylinder(l/3, d1=d, d2=0);
+      translate([0, 0, l/12]) biscuit(d*1.2);
+    }
+
+  difference() {
+    union() {
+      rod(d, l);
+
+      translate([0, 0, l*ratio])
+        rotate([0, 90, 0]) biscuit(d);
+    }
+
+    translate([-d/2, 0, l*ratio])
+      rotate([0, 90, 0])
+      rod(d, d);
+
+    translate([0, 0, l*ratio])
+      rotate([90, 0, 0])
+      rod(grub_d, d);
+  }
+}
+
+// stand(top = true);
+// joint();
+// bevel(horizontal = true);
+// bevel(horizontal = false);
+arrow();

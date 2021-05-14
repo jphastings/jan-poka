@@ -6,7 +6,7 @@ require (
 	cloud.google.com/go v0.50.0
 	github.com/ahmdrz/goinsta/v2 v2.4.5
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
-	github.com/denisbrodbeck/machineid v1.0.1 // indirect
+	github.com/denisbrodbeck/machineid v1.0.1
 	github.com/eclipse/paho.mqtt.golang v1.3.3
 	github.com/erikstmartin/go-testdb v0.0.0-20160219214506-8d10e4a1bae5 // indirect
 	github.com/faiface/beep v1.0.2
