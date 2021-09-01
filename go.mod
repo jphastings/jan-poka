@@ -18,10 +18,10 @@ require (
 	github.com/miekg/dns v1.1.26 // indirect
 	github.com/onsi/ginkgo v1.11.0
 	github.com/onsi/gomega v1.8.1
+	github.com/pebbe/proj/v5 v5.0.4 // indirect
 	github.com/twuillemin/modes v0.4.0
 	github.com/ziutek/mymysql v1.5.4 // indirect
 	google.golang.org/api v0.15.0
 	google.golang.org/genproto v0.0.0-20191223191004-3caeed10a8bf
 	googlemaps.github.io/maps v1.3.2
-	periph.io/x/periph v3.6.2+incompatible // indirect
 )

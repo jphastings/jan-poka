@@ -6,13 +6,14 @@ import (
 	"github.com/denisbrodbeck/machineid"
 	"github.com/jphastings/jan-poka/pkg/common"
 	"github.com/jphastings/jan-poka/pkg/future"
+	"github.com/jphastings/jan-poka/pkg/output/mapper"
 	"log"
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-// This will be interpreted by microcontrollers. Keep JSON keys at 8 or fewer characters.
+// Message will be interpreted by microcontrollers. Keep JSON keys at 8 or fewer characters.
 type Message struct {
 	TargetLatitude  float32 `json:"lat"`
 	TargetLongitude float32 `json:"lng"`
@@ -22,6 +23,13 @@ type Message struct {
 	CalculatedElevation       float32 `json:"ele"`
 	CalculatedRange           float32 `json:"rng"`
 	CalculatedSurfaceDistance float32 `json:"dst"`
+
+	CalculatedMapperLengths map[int]Lengths `json:"map"`
+}
+
+type Lengths struct {
+	Left  float32 `json:"l"`
+	Right float32 `json:"r"`
 }
 
 type Config struct {
@@ -75,6 +83,7 @@ func (s *Config) TrackerCallback(details common.TrackedDetails) future.Future {
 			CalculatedElevation:       float32(details.Bearing.Elevation),
 			CalculatedRange:           float32(details.Bearing.Range),
 			CalculatedSurfaceDistance: float32(details.UnobstructedDistance),
+			CalculatedMapperLengths:   mapperLengths(mapper.Calculate(details.Target)),
 		}
 		enc, err := json.Marshal(msg)
 		if err != nil {
@@ -82,4 +91,19 @@ func (s *Config) TrackerCallback(details common.TrackedDetails) future.Future {
 		}
 		return s.tokenOk(s.client.Publish(s.topic, 0, false, enc))
 	})
+}
+
+func mapperLengths(wps []*mapper.WallPos) map[int]Lengths {
+	ls := make(map[int]Lengths)
+	for i, wp := range wps {
+		if wp == nil {
+			continue
+		}
+
+		ls[i] = Lengths{
+			Left:  float32(wp.LengthLeft),
+			Right: float32(wp.LengthRight),
+		}
+	}
+	return ls
 }

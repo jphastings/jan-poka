@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/jphastings/jan-poka/pkg/common"
 	"github.com/jphastings/jan-poka/pkg/l10n"
+	"github.com/jphastings/jan-poka/pkg/output/webmapper"
 	"log"
 
 	"github.com/jphastings/jan-poka/pkg/env"
@@ -11,6 +12,7 @@ import (
 	"github.com/jphastings/jan-poka/pkg/tracker"
 )
 
+// TODO: is callbacks needed anymore?
 var callbacks []common.OnTracked
 var environment env.Config
 
@@ -22,6 +24,7 @@ type configurable struct {
 
 var configurables = []configurable{
 	{"Logging", func() bool { return environment.UseLog }, loggingCallback},
+	{"Mapper", func() bool { return environment.UseMapper }, webMapperCallback},
 }
 
 func init() {
@@ -39,11 +42,15 @@ func main() {
 	go track.Track()
 
 	fmt.Printf("Jan Poka is ready. Home is (%.2f,%.2f), %.0fm above sea level.\n", environment.Home.Latitude, environment.Home.Longitude, environment.Home.Altitude)
-	http.WebAPI(environment.Port, track)
+	http.WebAPI(environment.Port, track, environment.UseMapper)
 }
 
 func loggingCallback() (common.OnTracked, error) {
 	return l10n.TrackerCallback, nil
+}
+
+func webMapperCallback() (common.OnTracked, error) {
+	return webmapper.TrackerCallback, nil
 }
 
 func configureModules() map[string]common.OnTracked {

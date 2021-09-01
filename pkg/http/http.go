@@ -2,16 +2,20 @@ package http
 
 import (
 	"fmt"
+	"github.com/jphastings/jan-poka/pkg/output/webmapper"
 	"github.com/jphastings/jan-poka/pkg/tracker"
 	"net/http"
 	"time"
 )
 
-func WebAPI(port uint16, track *tracker.Config) {
+func WebAPI(port uint16, track *tracker.Config, includeMapper bool) {
 	router := http.NewServeMux()
 
 	router.Handle("/focus", handleFocus(track))
 	router.Handle("/config", handleConfig(track))
+	if includeMapper {
+		router.Handle("/", webmapper.Handler())
+	}
 
 	webserver := &http.Server{
 		Addr:         fmt.Sprintf(":%d", port),
