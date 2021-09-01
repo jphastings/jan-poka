@@ -10,18 +10,19 @@ import (
 	. "github.com/jphastings/jan-poka/pkg/math"
 )
 
-var (
-	configPath string
-	Mappers    []MapperConfig
-	mu         sync.Mutex
-)
+type Config struct {
+	Path string
+	mu   sync.Mutex
+
+	Mappers []State
+}
 
 type WallPos struct {
 	LengthLeft  Meters
 	LengthRight Meters
 }
 
-type MapperConfig struct {
+type State struct {
 	WallPos
 	WallConfig WallConfig
 	// MapSpecs earlier in this slice will take precedence
@@ -104,52 +105,43 @@ type Correlation struct {
 	LLACoords
 }
 
-// TODO: Facilitate initialisation
+func New(configPath string) (*Config, error) {
+	s := &Config{Path: configPath}
 
-func Init(initConfigPath string) error {
-	configPath = initConfigPath
-
-	data, err := ioutil.ReadFile(configPath)
+	data, err := ioutil.ReadFile(s.Path)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	if err := json.Unmarshal(data, &Mappers); err != nil {
-		return err
+	if err := json.Unmarshal(data, &s.Mappers); err != nil {
+		return nil, err
 	}
 
 	projCtx := proj.NewContext()
 	// Never closed, as the application's purpose is to map
 
 	// Check that all the projections are well-understood
-	for _, mc := range Mappers {
+	for _, mc := range s.Mappers {
 		for _, m := range mc.Maps {
 			p, err := projCtx.Create(m.ProjectionDescription)
 			if err != nil {
-				return err
+				return nil, err
 			}
 			m.Projection = p
 		}
 	}
 
-	return nil
+	return s, nil
 }
 
-func (c *MapperConfig) UpdateWallPos(left, right Meters) error {
-	c.LengthLeft = left
-	c.LengthRight = right
+func (c *Config) writeConfig() error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 
-	return writeConfig()
-}
-
-func writeConfig() error {
-	mu.Lock()
-	defer mu.Unlock()
-
-	data, err := json.Marshal(Mappers)
+	data, err := json.Marshal(c.Mappers)
 	if err != nil {
 		return err
 	}
 
-	return ioutil.WriteFile(configPath, data, 0644)
+	return ioutil.WriteFile(c.Path, data, 0644)
 }

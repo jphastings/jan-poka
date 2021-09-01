@@ -5,22 +5,22 @@ import (
 	"math"
 )
 
-func Calculate(coords LLACoords) []*WallPos {
-	pos := make([]*WallPos, len(Mappers))
-	for i, mc := range Mappers {
+func (c *Config) Calculate(coords LLACoords) []*WallPos {
+	pos := make([]*WallPos, len(c.Mappers))
+	for i, mc := range c.Mappers {
 		pos[i] = calcWallPosition(mc, coords)
 	}
 
 	return pos
 }
 
-func calcWallPosition(mc MapperConfig, coords LLACoords) *WallPos {
-	for _, m := range mc.Maps {
+func calcWallPosition(s State, coords LLACoords) *WallPos {
+	for _, m := range s.Maps {
 		if !coordsWithinBounds(m.BottomLeft, m.TopRight, coords) {
 			continue
 		}
 
-		pos, err := projectCoords(m, coords, mc.WallConfig)
+		pos, err := projectCoords(m, coords, s.WallConfig)
 		if err != nil {
 			panic(err) // TODO: don't panic
 			continue
