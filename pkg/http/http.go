@@ -13,7 +13,7 @@ func WebAPI(port uint16, track *tracker.Config, includeMapper bool) {
 
 	router.Handle("/focus", handleFocus(track))
 	router.Handle("/config", handleConfig(track))
-	if includeMapper {
+	if includeMapper && false {
 		router.Handle("/", webmapper.Handler())
 	}
 

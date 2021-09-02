@@ -6,7 +6,6 @@ import (
 	"github.com/denisbrodbeck/machineid"
 	"github.com/jphastings/jan-poka/pkg/common"
 	"github.com/jphastings/jan-poka/pkg/future"
-	"github.com/jphastings/jan-poka/pkg/output/mapper"
 	"log"
 	"time"
 
@@ -66,14 +65,14 @@ func clientID() string {
 	return fmt.Sprintf("jan-poka:publisher:%s", uid)
 }
 
-func (s *Config) tokenOk(token mqtt.Token) error {
-	if token.WaitTimeout(s.timeout) && token.Error() != nil {
+func (c *Config) tokenOk(token mqtt.Token) error {
+	if token.WaitTimeout(c.timeout) && token.Error() != nil {
 		return token.Error()
 	}
 	return nil
 }
 
-func (s *Config) TrackerCallback(details common.TrackedDetails) future.Future {
+func (c *Config) TrackerCallback(details common.TrackedDetails) future.Future {
 	return future.Exec(func() error {
 		msg := Message{
 			TargetLatitude:            float32(details.Target.Latitude),
@@ -83,26 +82,23 @@ func (s *Config) TrackerCallback(details common.TrackedDetails) future.Future {
 			CalculatedElevation:       float32(details.Bearing.Elevation),
 			CalculatedRange:           float32(details.Bearing.Range),
 			CalculatedSurfaceDistance: float32(details.UnobstructedDistance),
-			CalculatedMapperLengths:   mapperLengths(mapper.Calculate(details.Target)),
+			CalculatedMapperLengths:   mapperLengths(details.MapperLengths),
 		}
+
 		enc, err := json.Marshal(msg)
 		if err != nil {
 			return err
 		}
-		return s.tokenOk(s.client.Publish(s.topic, 0, false, enc))
+		return c.tokenOk(c.client.Publish(c.topic, 0, false, enc))
 	})
 }
 
-func mapperLengths(wps []*mapper.WallPos) map[int]Lengths {
+func mapperLengths(mls map[int]common.WallPos) map[int]Lengths {
 	ls := make(map[int]Lengths)
-	for i, wp := range wps {
-		if wp == nil {
-			continue
-		}
-
+	for i, ml := range mls {
 		ls[i] = Lengths{
-			Left:  float32(wp.LengthLeft),
-			Right: float32(wp.LengthRight),
+			Left:  float32(ml.LengthLeft),
+			Right: float32(ml.LengthRight),
 		}
 	}
 	return ls

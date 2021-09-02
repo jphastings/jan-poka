@@ -2,6 +2,9 @@ package mapper
 
 import (
 	"encoding/json"
+	"fmt"
+	"github.com/jphastings/jan-poka/pkg/common"
+	"github.com/jphastings/jan-poka/pkg/future"
 	"github.com/pebbe/proj/v5"
 	"io/ioutil"
 	"math"
@@ -17,16 +20,11 @@ type Config struct {
 	Mappers []State
 }
 
-type WallPos struct {
-	LengthLeft  Meters
-	LengthRight Meters
-}
-
 type State struct {
-	WallPos
-	WallConfig WallConfig
+	common.WallPos `json:"currentPosition"`
+	WallConfig     WallConfig `json:"wallConfig"`
 	// MapSpecs earlier in this slice will take precedence
-	Maps []MapSpec
+	Maps []MapSpec `json:"maps"`
 }
 
 type WallConfig struct {
@@ -35,14 +33,20 @@ type WallConfig struct {
 }
 
 type MapSpec struct {
-	TopRight              Correlation
-	BottomLeft            Correlation
-	ProjectionDescription string // proj.PJ.Info().Description
+	TopRight   Correlation
+	BottomLeft Correlation
 
-	Projection *proj.PJ `json:"-"`
+	// proj.PJ.Info().Description
+	ProjectionDescription string `json:"projection"`
+	projection            *proj.PJ
 
 	// memoization of the derived values
 	transforms *Transforms
+}
+
+type Correlation struct {
+	common.WallPos `json:"wallPosition"`
+	LLACoords      `json:"latLong"`
 }
 
 type Transforms struct {
@@ -52,7 +56,7 @@ type Transforms struct {
 }
 
 func (ms MapSpec) ToCartesian(coords LLACoords) (float64, float64, error) {
-	x, y, _, _, err := ms.Projection.Trans(proj.Fwd, float64(coords.Latitude), float64(coords.Longitude), 0, 0)
+	x, y, _, _, err := ms.projection.Trans(proj.Fwd, float64(coords.Latitude), float64(coords.Longitude), 0, 0)
 	if err != nil {
 		return 0, 0, err
 	}
@@ -84,7 +88,7 @@ func (ms *MapSpec) Transforms(w WallConfig) (*Transforms, error) {
 	return ms.transforms, nil
 }
 
-func calcXY(wall WallPos, width, wheelRadius Meters) (float64, float64) {
+func calcXY(wall common.WallPos, width, wheelRadius Meters) (float64, float64) {
 	left2 := math.Pow(float64(wall.LengthLeft), 2)
 	right2 := math.Pow(float64(wall.LengthRight), 2)
 	widthSquared := math.Pow(float64(width), 2)
@@ -98,11 +102,6 @@ func calcXY(wall WallPos, width, wheelRadius Meters) (float64, float64) {
 		math.Pow(Y, 2))
 
 	return X, Y
-}
-
-type Correlation struct {
-	WallPos
-	LLACoords
 }
 
 func New(configPath string) (*Config, error) {
@@ -121,17 +120,26 @@ func New(configPath string) (*Config, error) {
 	// Never closed, as the application's purpose is to map
 
 	// Check that all the projections are well-understood
-	for _, mc := range s.Mappers {
-		for _, m := range mc.Maps {
+	for i, mc := range s.Mappers {
+		for j, m := range mc.Maps {
 			p, err := projCtx.Create(m.ProjectionDescription)
 			if err != nil {
 				return nil, err
 			}
-			m.Projection = p
+			s.Mappers[i].Maps[j].projection = p
 		}
 	}
 
 	return s, nil
+}
+
+func (c *Config) TrackerCallback(details common.TrackedDetails) future.Future {
+	return future.Exec(func() error {
+		details.MapperLengths = c.Calculate(details.Target)
+		// TODO: Remove this fake logging
+		fmt.Println(details.MapperLengths)
+		return nil
+	})
 }
 
 func (c *Config) writeConfig() error {

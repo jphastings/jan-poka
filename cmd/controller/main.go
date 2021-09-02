@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"github.com/jphastings/jan-poka/pkg/common"
+	"github.com/jphastings/jan-poka/pkg/future"
 	"github.com/jphastings/jan-poka/pkg/l10n"
+	"github.com/jphastings/jan-poka/pkg/output/mapper"
 	"github.com/jphastings/jan-poka/pkg/output/webmapper"
 	"log"
 
@@ -23,8 +25,8 @@ type configurable struct {
 }
 
 var configurables = []configurable{
-	{"Logging", func() bool { return environment.UseLog }, loggingCallback},
-	{"Mapper", func() bool { return environment.UseMapper }, webMapperCallback},
+	{"Mapper", func() bool { return environment.UseMapper }, configureMapper},
+	{"Logging", func() bool { return environment.UseLog }, configureLogging},
 }
 
 func init() {
@@ -45,12 +47,22 @@ func main() {
 	http.WebAPI(environment.Port, track, environment.UseMapper)
 }
 
-func loggingCallback() (common.OnTracked, error) {
+func configureLogging() (common.OnTracked, error) {
 	return l10n.TrackerCallback, nil
 }
 
-func webMapperCallback() (common.OnTracked, error) {
-	return webmapper.TrackerCallback, nil
+// configureMapper needs to be called before any output method that uses mapper details (eg. MQTT)
+func configureMapper() (common.OnTracked, error) {
+	// TODO: Real config path
+	m, err := mapper.New("/Users/jp/.mapper.json")
+	if err != nil {
+		return nil, err
+	}
+
+	return func(details common.TrackedDetails) future.Future {
+		return future.All(m.TrackerCallback(details),
+			webmapper.TrackerCallback(details))
+	}, nil
 }
 
 func configureModules() map[string]common.OnTracked {
@@ -65,7 +77,7 @@ func configureModules() map[string]common.OnTracked {
 				}
 				log.Printf("✅ %s\n", conf.name)
 			} else {
-				log.Fatalf("🛑 %s: \n%v", conf.name, err)
+				log.Fatalf("🛑 %s: %v\n", conf.name, err)
 			}
 		} else {
 			log.Printf("✋ %s\n", conf.name)
