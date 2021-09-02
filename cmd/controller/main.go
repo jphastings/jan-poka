@@ -3,15 +3,17 @@ package main
 import (
 	"fmt"
 	"github.com/jphastings/jan-poka/pkg/common"
+	"github.com/jphastings/jan-poka/pkg/env"
 	"github.com/jphastings/jan-poka/pkg/future"
+	"github.com/jphastings/jan-poka/pkg/http"
 	"github.com/jphastings/jan-poka/pkg/l10n"
 	"github.com/jphastings/jan-poka/pkg/output/mapper"
 	"github.com/jphastings/jan-poka/pkg/output/webmapper"
-	"log"
-
-	"github.com/jphastings/jan-poka/pkg/env"
-	"github.com/jphastings/jan-poka/pkg/http"
 	"github.com/jphastings/jan-poka/pkg/tracker"
+	"log"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 // TODO: is callbacks needed anymore?
@@ -44,7 +46,12 @@ func main() {
 	go track.Track()
 
 	fmt.Printf("Jan Poka is ready. Home is (%.2f,%.2f), %.0fm above sea level.\n", environment.Home.Latitude, environment.Home.Longitude, environment.Home.Altitude)
-	http.WebAPI(environment.Port, track, environment.UseMapper)
+	shutdown := http.WebAPI(environment.Port, track, environment.UseMapper)
+
+	sig := make(chan os.Signal)
+	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
+	<-sig
+	shutdown()
 }
 
 func configureLogging() (common.OnTracked, error) {

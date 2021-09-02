@@ -57,7 +57,6 @@ func (track *Config) Track() {
 				Bearing:              bearing,
 				UnobstructedDistance: unobstructedDistance,
 				IsFirstTrack:         isFirstTrack,
-				// TODO: Add MapperLengths
 			}
 
 			callbacks := make(map[string]common.OnTracked)
