@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/jphastings/jan-poka/pkg/common"
 	"github.com/jphastings/jan-poka/pkg/future"
-	"github.com/pebbe/proj/v5"
+	"github.com/wroge/wgs84"
 	"io/ioutil"
 	"math"
 	"sync"
@@ -32,13 +32,41 @@ type WallConfig struct {
 	WheelRadius Meters
 }
 
+func New(configPath string) (*Config, error) {
+	s := &Config{Path: configPath}
+
+	data, err := ioutil.ReadFile(s.Path)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := json.Unmarshal(data, &s.Mappers); err != nil {
+		return nil, err
+	}
+
+	availableProjections := wgs84.EPSG()
+
+	for i, mc := range s.Mappers {
+		for j, m := range mc.Maps {
+			projection := availableProjections.Code(m.EPSGCode)
+			// Bizarrely, this library just returns geocentric if the code isn't valid
+			if projection == wgs84.XYZ() {
+				return nil, fmt.Errorf("projection code EPSG:%d not supported", m.EPSGCode)
+			}
+
+			s.Mappers[i].Maps[j].transform = wgs84.LonLat().To(projection)
+		}
+	}
+
+	return s, nil
+}
+
 type MapSpec struct {
 	TopRight   Correlation
 	BottomLeft Correlation
 
-	// proj.PJ.Info().Description
-	ProjectionDescription string `json:"projection"`
-	projection            *proj.PJ
+	EPSGCode  int `json:"epsgCode"`
+	transform wgs84.Func
 
 	// memoization of the derived values
 	transforms *Transforms
@@ -56,10 +84,7 @@ type Transforms struct {
 }
 
 func (ms MapSpec) ToCartesian(coords LLACoords) (float64, float64, error) {
-	x, y, _, _, err := ms.projection.Trans(proj.Fwd, float64(coords.Latitude), float64(coords.Longitude), 0, 0)
-	if err != nil {
-		return 0, 0, err
-	}
+	x, y, _ := ms.transform(float64(coords.Latitude), float64(coords.Longitude), float64(coords.Altitude))
 	return x, y, nil
 }
 
@@ -81,8 +106,10 @@ func (ms *MapSpec) Transforms(w WallConfig) (*Transforms, error) {
 	Xa, Ya := calcXY(ms.BottomLeft.WallPos, w.Width, w.WheelRadius)
 	Xb, Yb := calcXY(ms.TopRight.WallPos, w.Width, w.WheelRadius)
 
-	ms.transforms.Tx = (xa*Xb - xb*Xa) / (xa - xb)
-	ms.transforms.Ty = (yb*Ya - ya*Yb) / (yb - ya)
+	ms.transforms = &Transforms{
+		Tx: (xa*Xb - xb*Xa) / (xa - xb),
+		Ty: (yb*Ya - ya*Yb) / (yb - ya),
+	}
 	ms.transforms.Scale = (Xa - ms.transforms.Tx) / xa
 
 	return ms.transforms, nil
@@ -104,40 +131,9 @@ func calcXY(wall common.WallPos, width, wheelRadius Meters) (float64, float64) {
 	return X, Y
 }
 
-func New(configPath string) (*Config, error) {
-	s := &Config{Path: configPath}
-
-	data, err := ioutil.ReadFile(s.Path)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := json.Unmarshal(data, &s.Mappers); err != nil {
-		return nil, err
-	}
-
-	projCtx := proj.NewContext()
-	// Never closed, as the application's purpose is to map
-
-	// Check that all the projections are well-understood
-	for i, mc := range s.Mappers {
-		for j, m := range mc.Maps {
-			p, err := projCtx.Create(m.ProjectionDescription)
-			if err != nil {
-				return nil, err
-			}
-			s.Mappers[i].Maps[j].projection = p
-		}
-	}
-
-	return s, nil
-}
-
 func (c *Config) TrackerCallback(details common.TrackedDetails) future.Future {
 	return future.Exec(func() error {
 		details.MapperLengths = c.Calculate(details.Target)
-		// TODO: Remove this fake logging
-		fmt.Println(details.MapperLengths)
 		return nil
 	})
 }
