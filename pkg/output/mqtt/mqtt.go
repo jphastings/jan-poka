@@ -23,7 +23,11 @@ type Message struct {
 	CalculatedRange           float32 `json:"rng"`
 	CalculatedSurfaceDistance float32 `json:"dst"`
 
+	CalculatedMapperLeft    float32         `json:"r1"`
+	CalculatedMapperRight   float32         `json:"r2"`
 	CalculatedMapperLengths map[int]Lengths `json:"map"`
+
+	Reset bool `json:"reset"`
 }
 
 type Lengths struct {
@@ -73,18 +77,24 @@ func (c *Config) tokenOk(token mqtt.Token) error {
 }
 
 func (c *Config) TrackerCallback(details common.TrackedDetails) future.Future {
-	return future.Exec(func() error {
-		msg := Message{
-			TargetLatitude:            float32(details.Target.Latitude),
-			TargetLongitude:           float32(details.Target.Longitude),
-			TargetAltitude:            float32(details.Target.Altitude),
-			CalculatedAzimuth:         float32(details.Bearing.Azimuth),
-			CalculatedElevation:       float32(details.Bearing.Elevation),
-			CalculatedRange:           float32(details.Bearing.Range),
-			CalculatedSurfaceDistance: float32(details.UnobstructedDistance),
-			CalculatedMapperLengths:   mapperLengths(details.MapperLengths),
-		}
+	ml := mapperLengths(details.MapperLengths)
+	return c.Publish(Message{
+		TargetLatitude:            float32(details.Target.Latitude),
+		TargetLongitude:           float32(details.Target.Longitude),
+		TargetAltitude:            float32(details.Target.Altitude),
+		CalculatedAzimuth:         float32(details.Bearing.Azimuth),
+		CalculatedElevation:       float32(details.Bearing.Elevation),
+		CalculatedRange:           float32(details.Bearing.Range),
+		CalculatedSurfaceDistance: float32(details.UnobstructedDistance),
 
+		CalculatedMapperLeft:    ml[0].Left,
+		CalculatedMapperRight:   ml[0].Right,
+		CalculatedMapperLengths: ml,
+	})
+}
+
+func (c *Config) Publish(msg Message) future.Future {
+	return future.Exec(func() error {
 		enc, err := json.Marshal(msg)
 		if err != nil {
 			return err

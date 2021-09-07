@@ -40,6 +40,8 @@ void setup() {
   outer.setMaxSpeed(MAX_SPEED);
   inner.setAcceleration(ACCELERATION);
   outer.setAcceleration(ACCELERATION);
+  inner.setPinsInverted(true, false, false);
+  outer.setPinsInverted(true, false, false);
 
   mqttConnectionLoop();
   Serial.println("\nBooted");
@@ -83,6 +85,11 @@ void handleGeoTarget(char* topic, byte* payload, unsigned int length) {
     Serial.print("Unsuccessful at parsing MQTT JSON: ");
     Serial.println(err.f_str());
     return;
+  }
+
+  if (jsonDoc["reset"]) {
+    inner.setCurrentPosition(0);
+    outer.setCurrentPosition(0);
   }
   goTo(jsonDoc["r1"], jsonDoc["r2"]);
 }

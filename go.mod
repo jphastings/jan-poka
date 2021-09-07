@@ -8,6 +8,7 @@ require (
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
 	github.com/denisbrodbeck/machineid v1.0.1
 	github.com/eclipse/paho.mqtt.golang v1.3.3
+	github.com/eiannone/keyboard v0.0.0-20200508000154-caf4b762e807
 	github.com/erikstmartin/go-testdb v0.0.0-20160219214506-8d10e4a1bae5 // indirect
 	github.com/faiface/beep v1.0.2
 	github.com/grandcat/zeroconf v0.0.0-20190424104450-85eadb44205c
