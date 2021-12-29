@@ -16,8 +16,6 @@ import (
 	"syscall"
 )
 
-// TODO: is callbacks needed anymore?
-var callbacks []common.OnTracked
 var environment env.Config
 
 type configurable struct {
@@ -60,8 +58,7 @@ func configureLogging() (common.OnTracked, error) {
 
 // configureMapper needs to be called before any output method that uses mapper details (eg. MQTT)
 func configureMapper() (common.OnTracked, error) {
-	// TODO: Real config path
-	m, err := mapper.New("/Users/jp/.mapper.json")
+	m, err := mapper.New(environment.Persistence)
 	if err != nil {
 		return nil, err
 	}

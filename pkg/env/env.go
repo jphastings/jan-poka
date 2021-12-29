@@ -21,7 +21,7 @@ type Config struct {
 
 	UseLog    bool `default:"true"`
 	UseAudio  bool `default:"false"`
-	UseMapper bool `default:"true"`
+	UseMapper bool `default:"false"`
 
 	MQTTBroker   string `default:"mqtt.local:1883"`
 	MQTTUsername string `default:"jan-poka"`

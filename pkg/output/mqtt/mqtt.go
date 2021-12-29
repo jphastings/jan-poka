@@ -107,8 +107,8 @@ func mapperLengths(mls map[int]common.WallPos) map[int]Lengths {
 	ls := make(map[int]Lengths)
 	for i, ml := range mls {
 		ls[i] = Lengths{
-			Left:  float32(ml.LengthLeft),
-			Right: float32(ml.LengthRight),
+			Left:  float32(ml.Left),
+			Right: float32(ml.Right),
 		}
 	}
 	return ls

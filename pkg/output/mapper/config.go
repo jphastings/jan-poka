@@ -3,11 +3,12 @@ package mapper
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/jphastings/jan-poka/pkg/common"
+	. "github.com/jphastings/jan-poka/pkg/common"
 	"github.com/jphastings/jan-poka/pkg/future"
 	"github.com/wroge/wgs84"
 	"io/ioutil"
 	"math"
+	"path/filepath"
 	"sync"
 
 	. "github.com/jphastings/jan-poka/pkg/math"
@@ -21,8 +22,8 @@ type Config struct {
 }
 
 type State struct {
-	common.WallPos `json:"currentPosition"`
-	WallConfig     WallConfig `json:"wallConfig"`
+	WallPos    `json:"currentPosition"`
+	WallConfig WallConfig `json:"wallConfig"`
 	// MapSpecs earlier in this slice will take precedence
 	Maps []MapSpec `json:"maps"`
 }
@@ -32,7 +33,8 @@ type WallConfig struct {
 	WheelRadius Meters
 }
 
-func New(configPath string) (*Config, error) {
+func New(configRoot string) (*Config, error) {
+	configPath := filepath.Join(configRoot, "mapper.json")
 	s := &Config{Path: configPath}
 
 	data, err := ioutil.ReadFile(s.Path)
@@ -62,6 +64,7 @@ func New(configPath string) (*Config, error) {
 }
 
 type MapSpec struct {
+	Name       string
 	TopRight   Correlation
 	BottomLeft Correlation
 
@@ -73,8 +76,8 @@ type MapSpec struct {
 }
 
 type Correlation struct {
-	common.WallPos `json:"wallPosition"`
-	LLACoords      `json:"latLong"`
+	WallPos   `json:"wallPosition"`
+	LLACoords `json:"latLong"`
 }
 
 type Transforms struct {
@@ -115,9 +118,9 @@ func (ms *MapSpec) Transforms(w WallConfig) (*Transforms, error) {
 	return ms.transforms, nil
 }
 
-func calcXY(wall common.WallPos, width, wheelRadius Meters) (float64, float64) {
-	left2 := math.Pow(float64(wall.LengthLeft), 2)
-	right2 := math.Pow(float64(wall.LengthRight), 2)
+func calcXY(wall WallPos, width, wheelRadius Meters) (float64, float64) {
+	left2 := math.Pow(float64(wall.Left), 2)
+	right2 := math.Pow(float64(wall.Right), 2)
 	widthSquared := math.Pow(float64(width), 2)
 	wheelRadiusSquared := math.Pow(float64(wheelRadius), 2)
 
@@ -131,7 +134,7 @@ func calcXY(wall common.WallPos, width, wheelRadius Meters) (float64, float64) {
 	return X, Y
 }
 
-func (c *Config) TrackerCallback(details common.TrackedDetails) future.Future {
+func (c *Config) TrackerCallback(details TrackedDetails) future.Future {
 	return future.Exec(func() error {
 		details.MapperLengths = c.Calculate(details.Target)
 		return nil

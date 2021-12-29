@@ -1,4 +1,4 @@
-include <../../../vendor/openscad/hardware/bezier.scad>
+include <../../../ext/openscad/hardware/bezier.scad>
 
 RAD = 180 / PI;
 
@@ -12,7 +12,7 @@ flange_countersink_h = flange_countersink_diameter / (2 * tan(flange_countersink
 
 cutaway_count = 5;
 diameter = 100;
-outer_thickness = 4;
+outer_thickness = 8;
 rim = 0.5;
 inner_thickness = 2;
 hole_space = 4;
@@ -35,7 +35,7 @@ module profile() {
             curve_width = diameter/2 - flange_diameter;
             curve(
                 [flange_diameter, inner_thickness],
-                [flange_diameter + 1.1 * curve_width, inner_thickness/2],
+                [flange_diameter + 0.8 * curve_width, inner_thickness/2],
                 [flange_diameter + 0.8 * curve_width, (outer_thickness + inner_thickness)*3/4],
                 [diameter/2, outer_thickness]
             );
@@ -125,9 +125,9 @@ difference() {
     rotate_extrude()
         profile();
     if (!$preview) { holes(cutaway_count); }; // this eats CPU, so only on full render
-    
+
     translate([diameter/2, 0, outer_thickness/2]) rotate([0, -80, 0]) cylinder(spindle_diameter*2, d = thread_diameter);
-    
+
     for (i = [0:flange_holes - 1]) {
         rotate(360*i/flange_holes) translate([flange_holes_diameter/2, 0, 0]) { cylinder(outer_thickness, d = flange_hole_diameter);
             translate([0, 0, inner_thickness - flange_countersink_h]) cylinder(flange_countersink_h, d1 = 0, d2 = flange_countersink_diameter);
@@ -135,9 +135,4 @@ difference() {
     }
 }
 
-translate([diameter/4, 0, inner_thickness])
-    rotate([90, 0, 0])
-    rotate_extrude(angle=45)
-    translate([anchor_d*5/4, 0, 0])
-    circle(d = anchor_d);
-
+//profile();

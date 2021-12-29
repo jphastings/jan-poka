@@ -22,6 +22,10 @@ require (
 	github.com/twuillemin/modes v0.4.0
 	github.com/wroge/wgs84 v1.1.0
 	github.com/ziutek/mymysql v1.5.4 // indirect
+	gocv.io/x/gocv v0.28.0
+	golang.org/x/net v0.0.0-20201021035429-f5854403a974 // indirect
+	golang.org/x/sync v0.0.0-20201020160332-67f06af15bc9 // indirect
+	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/api v0.15.0
 	google.golang.org/genproto v0.0.0-20191223191004-3caeed10a8bf
 	googlemaps.github.io/maps v1.3.2

@@ -8,8 +8,9 @@
 #define APP_NAME "jan-poka:mapper"
 #define ONE_ROTATION_STEPS 8192
 #define POWER_OFF_DELAY 2000
-#define MAX_SPEED 24576
+#define MAX_SPEED 65536
 #define ACCELERATION 4096
+#define MQTT_POSITION_TOPIC MQTT_TOPIC "/" APP_NAME
 
 int INNER_DIR     = 14; // D5
 int INNER_STP     = 13; // D7
@@ -22,8 +23,8 @@ int BOOTING       = 2;  // D4
 WiFiClient wifiClient;
 PubSubClient mqttClient(wifiClient);
 
-AccelStepper inner = AccelStepper(AccelStepper::DRIVER, INNER_STP, INNER_DIR);
-AccelStepper outer = AccelStepper(AccelStepper::DRIVER, OUTER_STP, OUTER_DIR);
+AccelStepper leftWheel = AccelStepper(AccelStepper::DRIVER, INNER_STP, INNER_DIR);
+AccelStepper rightWheel = AccelStepper(AccelStepper::DRIVER, OUTER_STP, OUTER_DIR);
 
 void setup() {
   Serial.begin(115200);
@@ -36,12 +37,12 @@ void setup() {
 
   mqttClient.setServer(MQTT_HOST, MQTT_PORT);
 
-  inner.setMaxSpeed(MAX_SPEED);
-  outer.setMaxSpeed(MAX_SPEED);
-  inner.setAcceleration(ACCELERATION);
-  outer.setAcceleration(ACCELERATION);
-  inner.setPinsInverted(true, false, false);
-  outer.setPinsInverted(true, false, false);
+  leftWheel.setMaxSpeed(MAX_SPEED);
+  rightWheel.setMaxSpeed(MAX_SPEED);
+  leftWheel.setAcceleration(ACCELERATION);
+  rightWheel.setAcceleration(ACCELERATION);
+  leftWheel.setPinsInverted(true, false, false);
+  rightWheel.setPinsInverted(true, false, false);
 
   mqttConnectionLoop();
   Serial.println("\nBooted");
@@ -53,6 +54,7 @@ void mqttConnectionLoop() {
     if (!mqttClient.connect(APP_NAME, MQTT_USER, MQTT_PASS)) {
       Serial.println("Failed to connect to MQTT broker");
       // TODO: Backoff
+      delay(1000);
       return;
     }
     Serial.println("MQTT connected");
@@ -88,8 +90,9 @@ void handleGeoTarget(char* topic, byte* payload, unsigned int length) {
   }
 
   if (jsonDoc["reset"]) {
-    inner.setCurrentPosition(0);
-    outer.setCurrentPosition(0);
+    leftWheel.setCurrentPosition(0);
+    rightWheel.setCurrentPosition(0);
+    publishPosition();
   }
   goTo(jsonDoc["r1"], jsonDoc["r2"]);
 }
@@ -100,28 +103,41 @@ void goTo(double r1, double r2) {
   Serial.print(", r2=");
   Serial.println(r2);
 
-  inner.moveTo(r1 * ONE_ROTATION_STEPS);
-  outer.moveTo(r2 * ONE_ROTATION_STEPS);
+  leftWheel.moveTo(r1 * ONE_ROTATION_STEPS);
+  rightWheel.moveTo(r2 * ONE_ROTATION_STEPS);
+}
+
+void publishPosition() {
+  double r1 = leftWheel.currentPosition() / (double) ONE_ROTATION_STEPS;
+  double r2 = rightWheel.currentPosition() / (double) ONE_ROTATION_STEPS;
+
+  char buffer[64];
+  sprintf(buffer, "{\"r1\":%.3f,\"r2\":%.3f}", r1, r2);
+  mqttClient.publish(MQTT_POSITION_TOPIC, buffer);
 }
 
 unsigned long powerOffAt = 0;
+bool wasMoving = false;
 
 void loop() {
-  bool noMove = inner.distanceToGo() == 0 && outer.distanceToGo() == 0;
+  bool noMove = leftWheel.distanceToGo() == 0 && rightWheel.distanceToGo() == 0;
   if (noMove) {
-    if (powerOffAt == 0) {
+    if (powerOffAt == 0 && wasMoving) {
       powerOffAt = millis() + POWER_OFF_DELAY;
-    } else if (millis() >= powerOffAt) {
+      publishPosition();
+    } else if (millis() >= powerOffAt && wasMoving) {
       digitalWrite(INNER_DISABLE, HIGH);
       digitalWrite(OUTER_DISABLE, HIGH);
       powerOffAt = 0;
+      wasMoving = false;
     }
   } else {
     digitalWrite(INNER_DISABLE, LOW);
     digitalWrite(OUTER_DISABLE, LOW);
+    wasMoving = true;
   }
 
-  inner.run();
-  outer.run();
+  leftWheel.run();
+  rightWheel.run();
   mqttConnectionLoop();
 }

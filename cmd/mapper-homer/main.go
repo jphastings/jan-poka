@@ -4,9 +4,13 @@ import (
 	"fmt"
 	"github.com/eiannone/keyboard"
 	"github.com/jphastings/jan-poka/pkg/common"
+	"github.com/jphastings/jan-poka/pkg/output/mapper"
 	"github.com/jphastings/jan-poka/pkg/output/mqtt"
 	"github.com/kelseyhightower/envconfig"
 	"log"
+	"os/user"
+	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -28,6 +32,14 @@ type MQTTEnv struct {
 	MQTTTopic    string `default:"home/geo/target"`
 
 	TCPTimeout time.Duration `default:"1s"`
+
+	Persistence string `default:"~/.jan-poka"`
+}
+
+func check(err error) {
+	if err != nil {
+		log.Fatalf("Could not complete zeroing! %v", err)
+	}
 }
 
 func main() {
@@ -35,8 +47,11 @@ func main() {
 
 	var environment MQTTEnv
 	err := envconfig.Process("jp", &environment)
-	if err != nil {
-		panic(err)
+	check(err)
+	if strings.HasPrefix(environment.Persistence, "~/") {
+		usr, err := user.Current()
+		check(err)
+		environment.Persistence = filepath.Join(usr.HomeDir, environment.Persistence[2:])
 	}
 
 	pub, err = mqtt.New(
@@ -46,33 +61,25 @@ func main() {
 		environment.MQTTTopic,
 		environment.TCPTimeout,
 	)
-	if err != nil {
-		panic(err)
-	}
+	check(err)
 
-	if err := keyboard.Open(); err != nil {
-		panic(err)
-	}
+	check(keyboard.Open())
 	defer keyboard.Close()
 
-	log.Println("Move the mapper to your home point.")
-
-	if err := initialReset(); err != nil {
-		log.Fatalf("Could not complete zeroing! %v", err)
-	}
+	check(phaseInit())
 
 	log.Println("Use Q and S to shorten and lengthen the left wire")
 	log.Println("Use W and A to shorten and lengthen the right wire")
 
-	stepMove("Press ESC to quit or Enter when you're done")
+	check(stepMove("Move the mapper to your home point."))
 
-	pub.Publish(mqtt.Message{Reset: true})
+	resetPosition()
 
-	log.Println("All set! Your mapper is now reset and at its home position.")
+	check(phaseAddMaps(environment.Persistence))
 }
 
-func initialReset() error {
-	log.Println("Press R to move to the home position from here, H to move to the existing home position.")
+func phaseInit() error {
+	log.Println("Press R to find the home position from here, H to move to the previous home position and start from there.")
 	for {
 		char, key, err := keyboard.GetKey()
 		if err != nil {
@@ -89,19 +96,38 @@ func initialReset() error {
 			pub.Publish(mqtt.Message{Reset: true})
 			return nil
 		case 'h', 'H':
-			curPos.LengthLeft = 0
-			curPos.LengthRight = 0
+			curPos.Left = 0
+			curPos.Right = 0
 			publishPosition()
 			return nil
 		}
 	}
 }
 
-func stepMove(explain string) {
-	log.Println(explain)
-	if err := move(); err != nil {
-		log.Fatalf("Could not complete zeroing! %v", err)
+func phaseAddMaps(configRoot string) error {
+	m, err := mapper.New(configRoot)
+	if err != nil {
+		return err
 	}
+
+	var mapper mapper.State
+
+	// TODO: Deal with more than one mapper
+	if len(m.Mappers) >= 1 {
+		mapper = m.Mappers[0]
+	}
+
+
+	for mapID := range mapper.Maps {
+		// TODO: How to georeference?
+		_ = mapID
+	}
+	return fmt.Errorf("not implemented")
+}
+
+func stepMove(explain string) error {
+	log.Println(explain)
+	return move()
 }
 
 func move() error {
@@ -122,23 +148,23 @@ func move() error {
 
 		switch char {
 		case 'q', 'Q':
-			curPos.LengthLeft -= stepAmount
+			curPos.Left -= stepAmount
 		case 's', 'S':
-			curPos.LengthLeft += stepAmount
+			curPos.Left += stepAmount
 		case 'w', 'W':
-			curPos.LengthRight -= stepAmount
+			curPos.Right -= stepAmount
 		case 'a', 'A':
-			curPos.LengthRight += stepAmount
+			curPos.Right += stepAmount
 		}
 
 		publishPosition()
-		fmt.Printf("\rLeft: %10.1f Right: %10.1f", float32(curPos.LengthLeft), float32(curPos.LengthRight))
+		fmt.Printf("\rLeft: %10.1f Right: %10.1f", float32(curPos.Left), float32(curPos.Right))
 	}
 }
 
 func publishPosition() {
-	left := float32(curPos.LengthLeft)
-	right := float32(curPos.LengthRight)
+	left := float32(curPos.Left)
+	right := float32(curPos.Right)
 
 	pub.Publish(mqtt.Message{
 		CalculatedMapperLeft:  left,
@@ -148,4 +174,8 @@ func publishPosition() {
 			0: {Left: left, Right: right},
 		},
 	})
+}
+
+func resetPosition() {
+	pub.Publish(mqtt.Message{Reset: true})
 }

@@ -12,12 +12,13 @@
 #define ACCELERATION 8192
 #define MANAGED_SPEED false
 
-int INNER_DIR = 14; // D5
-int INNER_STP = 12; // D6
-int OUTER_DIR = 5;  // D1
-int OUTER_STP = 4;  // D2
-int DISABLE   = 16; // D0
-int BOOTING   = 2;  // D4
+int INNER_DIR     = 14; // D5
+int INNER_STP     = 13; // D7
+int INNER_DISABLE = 12; // D6
+int OUTER_DIR     = 4;  // D2
+int OUTER_STP     = 5;  // D1
+int OUTER_DISABLE = 16; // D0
+int BOOTING       = 2;  // D4
 
 WiFiClient wifiClient;
 PubSubClient mqttClient(wifiClient);
@@ -29,8 +30,10 @@ void setup() {
   Serial.begin(115200);
   pinMode(BOOTING, OUTPUT);
   digitalWrite(BOOTING, HIGH);
-  pinMode(DISABLE, OUTPUT);
-  digitalWrite(DISABLE, LOW);
+  pinMode(INNER_DISABLE, OUTPUT);
+  digitalWrite(INNER_DISABLE, LOW);
+  pinMode(OUTER_DISABLE, OUTPUT);
+  digitalWrite(OUTER_DISABLE, LOW);
 
   mqttClient.setServer(MQTT_HOST, MQTT_PORT);
 
@@ -49,6 +52,7 @@ void mqttConnectionLoop() {
     if (!mqttClient.connect(APP_NAME, MQTT_USER, MQTT_PASS)) {
       Serial.println("Failed to connect to MQTT broker");
       // TODO: Backoff
+      delay(1000);
       return;
     }
     Serial.println("MQTT connected");
@@ -116,18 +120,23 @@ void goTo(double azimuth, double elevation) {
 }
 
 unsigned long powerOffAt = 0;
+bool wasMoving = false;
 
 void loop() {
   bool noMove = inner.distanceToGo() == 0 && outer.distanceToGo() == 0;
   if (noMove) {
-    if (powerOffAt == 0) {
+    if (powerOffAt == 0 && wasMoving) {
       powerOffAt = millis() + POWER_OFF_DELAY;
-    } else if (millis() >= powerOffAt) {
-      digitalWrite(DISABLE, HIGH);
+    } else if (millis() >= powerOffAt && wasMoving) {
+      digitalWrite(INNER_DISABLE, HIGH);
+      digitalWrite(OUTER_DISABLE, HIGH);
       powerOffAt = 0;
+      wasMoving = false;
     }
   } else {
-    digitalWrite(DISABLE, LOW);
+    digitalWrite(INNER_DISABLE, LOW);
+    digitalWrite(OUTER_DISABLE, LOW);
+    wasMoving = true;
   }
   
   if (MANAGED_SPEED) {

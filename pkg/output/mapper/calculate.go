@@ -66,7 +66,7 @@ func projectCoords(ms MapSpec, coords LLACoords, w WallConfig) (common.WallPos, 
 	wheelRadiusSquared := math.Pow(float64(w.WheelRadius), 2)
 
 	return common.WallPos{
-		LengthLeft:  Meters(math.Sqrt(X2 + Y2 - wheelRadiusSquared)),
-		LengthRight: Meters(math.Sqrt(dxmX2 + Y2 - wheelRadiusSquared)),
+		Left:  Meters(math.Sqrt(X2 + Y2 - wheelRadiusSquared)),
+		Right: Meters(math.Sqrt(dxmX2 + Y2 - wheelRadiusSquared)),
 	}, nil
 }
