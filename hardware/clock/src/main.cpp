@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include <AccelStepper.h>
 #include <NeoPixelBus.h>
 #include <PubSubClient.h>
@@ -26,7 +27,6 @@ AccelStepper stepMin(AccelStepper::FULL4WIRE, 19, 21, 23, 22);
 
 NeoPixelBus<NeoGrbwFeature, NeoSk6812Method> leds(LED_COUNT, 27);
 
-HTTPClient httpClient;
 WiFiClient wifiClient;
 PubSubClient mqttClient(wifiClient);
 time_t epoch;
@@ -36,6 +36,34 @@ int lastUpdated = -1;
 int sunriseMins = -1;
 int sunsetMins = -1;
 
+// TODO: Pick good colours; include Warm White?
+RgbwColor dayCol(128, 64, 0, 128);
+RgbwColor nightCol(0, 0, 128, 0);
+RgbwColor offCol(0, 0, 0, 0);
+
+void setupWifi();
+void setupMQTT();
+void setupTime();
+void setupMotors();
+void setupLEDs();
+
+void updateTime();
+void updateClock();
+void updateMotors();
+void updateLEDs();
+void updateMQTT();
+
+void handleGeoTarget(char*, byte*, unsigned int);
+bool steppersMoving();
+void setSunriseAndSunset(String, String);
+int timeToDayMins(int, int);
+
+int updatedInt();
+bool noNeedToUpdate();
+void setTimezone(double, double);
+void normalizeStepper(AccelStepper*);
+void moveCircular(AccelStepper*, long);
+
 void setupWifi() {
   WiFi.begin(WIFI_SSID, WIFI_PASS);
   while(WiFi.status()!=WL_CONNECTED) {
@@ -43,9 +71,22 @@ void setupWifi() {
   }
 }
 
+void updateMQTT() {
+  if (!mqttClient.connected()) {
+    if (!mqttClient.connect(APP_NAME, MQTT_USER, MQTT_PASS)) {
+      Serial.println("Failed to connect to MQTT broker");
+      // TODO: Backoff
+      return;
+    }
+    mqttClient.setCallback(handleGeoTarget);
+    mqttClient.subscribe(MQTT_TOPIC);
+  }
+  mqttClient.loop();
+}
+
 void setupMQTT() {
   mqttClient.setServer(MQTT_HOST, MQTT_PORT);
-  mqttConnectionLoop();
+  updateMQTT();
 }
 
 void setupTime() {
@@ -55,10 +96,6 @@ void setupTime() {
 
   // Home:
   setTimezone(51.53647542276452, -0.08639983104800102);
-  // Chris:
-  //setTimezone(49.27103836424926, -123.15245006680813);
-  // Venezuela
-  //setTimezone(10.436620855606654, -66.84207546938133);
 }
 
 void setupMotors() {
@@ -75,42 +112,8 @@ void setupLEDs() {
   leds.Begin();
 }
 
-void setup() {
-  Serial.begin(115200);
-  
-  setupWifi();
-  setupMotors();
-  setupLEDs();
-  setupTime();
-  setupMQTT();
-  Serial.println("Booted");
-}
-
-void loop() {
-  time(&epoch);
-  now = localtime(&epoch);
-  
-  stepMin.run();
-  stepHour.run();
-
-  updateClock();
-}
-
-void mqttConnectionLoop() {
-  if (!mqttClient.connected()) {
-    if (!mqttClient.connect(APP_NAME, MQTT_USER, MQTT_PASS)) {
-      Serial.println("Failed to connect to MQTT broker");
-      // TODO: Backoff
-      return;
-    }
-    Serial.println("MQTT connected");
-    mqttClient.setCallback(handleGeoTarget);
-    mqttClient.subscribe(MQTT_TOPIC);
-  }
-  mqttClient.loop();
-}
-
 void handleGeoTarget(char* topic, byte* payload, unsigned int length) {
+  Serial.println("MQTT message received");
   /* Copied from EspMQTTClient: https://github.com/plapointe6/EspMQTTClient/blob/master/src/EspMQTTClient.cpp#L649 */
   // Convert the payload into a String
   // First, We ensure that we dont bypass the maximum size of the PubSubClient library buffer that originated the payload
@@ -127,43 +130,18 @@ void handleGeoTarget(char* topic, byte* payload, unsigned int length) {
   String payloadStr((char*)payload);
   /* end */
 
-  StaticJsonDocument<512> jsonDoc;
-  DeserializationError err = deserializeJson(jsonDoc, payload);
+  StaticJsonDocument<512> doc;
+  DeserializationError err = deserializeJson(doc, payload);
   if (err != DeserializationError::Ok) {
     Serial.print("Unsuccessful at parsing MQTT JSON: ");
-    Serial.println(err.f_str());
+    Serial.println(err.c_str());
     return;
   }
-  setTimezone(jsonDoc["lat"], jsonDoc["lng"]);
+  setTimezone(doc["lat"], doc["lng"]);
 }
 
 bool steppersMoving() {
   return stepMin.distanceToGo() != 0 || stepHour.distanceToGo() != 0;
-}
-
-void setTimezone(double latitude, double longitude) {
-  char url[255];
-  sprintf(url, TIMEZONE_QUERY, latitude, longitude);
-  
-  httpClient.useHTTP10(true);
-  httpClient.begin(wifiClient, url);
-  httpClient.GET();
-  
-  StaticJsonDocument<384> doc;
-  DeserializationError error = deserializeJson(doc, httpClient.getStream());
-
-  if (error) {
-    Serial.print("Grabbing timezone details failed: ");
-    Serial.println(error.c_str());
-    return;
-  }
-
-  // TODO: Deal with DST
-  configTime(doc["rawOffset"].as<float>() * 3600, 0, NTP_SERVER);
-  setSunriseAndSunset(doc["sunrise"], doc["sunset"]);
-
-  httpClient.end();
-  updateClock();
 }
 
 void setSunriseAndSunset(String sunriseStr, String sunsetStr) {
@@ -179,7 +157,7 @@ void updateClock() {
   if (now == 0 || steppersMoving() || noNeedToUpdate())
     return;
 
-  Serial.print("Setting time to: "); Serial.print(now->tm_hour); Serial.print(":"); Serial.println(now->tm_min); 
+  Serial.print("Setting time to: "); Serial.print(now->tm_hour); Serial.print(":"); Serial.print(now->tm_min); Serial.print(":"); Serial.println(now->tm_sec); 
 
   updateMotors();
   updateLEDs();
@@ -199,11 +177,6 @@ void updateMotors() {
   moveCircular(&stepMin, (now->tm_min + now->tm_sec/60.0) * MINS_STEPS);
   moveCircular(&stepHour, (now->tm_hour + now->tm_min/60.0) * HOURS_STEPS);
 }
-
-// TODO: Pick good colours; include Warm White?
-RgbwColor dayCol(128, 64, 0, 128);
-RgbwColor nightCol(0, 0, 128, 0);
-RgbwColor offCol(0, 0, 0, 0);
 
 void updateLEDs() {
   int nowMins = timeToDayMins(now->tm_hour, now->tm_min);
@@ -225,6 +198,14 @@ void updateLEDs() {
   leds.Show();
 }
 
+void normalizeStepper(AccelStepper* stepper) {
+  long pos = stepper->currentPosition();
+  if (pos < 0 || pos >= MOTOR_STEPS) {
+    int mult = pos / MOTOR_STEPS;
+    stepper->setCurrentPosition((pos - mult * MOTOR_STEPS) % MOTOR_STEPS);
+  }
+}
+
 void moveCircular(AccelStepper* stepper, long steps) {
     normalizeStepper(stepper);
 
@@ -240,10 +221,58 @@ void moveCircular(AccelStepper* stepper, long steps) {
     stepper->moveTo(-newPos); // -ve for clockwise correction
 }
 
-void normalizeStepper(AccelStepper* stepper) {
-  long pos = stepper->currentPosition();
-  if (pos < 0 || pos >= MOTOR_STEPS) {
-    int mult = pos / MOTOR_STEPS;
-    stepper->setCurrentPosition((pos - mult * MOTOR_STEPS) % MOTOR_STEPS);
+void setTimezone(double latitude, double longitude) {
+  Serial.print("Setting timezone for: ");
+    Serial.print(latitude);
+    Serial.print(", ");
+    Serial.println(longitude);
+
+  char url[255];
+  sprintf(url, TIMEZONE_QUERY, latitude, longitude);
+  
+  HTTPClient httpClient;
+  httpClient.useHTTP10(true);
+  httpClient.begin(wifiClient, url);
+  httpClient.GET();
+  
+  StaticJsonDocument<512> doc;
+  DeserializationError err = deserializeJson(doc, httpClient.getStream());
+  if (err != DeserializationError::Ok) {
+    Serial.print("Grabbing timezone details failed: ");
+    Serial.println(err.c_str());
+    return;
   }
+
+  // TODO: Deal with DST
+  configTime(doc["rawOffset"].as<float>() * 3600, 0, NTP_SERVER);
+  setSunriseAndSunset(doc["sunrise"], doc["sunset"]);
+
+  httpClient.end();
+  updateClock();
+}
+
+void updateTime() {
+  time(&epoch);
+  now = localtime(&epoch);
+}
+
+void setup() {
+  Serial.begin(115200);
+  
+  setupWifi();
+  setupMotors();
+  setupLEDs();
+  setupTime();
+  setupMQTT();
+  Serial.println("Booted");
+}
+
+void loop() {
+  updateTime();
+  
+  stepMin.run();
+  stepHour.run();
+
+  updateClock();
+  updateMQTT();
 }
