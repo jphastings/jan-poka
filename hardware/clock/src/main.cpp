@@ -24,16 +24,22 @@
 
 // Pins
 #define LED_DATA_PIN 27
+
 #define HOURS_STEPPER_A1 16
 #define HOURS_STEPPER_A2 17
 #define HOURS_STEPPER_B1 18
 #define HOURS_STEPPER_B2 15
 #define HOURS_HALL_SENSOR_PIN 34
+#define HOURS_STEP_SPEED 200
+#define HOURS_CALIB_STEP_SPEED 85
+
 #define MINS_STEPPER_A1 19
 #define MINS_STEPPER_A2 21
 #define MINS_STEPPER_B1 23
 #define MINS_STEPPER_B2 22
 #define MINS_HALL_SENSOR_PIN 35
+#define MINS_STEP_SPEED 200
+#define MINS_CALIB_STEP_SPEED 110
 
 AccelStepper stepHour(AccelStepper::FULL4WIRE, HOURS_STEPPER_A1, HOURS_STEPPER_A2, HOURS_STEPPER_B1, HOURS_STEPPER_B2);
 AccelStepper stepMin(AccelStepper::FULL4WIRE, MINS_STEPPER_A1, MINS_STEPPER_A2, MINS_STEPPER_B1, MINS_STEPPER_B2);
@@ -46,8 +52,8 @@ time_t epoch;
 struct tm *now;
 int lastUpdated = -1;
 
-int sunriseMins = 360; // 6am
-int sunsetMins = 1080; // 6pm
+int sunriseMins = -1;
+int sunsetMins = -1;
 
 // TODO: Pick good colours; include Warm White?
 RgbwColor dayCol(128, 64, 0, 128);
@@ -112,17 +118,17 @@ void setupTime() {
 bool motorsCalibrating = true;
 
 void setupMotors() {
-  stepMin.setMaxSpeed(100.0);
+  stepMin.setMaxSpeed(MINS_CALIB_STEP_SPEED);
   stepMin.setAcceleration(200.0);
   stepMin.setCurrentPosition(0);
 
-  stepHour.setMaxSpeed(100.0);
+  stepHour.setMaxSpeed(HOURS_CALIB_STEP_SPEED);
   stepHour.setAcceleration(200.0);
   stepHour.setCurrentPosition(0);
 
   // Do a calibration sweep
-  stepMin.moveTo(-MOTOR_STEPS);
-  stepHour.moveTo(MOTOR_STEPS);
+  stepMin.moveTo(-MOTOR_STEPS*2);
+  stepHour.moveTo(MOTOR_STEPS*2);
 }
 
 void setupLEDs() {
@@ -171,7 +177,7 @@ int timeToDayMins(int hours, int mins) {
 }
 
 void updateClock() {
-  if (now == 0 || steppersMoving() || noNeedToUpdate())
+  if (now == 0 || sunsetMins == -1 || sunriseMins == -1 || steppersMoving() || noNeedToUpdate())
     return;
 
   Serial.print("Setting time to: "); Serial.print(now->tm_hour); Serial.print(":"); Serial.print(now->tm_min); Serial.print(":"); Serial.println(now->tm_sec);
@@ -277,12 +283,15 @@ void updateTime() {
 struct StepperCalibration {
   int hallSensorPin;
   int lowestSeen;
+  int highestSeen;
   int bestGuess;
   int sensorMinsPos;
   bool calibrated;
+  bool isMins;
 };
-struct StepperCalibration minsCalibrate = {.hallSensorPin = MINS_HALL_SENSOR_PIN, .lowestSeen = 5000, .bestGuess = 0, .sensorMinsPos = 360, .calibrated = false};
-struct StepperCalibration hoursCalibrate = {.hallSensorPin = HOURS_HALL_SENSOR_PIN, .lowestSeen = 5000, .bestGuess = 0, .sensorMinsPos = 364, .calibrated = false};
+RgbwColor calibrationCol(0, 128, 0, 0);
+struct StepperCalibration minsCalibrate = {.hallSensorPin = MINS_HALL_SENSOR_PIN, .lowestSeen = 10000, .highestSeen = 0, .bestGuess = 0, .sensorMinsPos = 360, .calibrated = false, .isMins = true};
+struct StepperCalibration hoursCalibrate = {.hallSensorPin = HOURS_HALL_SENSOR_PIN, .lowestSeen = 10000, .highestSeen = 0, .bestGuess = 0, .sensorMinsPos = 360, .calibrated = false, .isMins = false};
 
 bool calibrateMotorStep(AccelStepper* stepper, struct StepperCalibration* calibration) {
   if (calibration->calibrated)
@@ -290,29 +299,37 @@ bool calibrateMotorStep(AccelStepper* stepper, struct StepperCalibration* calibr
 
   int pos = stepper->currentPosition();
   int hallReading = analogRead(calibration->hallSensorPin);
+  Serial.print(calibration->isMins); Serial.print(","); Serial.print(pos); Serial.print(","); Serial.println(hallReading);
+  if (hallReading > calibration->highestSeen) {
+    calibration->highestSeen = hallReading;
+  }
   if (hallReading < calibration->lowestSeen) {
     calibration->lowestSeen = hallReading;
     calibration->bestGuess = pos;
   }
+
   if (stepper->isRunning())
     return false;
 
   // minimum Hall Reading at 6 o'clock, so add MOTOR_STEPS/2
-  int actualPos = (pos + calibration->bestGuess - calibration->sensorMinsPos + MOTOR_STEPS) % MOTOR_STEPS;
-  Serial.print("Post-calibration, hand is at: ");
-  Serial.println(actualPos);
+  int actualPos = (pos + calibration->bestGuess + calibration->sensorMinsPos + MOTOR_STEPS) % MOTOR_STEPS;
 
   stepper->setCurrentPosition(actualPos);
-  stepper->moveTo(0);
+  stepper->moveTo(calibration->sensorMinsPos);
   calibration->calibrated = true;
   return true;
 }
 
 void calibrateMotors() {
-  Serial.println("Calibrating…");
-  if (calibrateMotorStep(&stepMin, &minsCalibrate) && calibrateMotorStep(&stepMin, &minsCalibrate)) {
+  bool minsGood = calibrateMotorStep(&stepMin, &minsCalibrate);
+  bool hoursGood = calibrateMotorStep(&stepHour, &hoursCalibrate);
+  if (minsGood && hoursGood) {
     Serial.println("Finished calibrating motors.");
+    stepMin.setMaxSpeed(MINS_STEP_SPEED);
+    stepHour.setMaxSpeed(HOURS_STEP_SPEED);
     motorsCalibrating = false;
+    leds.ClearTo(offCol);
+    leds.Show();
   }
 };
 
