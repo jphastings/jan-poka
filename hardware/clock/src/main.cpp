@@ -24,12 +24,14 @@
 
 // Pins
 #define LED_DATA_PIN 27
+#define HALL_QANTIZATION 64
 
 #define HOURS_STEPPER_A1 16
 #define HOURS_STEPPER_A2 17
 #define HOURS_STEPPER_B1 18
 #define HOURS_STEPPER_B2 15
 #define HOURS_HALL_SENSOR_PIN 34
+#define HOURS_HALL_SENSOR_POS 360
 #define HOURS_STEP_SPEED 200
 #define HOURS_CALIB_STEP_SPEED 85
 
@@ -38,6 +40,7 @@
 #define MINS_STEPPER_B1 23
 #define MINS_STEPPER_B2 22
 #define MINS_HALL_SENSOR_PIN 35
+#define MINS_HALL_SENSOR_POS 360
 #define MINS_STEP_SPEED 200
 #define MINS_CALIB_STEP_SPEED 110
 
@@ -60,6 +63,16 @@ RgbwColor dayCol(128, 64, 0, 128);
 RgbwColor nightCol(0, 0, 128, 0);
 RgbwColor offCol(0, 0, 0, 0);
 
+struct StepperCalibration {
+  long cumulativeReadings[MOTOR_STEPS];
+  int countReadings[MOTOR_STEPS];
+  bool calibrated;
+  bool isMins;
+};
+struct StepperCalibration minsCalibrate;
+struct StepperCalibration hoursCalibrate;
+bool motorsCalibrating;
+
 void setupWifi();
 void setupMQTT();
 void setupTime();
@@ -77,12 +90,20 @@ bool steppersMoving();
 void calibrateMotors();
 void setSunriseAndSunset(String, String);
 int timeToDayMins(int, int);
+void startMotorCalibration();
 
 int updatedInt();
 bool noNeedToUpdate();
 void setTimezone(double, double);
 void normalizeStepper(AccelStepper*);
 void moveCircular(AccelStepper*, long);
+
+int normalizeStepCount(int pos) {
+  if (pos < 0) {
+      pos += -(pos/MOTOR_STEPS)*MOTOR_STEPS + MOTOR_STEPS;
+  }
+  return pos % MOTOR_STEPS;
+}
 
 void setupWifi() {
   WiFi.begin(WIFI_SSID, WIFI_PASS);
@@ -115,8 +136,6 @@ void setupTime() {
   sntp_init();
 }
 
-bool motorsCalibrating = true;
-
 void setupMotors() {
   stepMin.setMaxSpeed(MINS_CALIB_STEP_SPEED);
   stepMin.setAcceleration(200.0);
@@ -126,13 +145,13 @@ void setupMotors() {
   stepHour.setAcceleration(200.0);
   stepHour.setCurrentPosition(0);
 
-  // Do a calibration sweep
-  stepMin.moveTo(-MOTOR_STEPS*2);
-  stepHour.moveTo(MOTOR_STEPS*2);
+  startMotorCalibration();
 }
 
 void setupLEDs() {
   leds.Begin();
+  leds.ClearTo(offCol);
+  leds.Show();
 }
 
 void handleGeoTarget(char* topic, byte* payload, unsigned int length) {
@@ -221,20 +240,11 @@ void updateLEDs() {
   leds.Show();
 }
 
-void normalizeStepper(AccelStepper* stepper) {
-  long pos = stepper->currentPosition();
-  if (pos < 0 || pos >= MOTOR_STEPS) {
-    int mult = pos / MOTOR_STEPS;
-    stepper->setCurrentPosition((pos - mult * MOTOR_STEPS) % MOTOR_STEPS);
-  }
-}
-
 void moveCircular(AccelStepper* stepper, long steps) {
-    normalizeStepper(stepper);
-
+    // normalizeStepper(stepper);
     // Move Backwards if it's faster
     // long curPos = -stepper->currentPosition(); // -ve for clockwise correction
-    long newPos = steps % MOTOR_STEPS;
+    // long newPos = steps % MOTOR_STEPS;
     // if (newPos - curPos > MOTOR_STEPS/2) {
     //   newPos = MOTOR_STEPS - newPos;
     // }
@@ -242,7 +252,7 @@ void moveCircular(AccelStepper* stepper, long steps) {
     //   newPos += MOTOR_STEPS;
     // }
     
-    stepper->moveTo(-newPos); // -ve for clockwise correction
+    stepper->moveTo(normalizeStepCount(-steps)); // -ve for clockwise correction
 }
 
 void setTimezone(double latitude, double longitude) {
@@ -280,56 +290,68 @@ void updateTime() {
   now = localtime(&epoch);
 }
 
-struct StepperCalibration {
-  int hallSensorPin;
-  int lowestSeen;
-  int highestSeen;
-  int bestGuess;
-  int sensorMinsPos;
-  bool calibrated;
-  bool isMins;
-};
-RgbwColor calibrationCol(0, 128, 0, 0);
-struct StepperCalibration minsCalibrate = {.hallSensorPin = MINS_HALL_SENSOR_PIN, .lowestSeen = 10000, .highestSeen = 0, .bestGuess = 0, .sensorMinsPos = 360, .calibrated = false, .isMins = true};
-struct StepperCalibration hoursCalibrate = {.hallSensorPin = HOURS_HALL_SENSOR_PIN, .lowestSeen = 10000, .highestSeen = 0, .bestGuess = 0, .sensorMinsPos = 360, .calibrated = false, .isMins = false};
+int guessHomePosition(long cumulativeReadings[MOTOR_STEPS], int countReadings[MOTOR_STEPS]) {
+  int bestGuessPosFirst = 0;
+  int bestGuessPosLast = 0;
+  int lowestReading = 10000;
 
-bool calibrateMotorStep(AccelStepper* stepper, struct StepperCalibration* calibration) {
+  for (int pos = 0; pos < MOTOR_STEPS; pos++) {
+    if (countReadings[pos] == 0)
+      continue;
+
+    int val = (cumulativeReadings[pos] / countReadings[pos]) / HALL_QANTIZATION;
+    // Serial.print(calibration->isMins); Serial.print(","); Serial.print(pos); Serial.print(","); Serial.println(val);
+    if (val < lowestReading) {
+      lowestReading = val;
+      bestGuessPosFirst = pos;
+      bestGuessPosLast = pos;
+    } else if (val == lowestReading) {
+      bestGuessPosLast = pos;
+    }
+  }
+
+  return (bestGuessPosFirst + bestGuessPosLast) / 2;
+}
+
+void startMotorCalibration() {
+  minsCalibrate = {.cumulativeReadings = {}, .countReadings = {}, .calibrated = false, .isMins = true};
+  hoursCalibrate = {.cumulativeReadings = {}, .countReadings = {}, .calibrated = false, .isMins = false};
+  motorsCalibrating = true;
+
+  stepMin.moveTo(-MOTOR_STEPS*2);
+  stepHour.moveTo(MOTOR_STEPS*2);
+}
+
+bool calibrateMotorStep(AccelStepper* stepper, struct StepperCalibration* calibration, int pin, int sensorPos) {
   if (calibration->calibrated)
     return true;
 
-  int pos = stepper->currentPosition();
-  int hallReading = analogRead(calibration->hallSensorPin);
-  Serial.print(calibration->isMins); Serial.print(","); Serial.print(pos); Serial.print(","); Serial.println(hallReading);
-  if (hallReading > calibration->highestSeen) {
-    calibration->highestSeen = hallReading;
-  }
-  if (hallReading < calibration->lowestSeen) {
-    calibration->lowestSeen = hallReading;
-    calibration->bestGuess = pos;
-  }
+  int pos = normalizeStepCount(stepper->currentPosition());
+  int reading = analogRead(pin);
+  calibration->cumulativeReadings[pos] += reading;
+  calibration->countReadings[pos]++;
 
   if (stepper->isRunning())
     return false;
 
-  // minimum Hall Reading at 6 o'clock, so add MOTOR_STEPS/2
-  int actualPos = (pos + calibration->bestGuess + calibration->sensorMinsPos + MOTOR_STEPS) % MOTOR_STEPS;
+  int bestGuessPos = guessHomePosition(calibration->cumulativeReadings, calibration->countReadings);
+
+  int actualPos = normalizeStepCount(pos - bestGuessPos + sensorPos);
 
   stepper->setCurrentPosition(actualPos);
-  stepper->moveTo(calibration->sensorMinsPos);
+  stepper->moveTo(0);
   calibration->calibrated = true;
   return true;
 }
 
 void calibrateMotors() {
-  bool minsGood = calibrateMotorStep(&stepMin, &minsCalibrate);
-  bool hoursGood = calibrateMotorStep(&stepHour, &hoursCalibrate);
+  bool minsGood = calibrateMotorStep(&stepMin, &minsCalibrate, MINS_HALL_SENSOR_PIN, MINS_HALL_SENSOR_POS);
+  bool hoursGood = calibrateMotorStep(&stepHour, &hoursCalibrate, HOURS_HALL_SENSOR_PIN, HOURS_HALL_SENSOR_POS);
   if (minsGood && hoursGood) {
     Serial.println("Finished calibrating motors.");
     stepMin.setMaxSpeed(MINS_STEP_SPEED);
     stepHour.setMaxSpeed(HOURS_STEP_SPEED);
     motorsCalibrating = false;
-    leds.ClearTo(offCol);
-    leds.Show();
   }
 };
 
