@@ -1,4 +1,4 @@
-use <2d_points/2d_points.scad>;
+use <../../../vendor/openscad/2d_points/2d_points.scad>;
 
 t = 4;
 minuteInnerD = 1.8; // want 1.3
@@ -80,13 +80,13 @@ module hand(inner, outer, length, widthMultiplier = 1, minWidth = 1.2, tail = fa
 }
 
 $fn=100;
-/*difference() {
+difference() {
   hand(hourInnerD, hourOuterD, hourLength, 2.5, tail=true);
   translate([hourMagnet, 0, 0])
     cylinder(magnetH, d = magnetD);
   translate([-counterweightHourPos, 0, 0])
     cylinder(counterweightH, d = counterweightD);
-}*/
+}
 
 translate([0, -25, 0]) difference() {
   hand(minuteInnerD, minuteOuterD, minuteLength, 2.8, tail = true);
