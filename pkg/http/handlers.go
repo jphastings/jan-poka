@@ -2,15 +2,16 @@ package http
 
 import (
 	"encoding/json"
+	"io/ioutil"
+	"log"
+	"net/http"
+	"time"
+
 	"github.com/jphastings/jan-poka/pkg/common"
 	"github.com/jphastings/jan-poka/pkg/future"
 	"github.com/jphastings/jan-poka/pkg/l10n"
 	"github.com/jphastings/jan-poka/pkg/locator"
 	"github.com/jphastings/jan-poka/pkg/tracker"
-	"io/ioutil"
-	"log"
-	"net/http"
-	"time"
 )
 
 const resultTimeout = 5 * time.Second
@@ -76,7 +77,7 @@ func onTrackedChannel() (chan trackedResponse, common.OnTracked) {
 				return nil
 			}
 
-			summary := l10n.Phrase(details.Name, details.Bearing, details.UnobstructedDistance, false)
+			summary := l10n.Phrase(details, false)
 
 			resp := trackedResponse{
 				Name:                 details.Name,

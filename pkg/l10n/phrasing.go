@@ -2,8 +2,10 @@ package l10n
 
 import (
 	"fmt"
-	. "github.com/jphastings/jan-poka/pkg/math"
 	"math"
+
+	"github.com/jphastings/jan-poka/pkg/common"
+	. "github.com/jphastings/jan-poka/pkg/math"
 )
 
 const exactAngleTolerance = Degrees(5)
@@ -20,19 +22,33 @@ var conversationalElevation = map[bool]string{true: ", and %d degrees %s the hor
 var conversationalDir = map[bool]map[bool]string{true: aboveBelow, false: upDown}
 var conversationalAhead = map[bool]string{true: "", false: " dead ahead"}
 
-func Phrase(name string, bearing AERCoords, distance Meters, isFirstTrack bool) string {
+func Phrase(details common.TrackedDetails, isFirstTrack bool) string {
 	if isFirstTrack {
-		return fmt.Sprintf("Turn to face%s, and look%s. %s that way, you'll find %s.",
-			compassHeading(bearing.Azimuth),
-			elevation(bearing.Elevation, false),
-			Distance(distance),
-			name)
+		dayPart := "morning"
+		if details.LocalTime.Hour() >= 12 {
+			dayPart = "afternoon"
+		} else if details.LocalTime.Hour() >= 18 {
+			dayPart = "evening"
+		}
+
+		return fmt.Sprintf("Turn to face%s, and look%s. %s that way, you'll find %s, where it is %02d:%02d in the %s.",
+			compassHeading(details.Bearing.Azimuth),
+			elevation(details.Bearing.Elevation, false),
+			Distance(details.UnobstructedDistance),
+			details.Name,
+			details.LocalTime.Hour()%12,
+			details.LocalTime.Minute(),
+			dayPart,
+		)
 	} else {
-		return fmt.Sprintf("%s is%s%s, %s.",
-			name,
-			compassHeading(bearing.Azimuth),
-			elevation(bearing.Elevation, true),
-			Distance(distance))
+		return fmt.Sprintf("%s is%s%s, %s (now %02d:%02d).",
+			details.Name,
+			compassHeading(details.Bearing.Azimuth),
+			elevation(details.Bearing.Elevation, true),
+			Distance(details.UnobstructedDistance),
+			details.LocalTime.Hour(),
+			details.LocalTime.Minute(),
+		)
 	}
 }
 
