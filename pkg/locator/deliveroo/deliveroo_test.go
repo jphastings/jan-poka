@@ -2,17 +2,18 @@ package deliveroo
 
 import (
 	"bytes"
-	"github.com/jphastings/jan-poka/pkg/math"
 	"io/ioutil"
 	"net/http"
 	"reflect"
 	"testing"
+
+	"github.com/jphastings/jan-poka/pkg/math"
 )
 
 var (
 	orderDelivered = &http.Response{
 		StatusCode: http.StatusOK,
-		Body:       ioutil.NopCloser(bytes.NewBufferString(`{"data":{"attributes":{"message":"Your order took just 16 minutes. Enjoy!"}},"included":[{"id":"12345","type":"order","attributes":{"items":"Build your own + one more item","restaurant_name":"🏄Honi Poke - Angel🏄"}},{"id":"12345","type":"order_banner","attributes":{}}]}`)),
+		Body:       ioutil.NopCloser(bytes.NewBufferString(`{"data":{"attributes":{"message":"Your order took just 16 minutes. Enjoy!","is_completed":true}},"included":[{"id":"12345","type":"order","attributes":{"items":"Build your own + one more item","restaurant_name":"🏄Honi Poke - Angel🏄"}},{"id":"12345","type":"order_banner","attributes":{}}]}`)),
 		Header:     make(http.Header),
 	}
 	orderArriving = &http.Response{
@@ -41,10 +42,10 @@ func Test_config_Location(t *testing.T) {
 		response  *http.Response
 		wantLLA   math.LLACoords
 		wantName  string
-		wantRetry bool
+		wantFinal bool
 	}{
-		{"Arriving order", orderArriving, math.LLACoords{Latitude: 51.5, Longitude: -0.1}, "Thales is nearby", true},
-		{"Delivered order", orderDelivered, math.LLACoords{}, "", false},
+		{"Arriving order", orderArriving, math.LLACoords{Latitude: 51.5, Longitude: -0.1}, "Your order", false},
+		{"Delivered order", orderDelivered, math.LLACoords{}, "", true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -54,15 +55,15 @@ func Test_config_Location(t *testing.T) {
 				orderStatusURL: queryURL,
 			}
 
-			details, retry, _ := c.Location()
+			details := c.Location()
 			if !reflect.DeepEqual(details.Coords, tt.wantLLA) {
-				t.Errorf("Location() got = %v, want %v", details.Coords, tt.wantLLA)
+				t.Errorf("Location() got = %v, want = %v", details.Coords, tt.wantLLA)
 			}
 			if details.Name != tt.wantName {
-				t.Errorf("Location() got = %v, want %v", details.Name, tt.wantName)
+				t.Errorf("Location() got = %v, want = %v", details.Name, tt.wantName)
 			}
-			if retry != tt.wantRetry {
-				t.Errorf("Location() got = %v, want %v", retry, tt.wantRetry)
+			if details.Final != tt.wantFinal {
+				t.Errorf("Location() got = %v, want = %v", details.Final, tt.wantFinal)
 			}
 		})
 	}

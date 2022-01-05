@@ -1,4 +1,4 @@
-// +build !libnova
+//go:build !libnova
 
 package celestial
 

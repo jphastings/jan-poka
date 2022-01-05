@@ -2,8 +2,9 @@ package l10n
 
 import (
 	"fmt"
-	. "github.com/jphastings/jan-poka/pkg/math"
 	"math"
+
+	. "github.com/jphastings/jan-poka/pkg/math"
 )
 
 type rangedDistance struct {
@@ -63,11 +64,15 @@ func Distance(m Meters) string {
 		}
 	}
 
-	return fmt.Sprintf("%.0f%s %s", r.amount, frac, r.unit)
+	if r.amount == 0 && frac != "" {
+		return fmt.Sprintf("%s %s", frac, r.unit)
+	} else {
+		return fmt.Sprintf("%.0f%s %s", r.amount, frac, r.unit)
+	}
 }
 
 func isBetter(newRep numberRepresentation, oldRep numberRepresentation) bool {
-	return oldRep.amount < 20 && newRep.amount > 1
+	return newRep.amount >= 1
 }
 
 // Uses a heuristic for SI units for jumps
