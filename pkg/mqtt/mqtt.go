@@ -33,7 +33,7 @@ type Message struct {
 
 type SkyChange struct {
 	MinsDiff float32 `json:"m"`
-	SkyType  string  `json:"s"`
+	SkyType  uint8   `json:"s"`
 }
 
 type Config struct {
@@ -113,7 +113,7 @@ func convertSkyChanges(skyChanges []common.SkyChange) []SkyChange {
 
 		out = append(out, SkyChange{
 			MinsDiff: float32(minsDiff),
-			SkyType:  string(change.Sky),
+			SkyType:  uint8(change.Sky),
 		})
 	}
 	return out

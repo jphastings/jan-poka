@@ -28,11 +28,11 @@ type SkyChange struct {
 	Time time.Time
 }
 
-type SkyType string
+type SkyType uint8
 
 const (
-	SkyDay   = "day"
-	SkyCivil = "civil"
-	SkyAstro = "astro"
-	SkyNight = "night"
+	SkyDay SkyType = iota
+	SkyCivil
+	SkyAstro
+	SkyNight
 )

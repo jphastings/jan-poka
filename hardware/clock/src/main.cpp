@@ -1,3 +1,5 @@
+#define ARDUINOJSON_USE_DOUBLE 1
+
 #include <Arduino.h>
 #include <AccelStepper.h>
 #include <NeoPixelBus.h>
@@ -40,7 +42,7 @@
 #define MINS_STEPPER_B1 23
 #define MINS_STEPPER_B2 22
 #define MINS_HALL_SENSOR_PIN 35
-#define MINS_HALL_SENSOR_POS 360
+#define MINS_HALL_SENSOR_POS 356
 #define MINS_STEP_SPEED 200
 #define MINS_CALIB_STEP_SPEED 110
 
@@ -126,6 +128,7 @@ void updateMQTT() {
 }
 
 void setupMQTT() {
+  mqttClient.setBufferSize(1024);
   mqttClient.setServer(MQTT_HOST, MQTT_PORT);
   updateMQTT();
 }
@@ -167,13 +170,12 @@ void handleGeoTarget(char* topic, byte* payload, unsigned int length) {
     strTerminationPos = length;
   }
   
-  // Second, we add the string termination code at the end of the payload and we convert it to a String object
+  // Second, we add the string termination code at the end of the payload
   payload[strTerminationPos] = '\0';
-  String payloadStr((char*)payload);
   /* end */
 
-  StaticJsonDocument<512> doc;
-  DeserializationError err = deserializeJson(doc, payload);
+  StaticJsonDocument<1024> doc;
+  DeserializationError err = deserializeJson(doc, payload, strTerminationPos + 1);
   if (err != DeserializationError::Ok) {
     Serial.print("Unsuccessful at parsing MQTT JSON: ");
     Serial.println(err.c_str());
