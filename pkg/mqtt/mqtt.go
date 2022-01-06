@@ -3,11 +3,12 @@ package mqtt
 import (
 	"encoding/json"
 	"fmt"
+	"log"
+	"time"
+
 	"github.com/denisbrodbeck/machineid"
 	"github.com/jphastings/jan-poka/pkg/common"
 	"github.com/jphastings/jan-poka/pkg/future"
-	"log"
-	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
@@ -22,6 +23,17 @@ type Message struct {
 	CalculatedElevation       float32 `json:"ele"`
 	CalculatedRange           float32 `json:"rng"`
 	CalculatedSurfaceDistance float32 `json:"dst"`
+
+	LocalTime       string `json:"tim"`
+	UTCOffsetInMins int16  `json:"utc"`
+	DSTOffsetInMins int16  `json:"sum"`
+	// Returns a map of the minutes since local midnight to the names of the sky type after that time. (Starts with 'now' and goes to 24 hours after)
+	SkyChanges []SkyChange `json:"sky"`
+}
+
+type SkyChange struct {
+	MinsDiff float32
+	SkyType  string
 }
 
 type Config struct {
@@ -66,6 +78,8 @@ func (s *Config) tokenOk(token mqtt.Token) error {
 }
 
 func (s *Config) TrackerCallback(details common.TrackedDetails) future.Future {
+	_, offsetSecs := details.LocalTime.Zone()
+
 	return future.Exec(func() error {
 		msg := Message{
 			TargetLatitude:            float32(details.Target.Latitude),
@@ -75,6 +89,11 @@ func (s *Config) TrackerCallback(details common.TrackedDetails) future.Future {
 			CalculatedElevation:       float32(details.Bearing.Elevation),
 			CalculatedRange:           float32(details.Bearing.Range),
 			CalculatedSurfaceDistance: float32(details.UnobstructedDistance),
+
+			LocalTime:       details.LocalTime.Format("15:04:05"),
+			UTCOffsetInMins: int16(offsetSecs / 60),
+			DSTOffsetInMins: 0, // TODO
+			SkyChanges:      convertSkyChanges(details.SkyChanges),
 		}
 		enc, err := json.Marshal(msg)
 		if err != nil {
@@ -82,4 +101,20 @@ func (s *Config) TrackerCallback(details common.TrackedDetails) future.Future {
 		}
 		return s.tokenOk(s.client.Publish(s.topic, 0, false, enc))
 	})
+}
+
+func convertSkyChanges(skyChanges []common.SkyChange) []SkyChange {
+	t := skyChanges[0].Time
+	localMidnight := time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location())
+
+	var out []SkyChange
+	for _, change := range skyChanges {
+		minsDiff := change.Time.Sub(localMidnight).Minutes()
+
+		out = append(out, SkyChange{
+			MinsDiff: float32(minsDiff),
+			SkyType:  string(change.Sky),
+		})
+	}
+	return out
 }
