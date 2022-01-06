@@ -8,8 +8,10 @@ COPY go.sum .
 RUN go mod download
 
 COPY . .
-RUN go install -tags 'libnova' github.com/jphastings/jan-poka/cmd/...
+RUN go install -mod=mod -tags 'libnova' github.com/jphastings/jan-poka/cmd/...
 
+# TODO: build a statically linked version
+#RUN go install -mod=mod -ldflags="-extldflags=-static" -tags 'libnova' github.com/jphastings/jan-poka/cmd/...
 #FROM scratch
 #COPY --from=builder /go/bin/controller /bin/controller
 

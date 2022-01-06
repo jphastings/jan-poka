@@ -32,8 +32,8 @@ type Message struct {
 }
 
 type SkyChange struct {
-	MinsDiff float32
-	SkyType  string
+	MinsDiff float32 `json:"m"`
+	SkyType  string  `json:"s"`
 }
 
 type Config struct {
