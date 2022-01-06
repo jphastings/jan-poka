@@ -9,10 +9,11 @@ require (
 	github.com/eclipse/paho.mqtt.golang v1.3.5
 	github.com/faiface/beep v1.1.0
 	github.com/grandcat/zeroconf v1.0.0
+	github.com/jphastings/twilight v0.0.0-20220105232159-e161b52941ca
 	github.com/kellydunn/golang-geo v0.7.0
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/onsi/ginkgo v1.11.0
-	github.com/onsi/gomega v1.8.1
+	github.com/onsi/ginkgo v1.16.5
+	github.com/onsi/gomega v1.17.0
 	github.com/twuillemin/modes v0.4.0
 	google.golang.org/api v0.63.0
 	google.golang.org/genproto v0.0.0-20211223182754-3ac035c7e7cb
@@ -20,7 +21,15 @@ require (
 )
 
 require (
-	cloud.google.com/go v0.99.0 // indirect
+	github.com/iancoleman/strcase v0.2.0 // indirect
+	github.com/lyft/protoc-gen-star v0.5.3 // indirect
+	github.com/nxadm/tail v1.4.8 // indirect
+	github.com/spf13/afero v1.6.0 // indirect
+	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616 // indirect
+)
+
+require (
+	cloud.google.com/go v0.100.2 // indirect
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
 	github.com/census-instrumentation/opencensus-proto v0.3.0 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
@@ -29,7 +38,7 @@ require (
 	github.com/envoyproxy/go-control-plane v0.10.1 // indirect
 	github.com/envoyproxy/protoc-gen-validate v0.6.2 // indirect
 	github.com/erikstmartin/go-testdb v0.0.0-20160219214506-8d10e4a1bae5 // indirect
-	github.com/fsnotify/fsnotify v1.4.9 // indirect
+	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/go-cmp v0.5.6 // indirect
@@ -43,6 +52,7 @@ require (
 	github.com/miekg/dns v1.1.45 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/ziutek/mymysql v1.5.4 // indirect
+	github.com/zsefvlol/timezonemapper v1.0.0
 	go.opencensus.io v0.23.0 // indirect
 	golang.org/x/exp v0.0.0-20220104160115-025e73f80486 // indirect
 	golang.org/x/image v0.0.0-20211028202545-6944b10bf410 // indirect
@@ -60,5 +70,5 @@ require (
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/fsnotify.v1 v1.4.7 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
-	gopkg.in/yaml.v2 v2.2.4 // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 )

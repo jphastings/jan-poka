@@ -18,19 +18,21 @@ type TrackedDetails struct {
 	UnobstructedDistance math.Meters
 	LocalTime            time.Time
 	// An ordered list of things which happen in the next 24 hours at the target (eg. sunrise, twilight, weather conditions)
-	DayEvents []DayEvent
+	SkyChanges []SkyChange
 
 	IsFirstTrack bool
 }
 
-type DayEvent struct {
-	Type DayEventType
+type SkyChange struct {
+	Sky  SkyType
 	Time time.Time
 }
 
-type DayEventType string
+type SkyType string
 
 const (
-	DayEventSunrise DayEventType = "sunrise"
-	DayEventSunset  DayEventType = "sunset"
+	SkyDay   = "day"
+	SkyCivil = "civil"
+	SkyAstro = "astro"
+	SkyNight = "night"
 )

@@ -2,11 +2,13 @@ package tracker
 
 import (
 	"fmt"
+	"sync"
+	"time"
+
 	"github.com/jphastings/jan-poka/pkg/common"
 	"github.com/jphastings/jan-poka/pkg/locator"
 	"github.com/jphastings/jan-poka/pkg/math"
-	"sync"
-	"time"
+	"github.com/jphastings/jan-poka/pkg/temporal"
 )
 
 const (
@@ -55,6 +57,12 @@ func (track *Config) Track() {
 				Bearing:              bearing,
 				UnobstructedDistance: unobstructedDistance,
 				IsFirstTrack:         isFirstTrack,
+			}
+
+			localTime, skyChanges, err := temporal.LocalTimeAndSkiesAt(details.Coords)
+			if err == nil {
+				trackedDetails.LocalTime = localTime
+				trackedDetails.SkyChanges = skyChanges
 			}
 
 			callbacks := make(map[string]common.OnTracked)
