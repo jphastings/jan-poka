@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <Container version="2">
     <Name>Jan Poka: Controller</Name>
+    <Beta>true</Beta>
     <Repository>ghcr.io/jphastings/jan-poka</Repository>
     <Registry>https://github.com/orgs/jphastings/packages/container/package/jan-poka</Registry>
     <Network>bridge</Network>
