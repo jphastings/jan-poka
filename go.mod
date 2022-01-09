@@ -9,7 +9,6 @@ require (
 	github.com/eclipse/paho.mqtt.golang v1.3.5
 	github.com/faiface/beep v1.1.0
 	github.com/grandcat/zeroconf v1.0.0
-	github.com/jphastings/twilight v0.0.0-20220105232159-e161b52941ca
 	github.com/kellydunn/golang-geo v0.7.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/onsi/ginkgo v1.16.5
@@ -22,22 +21,11 @@ require (
 
 require (
 	cloud.google.com/go/compute v0.1.0 // indirect
-	github.com/iancoleman/strcase v0.2.0 // indirect
-	github.com/lyft/protoc-gen-star v0.5.3 // indirect
 	github.com/nxadm/tail v1.4.8 // indirect
-	github.com/spf13/afero v1.6.0 // indirect
-	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616 // indirect
 )
 
 require (
-	cloud.google.com/go v0.100.2 // indirect
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
-	github.com/census-instrumentation/opencensus-proto v0.3.0 // indirect
-	github.com/cespare/xxhash/v2 v2.1.2 // indirect
-	github.com/cncf/udpa/go v0.0.0-20210930031921-04548b0d99d4 // indirect
-	github.com/cncf/xds/go v0.0.0-20211216145620-d92e9ce0af51 // indirect
-	github.com/envoyproxy/go-control-plane v0.10.1 // indirect
-	github.com/envoyproxy/protoc-gen-validate v0.6.2 // indirect
 	github.com/erikstmartin/go-testdb v0.0.0-20160219214506-8d10e4a1bae5 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
@@ -47,7 +35,6 @@ require (
 	github.com/googleapis/gax-go/v2 v2.1.1 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/hajimehoshi/oto v1.0.1 // indirect
-	github.com/hpcloud/tail v1.0.0 // indirect
 	github.com/kylelemons/go-gypsy v1.0.0 // indirect
 	github.com/lib/pq v1.10.4 // indirect
 	github.com/miekg/dns v1.1.45 // indirect
@@ -69,7 +56,6 @@ require (
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/grpc v1.43.0 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
-	gopkg.in/fsnotify.v1 v1.4.7 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
