@@ -5,18 +5,12 @@ import (
 	"log"
 )
 
-func announce(port int) {
+func announce(port int) func() {
 	announceSrv, err := zeroconf.Register("Jan-Poka", "_http._tcp", "local.", port, []string{"txtv=0", "lo=1", "la=2"}, nil)
 	if err != nil {
 		log.Printf("✋ Bonjour could not start: %v\n", err.Error())
+		return func() {}
 	}
-	_ = announceSrv
 
-	// TODO: Ensure the Bonjour annouce is ended when the app closes
-	//sig := make(chan os.Signal, 1)
-	//signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
-	//select {
-	//case <-sig:
-	//	announceSrv.Shutdown()
-	//}
+	return func() { announceSrv.Shutdown() }
 }

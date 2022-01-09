@@ -8,15 +8,18 @@
 
 #define APP_NAME "jan-poka:mapper"
 #define ONE_ROTATION_STEPS 8192
+#define POWER_OFF_DELAY 2000
+#define MAX_SPEED 8192
+#define ACCELERATION 8192
+#define MANAGED_SPEED false
 
-int INNER_DIR = 14; // D5
-int INNER_STP = 12; // D6
-int OUTER_DIR = 5;  // D1
-int OUTER_STP = 4;  // D2
-int DISABLE   = 16; // D0
-int BOOTING   = 2;  // D4
-
-int MAX_SPEED = 9000;
+int INNER_DIR     = 14; // D5
+int INNER_STP     = 13; // D7
+int INNER_DISABLE = 12; // D6
+int OUTER_DIR     = 4;  // D2
+int OUTER_STP     = 5;  // D1
+int OUTER_DISABLE = 16; // D0
+int BOOTING       = 2;  // D4
 
 WiFiClient wifiClient;
 PubSubClient mqttClient(wifiClient);
@@ -28,13 +31,17 @@ void setup() {
   Serial.begin(115200);
   pinMode(BOOTING, OUTPUT);
   digitalWrite(BOOTING, HIGH);
-  pinMode(DISABLE, OUTPUT);
-  digitalWrite(DISABLE, HIGH);
+  pinMode(INNER_DISABLE, OUTPUT);
+  digitalWrite(INNER_DISABLE, LOW);
+  pinMode(OUTER_DISABLE, OUTPUT);
+  digitalWrite(OUTER_DISABLE, LOW);
 
   mqttClient.setServer(MQTT_HOST, MQTT_PORT);
 
   inner.setMaxSpeed(MAX_SPEED);
   outer.setMaxSpeed(MAX_SPEED);
+  inner.setAcceleration(ACCELERATION);
+  outer.setAcceleration(ACCELERATION);
 
   mqttConnectionLoop();
   Serial.println("\nBooted");
@@ -46,6 +53,7 @@ void mqttConnectionLoop() {
     if (!mqttClient.connect(APP_NAME, MQTT_USER, MQTT_PASS)) {
       Serial.println("Failed to connect to MQTT broker");
       // TODO: Backoff
+      delay(1000);
       return;
     }
     Serial.println("MQTT connected");
@@ -66,7 +74,7 @@ void handleGeoTarget(char* topic, byte* payload, unsigned int length) {
   } else {
     strTerminationPos = length;
   }
-  
+
   // Second, we add the string termination code at the end of the payload and we convert it to a String object
   payload[strTerminationPos] = '\0';
   String payloadStr((char*)payload);
@@ -83,34 +91,61 @@ void handleGeoTarget(char* topic, byte* payload, unsigned int length) {
 }
 
 void goTo(double azimuth, double elevation) {
-  double zRotate = azimuth / 180.0;
-  double xyRotate = elevation / 270.0;
+  double zRotate = -fmod(azimuth / 360, 1);
+  double xyRotate = -fmod(elevation / 360, 1);
   long innerRotation = floor(zRotate * ONE_ROTATION_STEPS);
-  long outerRotation = floor((xyRotate - 2 * zRotate) * ONE_ROTATION_STEPS);
+  long outerRotation = floor((zRotate + xyRotate) * ONE_ROTATION_STEPS);
 
-  long stepsForInner = innerRotation - inner.currentPosition();
-  long stepsForOuter = outerRotation - outer.currentPosition();
+  long stepsForInner;
+  long stepsForOuter;
+  if (MANAGED_SPEED) {
+    stepsForInner = innerRotation - inner.currentPosition();
+    stepsForOuter = outerRotation - outer.currentPosition();
+  }
 
   inner.moveTo(innerRotation);
   outer.moveTo(outerRotation);
 
-  double innerSpeed = MAX_SPEED;
-  double outerSpeed = MAX_SPEED;
-  if (stepsForInner > stepsForOuter) {
-    outerSpeed = innerSpeed * stepsForInner / stepsForOuter;
-  } else {
-    innerSpeed = outerSpeed * stepsForOuter / stepsForInner;
+  if (MANAGED_SPEED) {
+    double innerSpeed = MAX_SPEED;
+    double outerSpeed = MAX_SPEED;
+    if (stepsForInner > stepsForOuter) {
+      outerSpeed = innerSpeed * stepsForInner / stepsForOuter;
+    } else {
+      innerSpeed = outerSpeed * stepsForOuter / stepsForInner;
+    }
+  
+    inner.setSpeed(innerSpeed);
+    outer.setSpeed(outerSpeed);
   }
-
-  inner.setSpeed(innerSpeed);
-  outer.setSpeed(outerSpeed);
 }
+
+unsigned long powerOffAt = 0;
+bool wasMoving = false;
 
 void loop() {
   bool noMove = inner.distanceToGo() == 0 && outer.distanceToGo() == 0;
-  digitalWrite(DISABLE, noMove ? HIGH : LOW);
+  if (noMove) {
+    if (powerOffAt == 0 && wasMoving) {
+      powerOffAt = millis() + POWER_OFF_DELAY;
+    } else if (millis() >= powerOffAt && wasMoving) {
+      digitalWrite(INNER_DISABLE, HIGH);
+      digitalWrite(OUTER_DISABLE, HIGH);
+      powerOffAt = 0;
+      wasMoving = false;
+    }
+  } else {
+    digitalWrite(INNER_DISABLE, LOW);
+    digitalWrite(OUTER_DISABLE, LOW);
+    wasMoving = true;
+  }
   
-  inner.runSpeedToPosition();
-  outer.runSpeedToPosition();
+  if (MANAGED_SPEED) {
+    inner.runSpeedToPosition();
+    outer.runSpeedToPosition();
+  } else {
+    inner.run();
+    outer.run();
+  }
   mqttConnectionLoop();
 }

@@ -23,11 +23,13 @@ type Config struct {
 }
 
 func New(home math.LLACoords, callbacks map[string]common.OnTracked) *Config {
-	return &Config{
+	c := &Config{
 		home:      home,
 		callbacks: callbacks,
 		Targets:   make(chan *locator.TargetInstructions, 1),
 	}
+
+	return c
 }
 
 func (track *Config) Track() {

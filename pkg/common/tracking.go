@@ -15,6 +15,7 @@ type TrackedDetails struct {
 	AccurateAt           time.Time
 	Target               math.LLACoords
 	Bearing              math.AERCoords
+	MapperLengths        map[int]WallPos
 	UnobstructedDistance math.Meters
 	LocalTime            time.Time
 

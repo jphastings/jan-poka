@@ -1,6 +1,9 @@
 package env
 
 import (
+	"os/user"
+	"path/filepath"
+	"strings"
 	"time"
 
 	. "github.com/jphastings/jan-poka/pkg/math"
@@ -16,13 +19,16 @@ type Config struct {
 	HomeLongitude Degrees `required:"true"`
 	HomeAltitude  Meters  `required:"true"`
 
-	UseLog   bool `default:"true"`
-	UseAudio bool `default:"false"`
+	UseLog    bool `default:"true"`
+	UseAudio  bool `default:"false"`
+	UseMapper bool `default:"false"`
 
 	MQTTBroker   string `default:"mqtt.local:1883"`
 	MQTTUsername string `default:"jan-poka"`
 	MQTTPassword string `default:""`
 	MQTTTopic    string `default:"home/geo/target"`
+
+	Persistence string `default:"~/.jan-poka"`
 
 	TCPTimeout time.Duration `default:"1s"`
 
@@ -45,6 +51,14 @@ func ParseEnv() (Config, error) {
 		Latitude:  env.HomeLatitude,
 		Longitude: env.HomeLongitude,
 		Altitude:  env.HomeAltitude,
+	}
+
+	if strings.HasPrefix(env.Persistence, "~/") {
+		usr, err := user.Current()
+		if err != nil {
+			return env, err
+		}
+		env.Persistence = filepath.Join(usr.HomeDir, env.Persistence[2:])
 	}
 
 	return env, nil
