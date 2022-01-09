@@ -96,6 +96,6 @@ func (s *Config) TrackerCallback(details common.TrackedDetails) future.Future {
 		if err != nil {
 			return err
 		}
-		return s.tokenOk(s.client.Publish(s.topic, 0, false, enc))
+		return s.tokenOk(s.client.Publish(s.topic, 0, true, enc))
 	})
 }
