@@ -1,10 +1,10 @@
 #include <Arduino.h>
 #include <AccelStepper.h>
-#include <WiFi.h>
+#include <WiFiManager.h>
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
 #include <math.h>
-#include "vars.h";
+#include "vars.h"
 
 #define APP_NAME "jan-poka:pointer"
 #define ONE_ROTATION_STEPS 8192
@@ -24,6 +24,22 @@ PubSubClient mqttClient(wifiClient);
 AccelStepper inner = AccelStepper(AccelStepper::DRIVER, INNER_STP, INNER_DIR);
 AccelStepper outer = AccelStepper(AccelStepper::DRIVER, OUTER_STP, OUTER_DIR);
 
+void mqttConnectionLoop();
+void handleGeoTarget(char*, byte*, unsigned int);
+void goTo(double, double);
+
+void setupWifi() {
+  WiFi.begin(WIFI_SSID, WIFI_PASS);
+
+  Serial.print("Connecting to WiFi");
+  while (WiFi.status() != WL_CONNECTED)
+  {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println();
+}
+
 void setup() {
   Serial.begin(115200);
   pinMode(BOOTING, OUTPUT);
@@ -31,6 +47,9 @@ void setup() {
   pinMode(DISABLE, OUTPUT);
   digitalWrite(DISABLE, HIGH);
 
+  setupWifi();
+
+  mqttClient.setBufferSize(1024);
   mqttClient.setServer(MQTT_HOST, MQTT_PORT);
 
   inner.setMaxSpeed(MAX_SPEED);
@@ -44,8 +63,9 @@ void setup() {
 void mqttConnectionLoop() {
   if (!mqttClient.connected()) {
     if (!mqttClient.connect(APP_NAME, MQTT_USER, MQTT_PASS)) {
+      Serial.print(MQTT_USER); Serial.print(":"); Serial.println(MQTT_PASS);
       Serial.println("Failed to connect to MQTT broker");
-      // TODO: Backoff
+      delay(1000);
       return;
     }
     Serial.println("MQTT connected");
@@ -79,6 +99,8 @@ void handleGeoTarget(char* topic, byte* payload, unsigned int length) {
     Serial.println(err.f_str());
     return;
   }
+
+  Serial.print("Moving to: "); Serial.print(jsonDoc["lat"].as<double>()); Serial.print(",");  Serial.println(jsonDoc["lng"].as<double>()); 
   goTo(jsonDoc["azi"], jsonDoc["ele"]);
 }
 
