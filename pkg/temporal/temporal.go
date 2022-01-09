@@ -7,7 +7,7 @@ import (
 	"github.com/zsefvlol/timezonemapper"
 )
 
-func LocalTimeAndSkiesAt(coords math.LLACoords) (time.Time, error) {
+func LocalTime(coords math.LLACoords) (time.Time, error) {
 	now := time.Now()
 
 	tz := timezonemapper.LatLngToTimezoneString(float64(coords.Latitude), float64(coords.Longitude))

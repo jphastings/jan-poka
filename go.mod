@@ -15,12 +15,13 @@ require (
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.17.0
 	github.com/twuillemin/modes v0.4.0
-	google.golang.org/api v0.63.0
+	google.golang.org/api v0.64.0
 	google.golang.org/genproto v0.0.0-20211223182754-3ac035c7e7cb
 	googlemaps.github.io/maps v1.3.2
 )
 
 require (
+	cloud.google.com/go/compute v0.1.0 // indirect
 	github.com/iancoleman/strcase v0.2.0 // indirect
 	github.com/lyft/protoc-gen-star v0.5.3 // indirect
 	github.com/nxadm/tail v1.4.8 // indirect

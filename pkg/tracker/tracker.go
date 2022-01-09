@@ -59,7 +59,7 @@ func (track *Config) Track() {
 				IsFirstTrack:         isFirstTrack,
 			}
 
-			localTime, skyChanges, err := temporal.LocalTime(details.Coords)
+			localTime, err := temporal.LocalTime(details.Coords)
 			if err == nil {
 				trackedDetails.LocalTime = localTime
 			}

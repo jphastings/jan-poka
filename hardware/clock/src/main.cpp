@@ -60,8 +60,8 @@ int lastUpdated = -1;
 SunSet sun;
 RgbwColor dayCol(128, 64, 0, 128);
 RgbwColor civilCol(128, 0, 64, 64);
-RgbwColor astroCol(0, 0, 128, 32);
-RgbwColor nightCol(0, 0, 18, 0);
+RgbwColor astroCol(0, 0, 192, 16);
+RgbwColor nightCol(0, 0, 255, 0);
 RgbwColor offCol(0,0,0,0);
 
 typedef struct {
