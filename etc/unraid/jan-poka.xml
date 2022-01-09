@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <Container version="2">
-    <Name>Jan Poka: Controller</Name>
+    <Name>Jan-Poka-controller</Name>
     <Beta>true</Beta>
     <Repository>ghcr.io/jphastings/jan-poka</Repository>
     <Registry>https://github.com/orgs/jphastings/packages/container/package/jan-poka</Registry>
@@ -26,5 +26,5 @@
     <Config Name="MQTT Username" Target="JP_MQTTUSERNAME" Default="" Description="The username to use while connecting to MQTT" Type="Variable" Display="always" Required="true" Mask="false"/>
     <Config Name="MQTT Password" Target="JP_MQTTPASSWORD" Default="" Description="The password to use while connecting to MQTT" Type="Variable" Display="always" Required="true" Mask="true"/>
 
-    <Config Name="Google Places API key" Target="JP_GOOGLEMAPSAPIKEY" Default="" Description="To allow Google Places searches this must be a Google API key with access to the Places and Elevation APIs" Type="Variable" Display="always" Required="false" Mask="false"/>
+    <Config Name="Google Places API key" Target="JP_GOOGLEMAPSAPIKEY" Default="" Description="To allow Google Places searches this must be a Google API key with access to the Places and Elevation APIs" Type="Variable" Display="always" Required="false" Mask="true"/>
 </Container>
