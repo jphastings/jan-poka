@@ -24,16 +24,16 @@ type Message struct {
 	CalculatedRange           float32 `json:"rng"`
 	CalculatedSurfaceDistance float32 `json:"dst"`
 
-	LocalTime       string `json:"tim"`
-	UTCOffsetInMins int16  `json:"utc"`
-	DSTOffsetInMins int16  `json:"sum"`
+	LocalTime       string `json:"time"`
+	UTCOffsetInMins int16  `json:"tutc"`
+	DSTOffsetInMins int16  `json:"tdst"`
 	// Returns a map of the minutes since local midnight to the names of the sky type after that time. (Starts with 'now' and goes to 24 hours after)
 	SkyChanges []SkyChange `json:"sky"`
 }
 
 type SkyChange struct {
-	MinsDiff float32 `json:"m"`
-	SkyType  uint8   `json:"s"`
+	DaysFromNow float32 `json:"d"`
+	SkyType     uint8   `json:"s"`
 }
 
 type Config struct {
@@ -104,16 +104,15 @@ func (s *Config) TrackerCallback(details common.TrackedDetails) future.Future {
 }
 
 func convertSkyChanges(skyChanges []common.SkyChange) []SkyChange {
-	t := skyChanges[0].Time
-	localMidnight := time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location())
+	now := skyChanges[0].Time
 
 	var out []SkyChange
 	for _, change := range skyChanges {
-		minsDiff := change.Time.Sub(localMidnight).Minutes()
+		minsDiff := change.Time.Sub(now).Hours() / 24.0
 
 		out = append(out, SkyChange{
-			MinsDiff: float32(minsDiff),
-			SkyType:  uint8(change.Sky),
+			DaysFromNow: float32(minsDiff),
+			SkyType:     uint8(change.Sky),
 		})
 	}
 	return out
