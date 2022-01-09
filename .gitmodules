@@ -7,3 +7,6 @@
 [submodule "ext/openscad/2d_points"]
 	path = ext/openscad/2d_points
 	url = git@github.com:sadr0b0t/2d_points.git
+[submodule "ext/openscad/parametric-pulley"]
+	path = ext/openscad/parametric-pulley
+	url = git@github.com:rbuckland/openscad.parametric-pulley.git
