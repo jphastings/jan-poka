@@ -10,6 +10,7 @@
 #include <time.h>
 #include <sys/time.h>
 #include <esp_sntp.h>
+#include <sunset.h>
 #include "vars.h"
 
 #define APP_NAME "jan-poka:clock"
@@ -22,7 +23,7 @@
 #define LED_FADE_AT LED_COUNT/3
 #define LED_OFF_AT LED_COUNT*2/3
 #define LED_MINS 12 * 60 / (float) LED_COUNT
-#define UPDATE_FREQ_S 10
+#define UPDATE_FREQ_S 15
 
 // Pins
 #define LED_DATA_PIN 27
@@ -57,13 +58,22 @@ time_t epoch;
 struct tm *now;
 int lastUpdated = -1;
 
-int sunriseMins = -1;
-int sunsetMins = -1;
-
-// TODO: Pick good colours; include Warm White?
+SunSet sun;
 RgbwColor dayCol(128, 64, 0, 128);
-RgbwColor nightCol(0, 0, 128, 0);
-RgbwColor offCol(0, 0, 0, 0);
+RgbwColor civilCol(128, 0, 64, 64);
+RgbwColor astroCol(0, 0, 128, 32);
+RgbwColor nightCol(0, 0, 18, 0);
+RgbwColor offCol(0,0,0,0);
+
+typedef struct {
+  int minutesAfterMidnight;
+  RgbwColor col;
+} SkyChange;
+
+#define SKY_CHANGE_COUNT 10
+typedef struct {
+  SkyChange changes[SKY_CHANGE_COUNT];
+} SkyChanges;
 
 struct StepperCalibration {
   long cumulativeReadings[MOTOR_STEPS];
@@ -85,18 +95,17 @@ void updateTime();
 void updateClock();
 void updateMotors();
 void updateLEDs();
-void updateMQTT();
+void loopMQTT();
+void loopClock();
 
 void handleGeoTarget(char*, byte*, unsigned int);
 bool steppersMoving();
 void calibrateMotors();
-void setSunriseAndSunset(String, String);
 int timeToDayMins(int, int);
 void startMotorCalibration();
 
 int updatedInt();
-bool noNeedToUpdate();
-void setTimezone(double, double);
+void setTimezone(double, double, int, int);
 void normalizeStepper(AccelStepper*);
 void moveCircular(AccelStepper*, long);
 
@@ -114,7 +123,7 @@ void setupWifi() {
   }
 }
 
-void updateMQTT() {
+void loopMQTT() {
   if (!mqttClient.connected()) {
     if (!mqttClient.connect(APP_NAME, MQTT_USER, MQTT_PASS)) {
       Serial.println("Failed to connect to MQTT broker");
@@ -122,7 +131,10 @@ void updateMQTT() {
       return;
     }
     mqttClient.setCallback(handleGeoTarget);
-    mqttClient.subscribe(MQTT_TOPIC);
+    if (!mqttClient.subscribe(MQTT_TOPIC, 0)) {
+      Serial.println("Failed to subscribe to the geo target topic");
+      return;
+    }
   }
   mqttClient.loop();
 }
@@ -130,7 +142,7 @@ void updateMQTT() {
 void setupMQTT() {
   mqttClient.setBufferSize(1024);
   mqttClient.setServer(MQTT_HOST, MQTT_PORT);
-  updateMQTT();
+  loopMQTT();
 }
 
 void setupTime() {
@@ -181,16 +193,11 @@ void handleGeoTarget(char* topic, byte* payload, unsigned int length) {
     Serial.println(err.c_str());
     return;
   }
-  setTimezone(doc["lat"], doc["lng"]);
+  setTimezone(doc["lat"], doc["lng"], doc["tutc"], doc["tdst"]);
 }
 
 bool steppersMoving() {
   return stepMin.distanceToGo() != 0 || stepHour.distanceToGo() != 0;
-}
-
-void setSunriseAndSunset(String sunriseStr, String sunsetStr) {
-  sunriseMins = timeToDayMins(sunriseStr.substring(11, 13).toInt(), sunriseStr.substring(14, 16).toInt());
-  sunsetMins = timeToDayMins(sunsetStr.substring(11, 13).toInt(), sunsetStr.substring(14, 16).toInt());
 }
 
 int timeToDayMins(int hours, int mins) {
@@ -198,7 +205,7 @@ int timeToDayMins(int hours, int mins) {
 }
 
 void updateClock() {
-  if (now == 0 || sunsetMins == -1 || sunriseMins == -1 || steppersMoving() || noNeedToUpdate())
+  if (now == 0 || steppersMoving() || motorsCalibrating)
     return;
 
   Serial.print("Setting time to: "); Serial.print(now->tm_hour); Serial.print(":"); Serial.print(now->tm_min); Serial.print(":"); Serial.println(now->tm_sec);
@@ -209,12 +216,14 @@ void updateClock() {
   lastUpdated = updatedInt();
 }
 
-int updatedInt() {
-  return (now->tm_min * 60 + now->tm_sec) / UPDATE_FREQ_S;
+void loopClock() {
+  if (lastUpdated == updatedInt())
+    return;
+  updateClock();
 }
 
-bool noNeedToUpdate() {
-  return motorsCalibrating || lastUpdated == updatedInt();
+int updatedInt() {
+  return (now->tm_min * 60 + now->tm_sec) / UPDATE_FREQ_S;
 }
 
 void updateMotors() {
@@ -222,16 +231,68 @@ void updateMotors() {
   moveCircular(&stepHour, (now->tm_hour + now->tm_min/60.0) * HOURS_STEPS);
 }
 
+
+SkyChanges calculateSkyChanges() {
+  SkyChanges s;
+
+  // Set the sky type for midnight; will be dark unless there was no sunset yesterday
+  now->tm_mday--;
+  sun.setCurrentDate(now->tm_year, now->tm_mon, now->tm_mday);
+  now->tm_mday++;
+  s.changes[0].minutesAfterMidnight = 0;
+  s.changes[0].col = (sun.calcSunset() == 0) ? dayCol : nightCol;
+
+  sun.setCurrentDate(now->tm_year, now->tm_mon, now->tm_mday);
+  s.changes[1].minutesAfterMidnight = sun.calcAstronomicalSunrise();
+  s.changes[1].col = astroCol;
+  s.changes[2].minutesAfterMidnight = sun.calcCivilSunrise();
+  s.changes[2].col = civilCol;
+  s.changes[3].minutesAfterMidnight = sun.calcSunrise();
+  s.changes[3].col = dayCol;
+  s.changes[4].minutesAfterMidnight = sun.calcSunset();
+  s.changes[4].col = civilCol;
+  s.changes[5].minutesAfterMidnight = sun.calcCivilSunset();
+  s.changes[5].col = astroCol;
+  s.changes[6].minutesAfterMidnight = sun.calcAstronomicalSunset();
+  s.changes[6].col = nightCol;
+
+  now->tm_mday++;
+  sun.setCurrentDate(now->tm_year, now->tm_mon, now->tm_mday);
+  now->tm_mday--;
+  s.changes[7].minutesAfterMidnight = 24 * 60 + sun.calcAstronomicalSunrise();
+  s.changes[7].col = astroCol;
+  s.changes[8].minutesAfterMidnight = 24 * 60 + sun.calcCivilSunrise();
+  s.changes[8].col = civilCol;
+  s.changes[9].minutesAfterMidnight = 24 * 60 + sun.calcSunrise();
+  s.changes[9].col = dayCol;
+
+  return s;
+}
+
+RgbwColor colAtMins(SkyChanges s, int minsAfterMidnight) {
+  RgbwColor col = s.changes[0].col;
+
+  for (int i = 1; i < SKY_CHANGE_COUNT; i++) {
+    if (minsAfterMidnight < s.changes[i].minutesAfterMidnight) {
+      return col;
+    }
+    col = s.changes[i].col;
+  }
+
+  return col;
+}
+
 void updateLEDs() {
   int nowMins = timeToDayMins(now->tm_hour, now->tm_min);
   // The time in minutes now, scaled to fit into the number of LEDs, offset by half as 0th pixel is at 6 o'clock
   int nowPos = (nowMins * LED_COUNT / (12 * 60) + (LED_COUNT / 2)) % LED_COUNT;
 
+  SkyChanges skyChanges = calculateSkyChanges();
+
   leds.ClearTo(offCol);
   for (int i = 0; i < LED_OFF_AT; i++) {
     int iMins = (int)(i*LED_MINS + nowMins) % (24 * 60);
-    bool nightTime = iMins < sunriseMins || iMins >= sunsetMins;
-    RgbwColor col = nightTime ? nightCol : dayCol;
+    RgbwColor col = colAtMins(skyChanges, iMins);
 
     float fadeAmount = (i < LED_FADE_AT) ? 0 : ((i - LED_FADE_AT) / (float)(LED_OFF_AT - LED_FADE_AT));
     col = RgbwColor::LinearBlend(col, offCol, fadeAmount);
@@ -257,33 +318,10 @@ void moveCircular(AccelStepper* stepper, long steps) {
     stepper->moveTo(normalizeStepCount(-steps)); // -ve for clockwise correction
 }
 
-void setTimezone(double latitude, double longitude) {
-  Serial.print("Setting timezone for: ");
-    Serial.print(latitude);
-    Serial.print(", ");
-    Serial.println(longitude);
-
-  char url[255];
-  sprintf(url, TIMEZONE_QUERY, latitude, longitude);
-  
-  HTTPClient httpClient;
-  httpClient.useHTTP10(true);
-  httpClient.begin(wifiClient, url);
-  httpClient.GET();
-  
-  StaticJsonDocument<512> doc;
-  DeserializationError err = deserializeJson(doc, httpClient.getStream());
-  if (err != DeserializationError::Ok) {
-    Serial.print("Grabbing timezone details failed: ");
-    Serial.println(err.c_str());
-    return;
-  }
-
-  // TODO: Deal with DST
-  configTime(doc["rawOffset"].as<float>() * 3600, 0, NTP_SERVER);
-  setSunriseAndSunset(doc["sunrise"], doc["sunset"]);
-
-  httpClient.end();
+void setTimezone(double latitude, double longitude, int utcOffsetMins, int dstOffsetMins) {
+  Serial.print("Setting timezone offsets. UTC: "); Serial.print(utcOffsetMins); Serial.print(", DST: "); Serial.println(dstOffsetMins);
+  sun.setPosition(latitude, longitude, (utcOffsetMins + dstOffsetMins) / 60.0);
+  configTime(utcOffsetMins * 60, dstOffsetMins * 60, NTP_SERVER);
   updateClock();
 }
 
@@ -377,6 +415,6 @@ void loop() {
   if (motorsCalibrating)
     calibrateMotors();
   
-  updateClock();
-  updateMQTT();
+  loopClock();
+  loopMQTT();
 }

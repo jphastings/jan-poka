@@ -27,8 +27,6 @@ type Message struct {
 	LocalTime       string `json:"time"`
 	UTCOffsetInMins int16  `json:"tutc"`
 	DSTOffsetInMins int16  `json:"tdst"`
-	// Returns a map of the minutes since local midnight to the names of the sky type after that time. (Starts with 'now' and goes to 24 hours after)
-	SkyChanges []SkyChange `json:"sky"`
 }
 
 type SkyChange struct {
@@ -93,7 +91,6 @@ func (s *Config) TrackerCallback(details common.TrackedDetails) future.Future {
 			LocalTime:       details.LocalTime.Format("15:04:05"),
 			UTCOffsetInMins: int16(offsetSecs / 60),
 			DSTOffsetInMins: 0, // TODO
-			SkyChanges:      convertSkyChanges(details.SkyChanges),
 		}
 		enc, err := json.Marshal(msg)
 		if err != nil {
@@ -101,20 +98,4 @@ func (s *Config) TrackerCallback(details common.TrackedDetails) future.Future {
 		}
 		return s.tokenOk(s.client.Publish(s.topic, 0, false, enc))
 	})
-}
-
-func convertSkyChanges(skyChanges []common.SkyChange) []SkyChange {
-	now := skyChanges[0].Time
-	localMidnight := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
-
-	var out []SkyChange
-	for _, change := range skyChanges {
-		minsDiff := change.Time.Sub(localMidnight).Hours() / 24.0
-
-		out = append(out, SkyChange{
-			DaysFromMidnight: float32(minsDiff),
-			SkyType:          uint8(change.Sky),
-		})
-	}
-	return out
 }

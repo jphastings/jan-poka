@@ -17,22 +17,6 @@ type TrackedDetails struct {
 	Bearing              math.AERCoords
 	UnobstructedDistance math.Meters
 	LocalTime            time.Time
-	// An ordered list of things which happen in the next 24 hours at the target (eg. sunrise, twilight, weather conditions)
-	SkyChanges []SkyChange
 
 	IsFirstTrack bool
 }
-
-type SkyChange struct {
-	Sky  SkyType
-	Time time.Time
-}
-
-type SkyType uint8
-
-const (
-	SkyDay SkyType = iota
-	SkyCivil
-	SkyAstro
-	SkyNight
-)

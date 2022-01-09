@@ -59,10 +59,9 @@ func (track *Config) Track() {
 				IsFirstTrack:         isFirstTrack,
 			}
 
-			localTime, skyChanges, err := temporal.LocalTimeAndSkiesAt(details.Coords)
+			localTime, skyChanges, err := temporal.LocalTime(details.Coords)
 			if err == nil {
 				trackedDetails.LocalTime = localTime
-				trackedDetails.SkyChanges = skyChanges
 			}
 
 			callbacks := make(map[string]common.OnTracked)
