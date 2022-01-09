@@ -1,6 +1,9 @@
-[submodule "vendor/openscad/MCAD"]
-	path = vendor/openscad/MCAD
+[submodule "ext/openscad/MCAD"]
+	path = ext/openscad/MCAD
 	url = git@github.com:openscad/MCAD.git
-[submodule "vendor/openscad/PolyGear"]
-	path = vendor/openscad/PolyGear
+[submodule "ext/openscad/PolyGear"]
+	path = ext/openscad/PolyGear
 	url = git@github.com:dpellegr/PolyGear.git
+[submodule "ext/openscad/2d_points"]
+	path = ext/openscad/2d_points
+	url = git@github.com:sadr0b0t/2d_points.git

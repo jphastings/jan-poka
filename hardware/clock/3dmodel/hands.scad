@@ -1,4 +1,4 @@
-use <../../../vendor/openscad/2d_points/2d_points.scad>;
+use <../../../ext/openscad/2d_points/2d_points.scad>;
 
 t = 4;
 minuteInnerD = 1.8; // want 1.3

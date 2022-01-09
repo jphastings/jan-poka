@@ -1,9 +1,9 @@
-use <../../../vendor/openscad/hardware/rods.scad>;
-use <../../../vendor/openscad/hardware/screws.scad>;
-use <../../../vendor/openscad/hardware/gt2.scad>;
-use <../../../vendor/openscad/MCAD/motors.scad>;
-use <../../../vendor/openscad/MCAD/stepper.scad>;
-use <../../../vendor/openscad/PolyGear/PolyGear.scad>;
+use <../../../ext/openscad/hardware/rods.scad>;
+use <../../../ext/openscad/hardware/screws.scad>;
+use <../../../ext/openscad/hardware/gt2.scad>;
+use <../../../ext/openscad/MCAD/motors.scad>;
+use <../../../ext/openscad/MCAD/stepper.scad>;
+use <../../../ext/openscad/PolyGear/PolyGear.scad>;
 
 $fn=25;
 if (!$preview) {

@@ -7,6 +7,7 @@ require (
 	github.com/ahmdrz/goinsta/v2 v2.4.5
 	github.com/denisbrodbeck/machineid v1.0.1
 	github.com/eclipse/paho.mqtt.golang v1.3.5
+	github.com/eiannone/keyboard v0.0.0-20200508000154-caf4b762e807
 	github.com/faiface/beep v1.1.0
 	github.com/grandcat/zeroconf v1.0.0
 	github.com/kellydunn/golang-geo v0.7.0
@@ -14,6 +15,8 @@ require (
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.17.0
 	github.com/twuillemin/modes v0.4.0
+	github.com/wroge/wgs84 v1.1.2
+	gocv.io/x/gocv v0.29.0
 	google.golang.org/api v0.64.0
 	google.golang.org/genproto v0.0.0-20211223182754-3ac035c7e7cb
 	googlemaps.github.io/maps v1.3.2

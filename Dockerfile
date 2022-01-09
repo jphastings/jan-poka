@@ -9,7 +9,7 @@ RUN go mod download
 
 COPY . .
 
-RUN mkdir -p bin/ && cd bin/ && go build -mod=mod -tags 'libnova' github.com/jphastings/jan-poka/cmd/...
+RUN mkdir -p bin/ && cd bin/ && go build -tags 'libnova' github.com/jphastings/jan-poka/cmd/...
 
 FROM debian:bullseye-slim
 COPY --from=builder /go/src/github.com/jphastings/jan-poka/bin/controller /usr/bin/

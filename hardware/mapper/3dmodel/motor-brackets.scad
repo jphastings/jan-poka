@@ -1,7 +1,7 @@
-use <../../../vendor/openscad/hardware/rods.scad>;
-use <../../../vendor/openscad/hardware/screws.scad>;
-use <../../../vendor/openscad/MCAD/motors.scad>;
-use <../../../vendor/openscad/MCAD/stepper.scad>;
+use <../../../ext/openscad/hardware/rods.scad>;
+use <../../../ext/openscad/hardware/screws.scad>;
+use <../../../ext/openscad/MCAD/motors.scad>;
+use <../../../ext/openscad/MCAD/stepper.scad>;
 
 $fn=25;
 
