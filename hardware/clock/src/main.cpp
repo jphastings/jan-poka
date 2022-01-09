@@ -14,7 +14,6 @@
 #include "vars.h"
 
 #define APP_NAME "jan-poka:clock"
-#define TIMEZONE_QUERY "http://api.geonames.org/timezoneJSON?lat=%f&lng=%f&username=jphastings"
 #define NTP_SERVER "time.google.com"
 #define MOTOR_STEPS 720
 #define MINS_STEPS MOTOR_STEPS / 60.0
