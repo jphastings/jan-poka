@@ -32,8 +32,8 @@ type Message struct {
 }
 
 type SkyChange struct {
-	DaysFromNow float32 `json:"d"`
-	SkyType     uint8   `json:"s"`
+	DaysFromMidnight float32 `json:"d"`
+	SkyType          uint8   `json:"s"`
 }
 
 type Config struct {
@@ -105,14 +105,15 @@ func (s *Config) TrackerCallback(details common.TrackedDetails) future.Future {
 
 func convertSkyChanges(skyChanges []common.SkyChange) []SkyChange {
 	now := skyChanges[0].Time
+	localMidnight := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
 
 	var out []SkyChange
 	for _, change := range skyChanges {
-		minsDiff := change.Time.Sub(now).Hours() / 24.0
+		minsDiff := change.Time.Sub(localMidnight).Hours() / 24.0
 
 		out = append(out, SkyChange{
-			DaysFromNow: float32(minsDiff),
-			SkyType:     uint8(change.Sky),
+			DaysFromMidnight: float32(minsDiff),
+			SkyType:          uint8(change.Sky),
 		})
 	}
 	return out
