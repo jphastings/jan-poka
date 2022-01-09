@@ -1,6 +1,7 @@
-#include <WiFiManager.h>
-#include <PubSubClient.h>
+#include <Arduino.h>
 #include <AccelStepper.h>
+#include <WiFi.h>
+#include <PubSubClient.h>
 #include <ArduinoJson.h>
 #include <math.h>
 #include "vars.h";
