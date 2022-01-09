@@ -15,12 +15,12 @@
     <Project>https://github.com/jphastings/jan-poka/</Project>
     <Overview>Jan Poka is a suite of tools for controlling custom internet-of-things devices that help make your distant friends around the world feel closer. This 'controller' service handles API requests and publishes MQTT directives to the connected devices.</Overview>
     <TemplateURL>https://raw.githubusercontent.com/jphastings/jan-poka/master/etc/unraid/jan-poka.xml</TemplateURL>
-    <Icon>ttps://raw.githubusercontent.com/jphastings/jan-poka/master/etc/icon.png</Icon>
+    <Icon>https://raw.githubusercontent.com/jphastings/jan-poka/master/etc/icon.png</Icon>
     <Config Name="API Port" Target="2678" Default="2678" Mode="tcp" Description="API service port" Type="Port" Display="always" Required="true" Mask="false"/>
     
-    <Config Name="Latitude" Target="JP_HOMELATITUDE" Default="" Description="Your &ldquo;home&rdquo; latitude" Type="Variable" Display="always" Required="true" Mask="false"/>
-    <Config Name="Longitude" Target="JP_HOMELONGITUDE" Default="" Description="Your &ldquo;home&rdquo; longitude" Type="Variable" Display="always" Required="true" Mask="false"/>
-    <Config Name="Altitude" Target="JP_HOMEALTITUDE" Default="0" Description="Your &ldquo;home&rdquo; altitude in meters above seal level" Type="Variable" Display="advanced" Required="false" Mask="false"/>
+    <Config Name="Latitude" Target="JP_HOMELATITUDE" Default="" Description="Your 'home' latitude" Type="Variable" Display="always" Required="true" Mask="false"/>
+    <Config Name="Longitude" Target="JP_HOMELONGITUDE" Default="" Description="Your 'home' longitude" Type="Variable" Display="always" Required="true" Mask="false"/>
+    <Config Name="Altitude" Target="JP_HOMEALTITUDE" Default="0" Description="Your 'home' altitude in meters above seal level" Type="Variable" Display="advanced" Required="false" Mask="false"/>
 
     <Config Name="MQTT Broker" Target="JP_MQTTBROKER" Default="mqtt.local:1883" Description="MQTT broker to use (host:port)" Type="Variable" Display="always" Required="true" Mask="false"/>
     <Config Name="MQTT Username" Target="JP_MQTTUSERNAME" Default="" Description="The username to use while connecting to MQTT" Type="Variable" Display="always" Required="true" Mask="false"/>
