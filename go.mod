@@ -5,17 +5,16 @@ go 1.17
 require (
 	cloud.google.com/go/texttospeech v1.1.0
 	github.com/ahmdrz/goinsta/v2 v2.4.5
-	github.com/denisbrodbeck/machineid v1.0.1
-	github.com/eclipse/paho.mqtt.golang v1.3.5
 	github.com/eiannone/keyboard v0.0.0-20200508000154-caf4b762e807
 	github.com/faiface/beep v1.1.0
-	github.com/grandcat/zeroconf v1.0.0
 	github.com/kellydunn/golang-geo v0.7.0
 	github.com/kelseyhightower/envconfig v1.4.0
+	github.com/mochi-co/mqtt v1.0.1
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.17.0
 	github.com/twuillemin/modes v0.4.0
 	github.com/wroge/wgs84 v1.1.2
+	go.etcd.io/bbolt v1.3.3
 	gocv.io/x/gocv v0.29.0
 	google.golang.org/api v0.64.0
 	google.golang.org/genproto v0.0.0-20211223182754-3ac035c7e7cb
@@ -24,11 +23,13 @@ require (
 
 require (
 	cloud.google.com/go/compute v0.1.0 // indirect
+	github.com/asdine/storm v2.1.2+incompatible // indirect
+	github.com/asdine/storm/v3 v3.1.0 // indirect
 	github.com/nxadm/tail v1.4.8 // indirect
+	github.com/rs/xid v1.2.1 // indirect
 )
 
 require (
-	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
 	github.com/erikstmartin/go-testdb v0.0.0-20160219214506-8d10e4a1bae5 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
@@ -38,6 +39,7 @@ require (
 	github.com/googleapis/gax-go/v2 v2.1.1 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/hajimehoshi/oto v1.0.1 // indirect
+	github.com/hashicorp/mdns v1.0.5
 	github.com/kylelemons/go-gypsy v1.0.0 // indirect
 	github.com/lib/pq v1.10.4 // indirect
 	github.com/miekg/dns v1.1.45 // indirect

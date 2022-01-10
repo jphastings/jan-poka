@@ -2,16 +2,16 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"os/user"
+	"path/filepath"
+	"strings"
+
 	"github.com/eiannone/keyboard"
 	"github.com/jphastings/jan-poka/pkg/common"
 	"github.com/jphastings/jan-poka/pkg/output/mapper"
 	"github.com/jphastings/jan-poka/pkg/output/mqtt"
 	"github.com/kelseyhightower/envconfig"
-	"log"
-	"os/user"
-	"path/filepath"
-	"strings"
-	"time"
 )
 
 const (
@@ -26,12 +26,7 @@ var (
 // TODO: Use a subset of env.Config?
 
 type MQTTEnv struct {
-	MQTTBroker   string `default:"mqtt.local:1883"`
-	MQTTUsername string `default:"jan-poka"`
-	MQTTPassword string `default:""`
-	MQTTTopic    string `default:"home/geo/target"`
-
-	TCPTimeout time.Duration `default:"1s"`
+	MQTTPort int `default:"1883"`
 
 	Persistence string `default:"~/.jan-poka"`
 }
@@ -54,13 +49,7 @@ func main() {
 		environment.Persistence = filepath.Join(usr.HomeDir, environment.Persistence[2:])
 	}
 
-	pub, err = mqtt.New(
-		environment.MQTTBroker,
-		environment.MQTTUsername,
-		environment.MQTTPassword,
-		environment.MQTTTopic,
-		environment.TCPTimeout,
-	)
+	pub, err = mqtt.New(environment.MQTTPort, environment.Persistence)
 	check(err)
 
 	check(keyboard.Open())
@@ -116,7 +105,6 @@ func phaseAddMaps(configRoot string) error {
 	if len(m.Mappers) >= 1 {
 		mapper = m.Mappers[0]
 	}
-
 
 	for mapID := range mapper.Maps {
 		// TODO: How to georeference?

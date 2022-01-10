@@ -21,7 +21,7 @@ func handleFocus(track *tracker.Config) http.Handler {
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			log.Println(err)
+			log.Printf("⚠️ Returned HTTP 500: %v\n", err)
 			return
 		}
 		target, err := locator.DecodeJSON(body)

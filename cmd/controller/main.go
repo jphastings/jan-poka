@@ -2,6 +2,9 @@ package main
 
 import (
 	"fmt"
+	"github.com/jphastings/jan-poka/pkg/output/mqtt"
+	"log"
+
 	"github.com/jphastings/jan-poka/pkg/common"
 	"github.com/jphastings/jan-poka/pkg/env"
 	"github.com/jphastings/jan-poka/pkg/future"
@@ -9,11 +12,8 @@ import (
 	"github.com/jphastings/jan-poka/pkg/l10n"
 	"github.com/jphastings/jan-poka/pkg/output/mapper"
 	"github.com/jphastings/jan-poka/pkg/output/webmapper"
+	"github.com/jphastings/jan-poka/pkg/shutdown"
 	"github.com/jphastings/jan-poka/pkg/tracker"
-	"log"
-	"os"
-	"os/signal"
-	"syscall"
 )
 
 var environment env.Config
@@ -25,15 +25,16 @@ type configurable struct {
 }
 
 var configurables = []configurable{
-	{"Mapper", func() bool { return environment.UseMapper }, configureMapper},
-	{"Logging", func() bool { return environment.UseLog }, configureLogging},
+	{"Tracker: Logging", func() bool { return environment.UseLog }, configureLogging},
+	{"Tracker: MQTT", func() bool { return true }, configureMQTT},
+	{"Tracker: Mapper", func() bool { return environment.UseMapper }, configureMapper},
 }
 
 func init() {
 	var err error
 	environment, err = env.ParseEnv()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("🛑 Could not prepare environment: %s\n", err)
 	}
 }
 
@@ -44,12 +45,9 @@ func main() {
 	go track.Track()
 
 	fmt.Printf("Jan Poka is ready. Home is (%.2f,%.2f), %.0fm above sea level.\n", environment.Home.Latitude, environment.Home.Longitude, environment.Home.Altitude)
-	shutdown := http.WebAPI(environment.Port, track, environment.UseMapper)
+	http.WebAPI(environment.Port, track, environment.UseMapper)
 
-	sig := make(chan os.Signal)
-	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
-	<-sig
-	shutdown()
+	shutdown.Await()
 }
 
 func configureLogging() (common.OnTracked, error) {
@@ -67,6 +65,15 @@ func configureMapper() (common.OnTracked, error) {
 		return future.All(m.TrackerCallback(details),
 			webmapper.TrackerCallback(details))
 	}, nil
+}
+
+func configureMQTT() (common.OnTracked, error) {
+	pub, err := mqtt.New(environment.MQTTPort, environment.Persistence)
+	if err != nil {
+		return nil, err
+	}
+
+	return pub.TrackerCallback, nil
 }
 
 func configureModules() map[string]common.OnTracked {

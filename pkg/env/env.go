@@ -1,6 +1,7 @@
 package env
 
 import (
+	"os"
 	"os/user"
 	"path/filepath"
 	"strings"
@@ -23,10 +24,7 @@ type Config struct {
 	UseAudio  bool `default:"false"`
 	UseMapper bool `default:"false"`
 
-	MQTTBroker   string `default:"mqtt.local:1883"`
-	MQTTUsername string `default:"jan-poka"`
-	MQTTPassword string `default:""`
-	MQTTTopic    string `default:"home/geo/target"`
+	MQTTPort int `default:"1883"`
 
 	Persistence string `default:"~/.jan-poka"`
 
@@ -59,6 +57,11 @@ func ParseEnv() (Config, error) {
 			return env, err
 		}
 		env.Persistence = filepath.Join(usr.HomeDir, env.Persistence[2:])
+		if s, sErr := os.Stat(env.Persistence); os.IsNotExist(sErr) || !s.IsDir() {
+			if mkErr := os.Mkdir(env.Persistence, 0755); mkErr != nil {
+				return env, mkErr
+			}
+		}
 	}
 
 	return env, nil

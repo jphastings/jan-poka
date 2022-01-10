@@ -19,4 +19,7 @@ RUN apt-get update && apt-get install -y libnova-0.16-0
 ENV JP_PORT 2678
 EXPOSE 2678
 
+ENV JP_MQTTPORT 1883
+EXPOSE 1883
+
 CMD ["/usr/bin/controller"]

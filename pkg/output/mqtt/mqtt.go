@@ -3,15 +3,19 @@ package mqtt
 import (
 	"encoding/json"
 	"fmt"
-	"log"
-	"time"
-
-	"github.com/denisbrodbeck/machineid"
 	"github.com/jphastings/jan-poka/pkg/common"
 	"github.com/jphastings/jan-poka/pkg/future"
-
-	mqtt "github.com/eclipse/paho.mqtt.golang"
+	"github.com/jphastings/jan-poka/pkg/mdns"
+	"github.com/jphastings/jan-poka/pkg/shutdown"
+	mqtt "github.com/mochi-co/mqtt/server"
+	"github.com/mochi-co/mqtt/server/listeners"
+	"github.com/mochi-co/mqtt/server/persistence/bolt"
+	"go.etcd.io/bbolt"
+	"path/filepath"
+	"time"
 )
+
+const Topic = "home/geo/target"
 
 // Message will be interpreted by microcontrollers. Keep JSON keys at 8 or fewer characters.
 type Message struct {
@@ -40,50 +44,45 @@ type Lengths struct {
 	Right float32 `json:"r"`
 }
 
-type SkyChange struct {
-	DaysFromMidnight float32 `json:"d"`
-	SkyType          uint8   `json:"s"`
-}
-
 type Config struct {
-	client  mqtt.Client
-	topic   string
-	timeout time.Duration
+	server *mqtt.Server
 }
 
-func New(broker, username, password, topic string, timeout time.Duration) (*Config, error) {
-	opts := mqtt.NewClientOptions()
-	opts.AddBroker(fmt.Sprintf("tcp://%s", broker))
-	opts.SetClientID(clientID())
-	opts.SetUsername(username)
-	opts.SetPassword(password)
-
-	opts.OnConnect = func(mqtt.Client) { log.Println("Connected to MQTT") }
-	opts.OnConnectionLost = func(_ mqtt.Client, err error) { log.Printf("MQTT connection lost: %v\n", err) }
-
-	client := mqtt.NewClient(opts)
-	s := &Config{
-		client:  client,
-		topic:   topic,
-		timeout: timeout,
+func New(port int, persistence string) (*Config, error) {
+	if port == 0 {
+		// This is because mqtt doesn't expose the Port in its internal tcp listener
+		return nil, fmt.Errorf("MQTT subsystem cannot select a random free port")
 	}
-	return s, s.tokenOk(client.Connect())
-}
 
-// clientID generates a unique ID for MQTT to use (as only one client of each name can exist on a server at once)
-func clientID() string {
-	uid, err := machineid.ID()
+	server := mqtt.New()
+	tcp := listeners.NewTCP("tcp", fmt.Sprintf(":%d", port))
+	err := server.AddListener(tcp, &listeners.Config{Auth: ReadOnlyAuth})
 	if err != nil {
-		uid = "unknown-machine-id"
+		return nil, err
 	}
-	return fmt.Sprintf("jan-poka:publisher:%s", uid)
+
+	if persistence != "" {
+		db := bolt.New(filepath.Join(persistence, "mqtt.db"), &bbolt.Options{
+			Timeout: 500 * time.Millisecond,
+		})
+		if err := server.AddStore(db); err != nil {
+			return nil, err
+		}
+	}
+
+	shutdown.Ensure("MQTT server", server.Close)
+	if err := server.Serve(); err != nil {
+		return nil, err
+	}
+	if _, err := mdns.Register("_mqtt._tcp", port); err != nil {
+		return nil, err
+	}
+
+	return &Config{server: server}, nil
 }
 
-func (c *Config) tokenOk(token mqtt.Token) error {
-	if token.WaitTimeout(c.timeout) && token.Error() != nil {
-		return token.Error()
-	}
-	return nil
+func (c *Config) Close() {
+	c.server.Close()
 }
 
 func (c *Config) TrackerCallback(details common.TrackedDetails) future.Future {
@@ -115,7 +114,7 @@ func (c *Config) Publish(msg Message) future.Future {
 		if err != nil {
 			return err
 		}
-		return c.tokenOk(c.client.Publish(c.topic, 0, true, enc))
+		return c.server.Publish(Topic, enc, true)
 	})
 }
 

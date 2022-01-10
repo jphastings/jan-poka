@@ -3,11 +3,14 @@ package http
 import (
 	"context"
 	"fmt"
-	"github.com/jphastings/jan-poka/pkg/output/webmapper"
-	"github.com/jphastings/jan-poka/pkg/tracker"
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/jphastings/jan-poka/pkg/mdns"
+	"github.com/jphastings/jan-poka/pkg/output/webmapper"
+	"github.com/jphastings/jan-poka/pkg/shutdown"
+	"github.com/jphastings/jan-poka/pkg/tracker"
 )
 
 const (
@@ -17,7 +20,7 @@ const (
 	shutdownTimeout = 20 * time.Second
 )
 
-func WebAPI(port uint16, track *tracker.Config, includeMapper bool) func() {
+func WebAPI(port uint16, track *tracker.Config, includeMapper bool) {
 	router := http.NewServeMux()
 
 	router.Handle("/focus", handleFocus(track))
@@ -34,8 +37,14 @@ func WebAPI(port uint16, track *tracker.Config, includeMapper bool) func() {
 		IdleTimeout:  idleTimeout,
 	}
 
-	webserver.RegisterOnShutdown(announce(int(port)))
+	shutdownMDNS, _ := mdns.Register("_http._tcp", int(port))
+	webserver.RegisterOnShutdown(func() {
+		if err := shutdownMDNS(); err != nil {
+			log.Printf("⚠️ Failed to shutdown mDNS server for HTTP: %v", err)
+		}
+	})
 
+	shutdown.Ensure("Webserver", func() error { return webserver.Shutdown(context.Background()) })
 	go func() {
 		for {
 			err := webserver.ListenAndServe()
@@ -45,10 +54,4 @@ func WebAPI(port uint16, track *tracker.Config, includeMapper bool) func() {
 			log.Printf("😱 Webserver died, attempting to restart: %v\n", err)
 		}
 	}()
-
-	return func() {
-		log.Printf("🥱 Shutting down web server…")
-		ctx, _ := context.WithTimeout(context.Background(), shutdownTimeout)
-		_ = webserver.Shutdown(ctx)
-	}
 }
