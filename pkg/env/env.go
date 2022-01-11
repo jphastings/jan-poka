@@ -1,14 +1,15 @@
 package env
 
 import (
+	_ "embed"
 	"os"
 	"os/user"
 	"path/filepath"
 	"strings"
 	"time"
 
+	janpoka "github.com/jphastings/jan-poka"
 	. "github.com/jphastings/jan-poka/pkg/math"
-
 	"github.com/kelseyhightower/envconfig"
 )
 
@@ -36,6 +37,8 @@ type Config struct {
 	Dump1090Host      string
 
 	Home LLACoords `ignored:"true"`
+
+	Version string `ignored:"true"`
 }
 
 func ParseEnv() (Config, error) {
@@ -44,6 +47,8 @@ func ParseEnv() (Config, error) {
 	if err != nil {
 		return env, err
 	}
+
+	env.Version = janpoka.Version
 
 	env.Home = LLACoords{
 		Latitude:  env.HomeLatitude,

@@ -6,12 +6,16 @@
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
 #include <HTTPClient.h>
+#include <ESPmDNS.h>
 #include <WiFi.h>
+#include <WiFiManager.h>
 #include <time.h>
 #include <sys/time.h>
 #include <esp_sntp.h>
 #include <sunset.h>
-#include "vars.h"
+
+#define MQTT_TOPIC "home/geo/target"
+#define MDNS_TARGET "Jan Poka"
 
 #define APP_NAME "jan-poka:clock"
 #define NTP_SERVER "time.google.com"
@@ -84,7 +88,7 @@ struct StepperCalibration minsCalibrate;
 struct StepperCalibration hoursCalibrate;
 bool motorsCalibrating;
 
-void setupWifi();
+void setupWifi(bool);
 void setupMQTT();
 void setupTime();
 void setupMotors();
@@ -115,18 +119,42 @@ int normalizeStepCount(int pos) {
   return pos % MOTOR_STEPS;
 }
 
-void setupWifi() {
-  WiFi.begin(WIFI_SSID, WIFI_PASS);
-  while(WiFi.status()!=WL_CONNECTED) {
-    delay(1);
+void setupWifi(bool setLeds) {
+  // Show LEDs; it shows WHIte at FIve, geddit?
+  if (setLeds) {
+    int wiFiveOclock = 11*LED_COUNT/12 - 2;
+    leds.SetPixelColor(wiFiveOclock, RgbwColor(128,128,128,128));
+    leds.Show();
+  }
+
+  // Connect to WiFi
+  WiFi.mode(WIFI_STA);
+  WiFiManager wifiManager;
+  bool success = wifiManager.autoConnect(APP_NAME);
+  if(!success) {
+      Serial.println("Failed to connect using WiFi manager");
+  } else {
+      Serial.println("Connected using WiFi manager");
+  }
+
+  // Start mDNS
+  if(mdns_init() != ESP_OK) {
+    Serial.println("mDNS failed to start");
+    return;
+  }
+
+  // Stop showing LEDs
+  if (setLeds) {
+    leds.ClearTo(offCol);
+    leds.Show();
   }
 }
 
 void loopMQTT() {
   if (!mqttClient.connected()) {
-    if (!mqttClient.connect(APP_NAME, MQTT_USER, MQTT_PASS)) {
+    // TODO: Pick random name for username
+    if (!mqttClient.connect(APP_NAME, "clock", "")) {
       Serial.println("Failed to connect to MQTT broker");
-      // TODO: Backoff
       return;
     }
     mqttClient.setCallback(handleGeoTarget);
@@ -140,9 +168,40 @@ void loopMQTT() {
 
 void setupMQTT() {
   mqttClient.setBufferSize(1024);
-  mqttClient.setServer(MQTT_HOST, MQTT_PORT);
-  loopMQTT();
+
+  IPAddress ip;
+  uint16_t port = 0;
+
+  while (true) {
+    int countServices = MDNS.queryService("_jan_poka_mqtt", "_tcp");
+    if (countServices == 0) {
+      Serial.println("No Jan Poka MQTT services visible over mDNS. Please turn on Jan Poka controller.");
+      delay(500);
+      continue;
+    }
+    
+    if (countServices > 1) {
+      Serial.println("More than one Jan Poka controller was found, using the first.");
+    }
+    
+    ip = MDNS.IP(0);
+    port = MDNS.port(0);
+
+    if (port != 0) {
+      break;
+    }
+
+    Serial.println("mDNS returned a service with invalid port, trying again");
+    delay(500);
+  }
+
+
+  Serial.print(ip); Serial.print(":"); Serial.println(port);
+  // mqttClient.setServer(ip, port);
+
+  // loopMQTT();
 }
+
 
 void setupTime() {
   sntp_setoperatingmode(SNTP_OPMODE_POLL);
@@ -396,12 +455,12 @@ void calibrateMotors() {
 
 void setup() {
   Serial.begin(115200);
-  
-  setupWifi();
-  setupMotors();
+
   setupLEDs();
-  setupTime();
+  setupWifi(true);
   setupMQTT();
+  setupMotors();
+  setupTime();
   Serial.println("Booted");
 }
 

@@ -3,6 +3,9 @@ package mqtt
 import (
 	"encoding/json"
 	"fmt"
+	"path/filepath"
+	"time"
+
 	"github.com/jphastings/jan-poka/pkg/common"
 	"github.com/jphastings/jan-poka/pkg/future"
 	"github.com/jphastings/jan-poka/pkg/mdns"
@@ -11,8 +14,6 @@ import (
 	"github.com/mochi-co/mqtt/server/listeners"
 	"github.com/mochi-co/mqtt/server/persistence/bolt"
 	"go.etcd.io/bbolt"
-	"path/filepath"
-	"time"
 )
 
 const Topic = "home/geo/target"
@@ -74,7 +75,7 @@ func New(port int, persistence string) (*Config, error) {
 	if err := server.Serve(); err != nil {
 		return nil, err
 	}
-	if _, err := mdns.Register("_mqtt._tcp", port); err != nil {
+	if _, err := mdns.Register("MQTT", "_jan_poka_mqtt._tcp", port); err != nil {
 		return nil, err
 	}
 

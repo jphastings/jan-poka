@@ -37,7 +37,7 @@ func WebAPI(port uint16, track *tracker.Config, includeMapper bool) {
 		IdleTimeout:  idleTimeout,
 	}
 
-	shutdownMDNS, _ := mdns.Register("_http._tcp", int(port))
+	shutdownMDNS, _ := mdns.Register("API", "_http._tcp", int(port))
 	webserver.RegisterOnShutdown(func() {
 		if err := shutdownMDNS(); err != nil {
 			log.Printf("⚠️ Failed to shutdown mDNS server for HTTP: %v", err)
