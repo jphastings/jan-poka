@@ -1,4 +1,4 @@
-name: Release PlatformIO projects' firmware
+name: Release firmware
 
 on:
   push:
