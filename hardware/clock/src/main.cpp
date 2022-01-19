@@ -195,11 +195,11 @@ void setupMQTT() {
     delay(500);
   }
 
-
+  Serial.print("Connected to MQTT: ");
   Serial.print(ip); Serial.print(":"); Serial.println(port);
-  // mqttClient.setServer(ip, port);
 
-  // loopMQTT();
+  mqttClient.setServer(ip, port);
+  loopMQTT();
 }
 
 
@@ -380,6 +380,7 @@ void setTimezone(double latitude, double longitude, int utcOffsetMins, int dstOf
   Serial.print("Setting timezone offsets. UTC: "); Serial.print(utcOffsetMins); Serial.print(", DST: "); Serial.println(dstOffsetMins);
   sun.setPosition(latitude, longitude, (utcOffsetMins + dstOffsetMins) / 60.0);
   configTime(utcOffsetMins * 60, dstOffsetMins * 60, NTP_SERVER);
+  updateTime();
   updateClock();
 }
 

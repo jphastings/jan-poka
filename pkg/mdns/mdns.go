@@ -2,22 +2,21 @@ package mdns
 
 import (
 	"fmt"
+
 	janpoka "github.com/jphastings/jan-poka"
 	"github.com/jphastings/jan-poka/pkg/shutdown"
-	"github.com/oleksandr/bonjour"
+
+	"github.com/grandcat/zeroconf"
 )
 
 var versionRecord = fmt.Sprintf("v=%s", janpoka.Version)
 
 func Register(name, serviceType string, port int) (func() error, error) {
-	srv, err := bonjour.Register(fmt.Sprintf("Jan Poka (%s)", name), serviceType, "local.", port, []string{versionRecord}, nil)
+	server, err := zeroconf.Register(fmt.Sprintf("Jan Poka (%s)", name), serviceType, "local.", port, []string{versionRecord}, nil)
 	if err != nil {
 		return nil, err
 	}
-	srv.Shutdown()
+	shutdown.Ensure("mDNS server", func() error { server.Shutdown(); return nil })
 
-	sd := func() error { srv.Shutdown(); return nil }
-	shutdown.Ensure("mDNS server", sd)
-
-	return sd, nil
+	return nil, nil
 }
