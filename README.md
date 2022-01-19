@@ -20,7 +20,6 @@ While executing:
 
 | $ENV_VAR            | Functionality                                                                                                                       |
 |---------------------|-------------------------------------------------------------------------------------------------------------------------------------|
-| $JP_FACING          | The direction the device is facing, in degrees clockwise from North                                                                 |
 | $JP_HOMELATITUDE    | The latitude of where the device is.                                                                                                |
 | $JP_HOMELONGITUDE   | The longitude of where the device is.                                                                                               |
 | $JP_HOMEALTITUDE    | The altitude of where the device is.                                                                                                |
