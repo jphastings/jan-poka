@@ -1,3 +1,5 @@
+name: Bump Version
+
 on:
   pull_request:
     types: [closed]
@@ -7,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Identify version bumps and tag the repo
-        uses: deliveroo/label-semver-tagger.action@v0.1.9
+        uses: deliveroo/label-semver-tagger.action@v1.0.0
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
           bump-script: versionFile
