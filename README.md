@@ -7,8 +7,10 @@ A device for bringing your distant friends a little nearer.
 Use docker to run anywhere:
 
 ```bash
-docker run --env-file .env ghcr.io/jphastings/jan-poka:latest
+docker run --env-file .env --network host ghcr.io/jphastings/jan-poka:latest
 ```
+
+NB. You must run attached to the host network, as this service uses Bonjour service discovery, so needs to know its network-visible IP address.
 
 (Assuming that you have appropriate environment variables in a file called `.env`)
 
