@@ -25,7 +25,8 @@ type Config struct {
 	UseAudio  bool `default:"false"`
 	UseMapper bool `default:"false"`
 
-	MQTTPort int `default:"1883"`
+	IPAddress string `default:""`
+	MQTTPort  int    `default:"1883"`
 
 	Persistence string `default:"~/.jan-poka"`
 
