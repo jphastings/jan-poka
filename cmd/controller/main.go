@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/jphastings/jan-poka/pkg/output/mqtt"
 	"log"
+
+	"github.com/jphastings/jan-poka/pkg/mdns"
+	"github.com/jphastings/jan-poka/pkg/output/mqtt"
 
 	"github.com/jphastings/jan-poka/pkg/common"
 	"github.com/jphastings/jan-poka/pkg/env"
@@ -39,6 +41,10 @@ func init() {
 }
 
 func main() {
+	if err := mdns.SetBroadcastInterface(environment.IPAddress); err != nil {
+		log.Fatalf("🛑 Could not find a suitable network interface: %s\n", environment.IPAddress)
+	}
+
 	callbacks := configureModules()
 	track := tracker.New(environment.Home, callbacks)
 
