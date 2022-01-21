@@ -16,15 +16,13 @@
     <Overview>Jan Poka is a suite of tools for controlling custom internet-of-things devices that help make your distant friends around the world feel closer. This 'controller' service handles API requests and publishes MQTT directives to the connected devices.</Overview>
     <TemplateURL>https://raw.githubusercontent.com/jphastings/jan-poka/master/etc/unraid/jan-poka.xml</TemplateURL>
     <Icon>https://raw.githubusercontent.com/jphastings/jan-poka/master/etc/icon.png</Icon>
-    <Config Name="API Port" Target="2678" Default="2678" Mode="tcp" Description="API service port" Type="Port" Display="always" Required="true" Mask="false"/>
+    <Config Name="Bind IP" Target="JP_IPADDRESS" Default="" Mode="tcp" Description="IP address to bind to" Type="Port" Display="advanced" Required="false" Mask="false"/>
+    <Config Name="API Port" Target="JP_PORT" Default="2678" Mode="tcp" Description="API service port" Type="Port" Display="advanced" Required="false" Mask="false"/>
+    <Config Name="MQTT Port" Target="JP_MQTTPORT" Default="1883" Mode="tcp" Description="MQTT service port" Type="Port" Display="advanced" Required="false" Mask="false"/>
     
     <Config Name="Latitude" Target="JP_HOMELATITUDE" Default="" Description="Your 'home' latitude" Type="Variable" Display="always" Required="true" Mask="false"/>
     <Config Name="Longitude" Target="JP_HOMELONGITUDE" Default="" Description="Your 'home' longitude" Type="Variable" Display="always" Required="true" Mask="false"/>
-    <Config Name="Altitude" Target="JP_HOMEALTITUDE" Default="0" Description="Your 'home' altitude in meters above seal level" Type="Variable" Display="advanced" Required="false" Mask="false"/>
-
-    <Config Name="MQTT Broker" Target="JP_MQTTBROKER" Default="mqtt.local:1883" Description="MQTT broker to use (host:port)" Type="Variable" Display="always" Required="true" Mask="false"/>
-    <Config Name="MQTT Username" Target="JP_MQTTUSERNAME" Default="" Description="The username to use while connecting to MQTT" Type="Variable" Display="always" Required="true" Mask="false"/>
-    <Config Name="MQTT Password" Target="JP_MQTTPASSWORD" Default="" Description="The password to use while connecting to MQTT" Type="Variable" Display="always" Required="true" Mask="true"/>
+    <Config Name="Altitude" Target="JP_HOMEALTITUDE" Default="0" Description="Your 'home' altitude in meters above seal level" Type="Variable" Display="advanced" Required="true" Mask="false"/>
 
     <Config Name="Google Places API key" Target="JP_GOOGLEMAPSAPIKEY" Default="" Description="To allow Google Places searches this must be a Google API key with access to the Places and Elevation APIs" Type="Variable" Display="always" Required="false" Mask="true"/>
 </Container>
