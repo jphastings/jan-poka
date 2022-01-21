@@ -21,7 +21,7 @@ func SetBroadcastInterface(target string) error {
 		return err
 	}
 
-	if target == "" {
+	if target == "" || target == "0.0.0.0" {
 		AnnounceInterfaces = ifaces
 		return nil
 	}

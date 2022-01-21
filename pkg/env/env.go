@@ -19,7 +19,7 @@ type Config struct {
 
 	HomeLatitude  Degrees `required:"true"`
 	HomeLongitude Degrees `required:"true"`
-	HomeAltitude  Meters  `required:"true"`
+	HomeAltitude  Meters  `default:"0"`
 
 	UseLog    bool `default:"true"`
 	UseAudio  bool `default:"false"`

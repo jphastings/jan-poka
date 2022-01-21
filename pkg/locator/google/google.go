@@ -3,13 +3,16 @@ package google
 import (
 	"context"
 	"fmt"
+	"time"
+
 	. "github.com/jphastings/jan-poka/pkg/common"
 	"github.com/jphastings/jan-poka/pkg/math"
 	"googlemaps.github.io/maps"
-	"time"
 )
 
 const TYPE = "google"
+
+const queryTimeout = 5 * time.Second
 
 type config struct {
 	client *maps.Client
@@ -37,7 +40,7 @@ func (c *config) SetParams(decodeInto func(interface{}) error) error {
 }
 
 func (c *config) Location() TargetDetails {
-	ctx := context.Background()
+	ctx, _ := context.WithTimeout(context.Background(), queryTimeout)
 
 	fields := []maps.PlaceSearchFieldMask{maps.PlaceSearchFieldMaskGeometryLocation}
 	if c.target.Name == "" {
@@ -66,7 +69,7 @@ func (c *config) Location() TargetDetails {
 		Latitude:  math.Degrees(place.Geometry.Location.Lat),
 		Longitude: math.Degrees(place.Geometry.Location.Lng),
 	}
-	_ = c.GuessElevation(&lla)
+	_ = c.GuessElevation(ctx, &lla)
 	return TargetDetails{
 		Name:       name,
 		Coords:     lla,
@@ -75,8 +78,9 @@ func (c *config) Location() TargetDetails {
 	}
 }
 
-func (c *config) GuessElevation(lla *math.LLACoords) error {
-	elevations, err := c.client.Elevation(context.Background(), &maps.ElevationRequest{
+func (c *config) GuessElevation(ctx context.Context, lla *math.LLACoords) error {
+	ctxTimeout, _ := context.WithTimeout(ctx, queryTimeout)
+	elevations, err := c.client.Elevation(ctxTimeout, &maps.ElevationRequest{
 		Locations: []maps.LatLng{{
 			Lat: float64(lla.Latitude),
 			Lng: float64(lla.Longitude),
