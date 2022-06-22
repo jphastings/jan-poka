@@ -6,6 +6,7 @@ import (
 )
 
 var Winkel = Projection{
+	ID: "winkel-globe",
 	Anchors: []AnchorPoint{
 		{Name: "Top top, middle", Coords: LLACoords{Latitude: 90, Longitude: 0}},
 		{Name: "Rightmost", Coords: LLACoords{Latitude: 0, Longitude: 180}},

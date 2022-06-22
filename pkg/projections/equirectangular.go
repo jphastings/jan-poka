@@ -5,6 +5,7 @@ import (
 )
 
 var Equirectangular = Projection{
+	ID: "equirectangular-globe",
 	Anchors: []AnchorPoint{
 		{Name: "Top left corner", Coords: LLACoords{Latitude: 90, Longitude: -180}},
 		{Name: "Top right corner", Coords: LLACoords{Latitude: 90, Longitude: 180}},

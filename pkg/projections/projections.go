@@ -3,6 +3,7 @@ package projections
 import "github.com/jphastings/jan-poka/pkg/math"
 
 type Projection struct {
+	ID      string
 	Anchors []AnchorPoint
 	// Normalize uses the projection to turn a Lat/Long into an arbitrarily scaled cartesian pair
 	Normalize func(math.LLACoords) Pos

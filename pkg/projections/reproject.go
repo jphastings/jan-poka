@@ -8,8 +8,14 @@ import (
 )
 
 func Reproject(img image.Image, srcPrj Projection, dstPrj Projection, dstTrans Transformer, bounds image.Rectangle) (image.Image, error) {
-	if srcPrj.Reverse == nil {
-		return nil, fmt.Errorf("source projection does not support reversing")
+	var shiftCoords func(Pos) Pos
+	if srcPrj.ID == dstPrj.ID {
+		shiftCoords = func(in Pos) Pos { return in }
+	} else {
+		if srcPrj.Reverse == nil {
+			return nil, fmt.Errorf("source projection does not support reversing")
+		}
+		shiftCoords = func(in Pos) Pos { return dstPrj.Normalize(srcPrj.Reverse(in)) }
 	}
 
 	w := img.Bounds().Max.X
@@ -25,9 +31,7 @@ func Reproject(img image.Image, srcPrj Projection, dstPrj Projection, dstTrans T
 
 	chain := func(pos Pos) Pos {
 		s := srcTrans(pos)
-		r := srcPrj.Reverse(s)
-		n := dstPrj.Normalize(r)
-		d := dstTrans(n)
+		d := dstTrans(shiftCoords(s))
 		return d
 	}
 
