@@ -1,6 +1,11 @@
 package main
 
 import (
+	"bytes"
+	_ "embed"
+)
+
+import (
 	"github.com/fogleman/gg"
 	"github.com/jphastings/jan-poka/pkg/images"
 	"github.com/jphastings/jan-poka/pkg/math"
@@ -14,6 +19,9 @@ import (
 const w = 1024
 const h = 576
 
+//go:embed earth_lights.jpeg
+var earthLights []byte
+
 func main() {
 	im := images.New(w, h, projections.Winkel)
 
@@ -22,7 +30,7 @@ func main() {
 	im.SetAnchor(2, 512, 576)
 	im.SetAnchor(3, 40, 288)
 
-	night, err := pic("earth_lights.jpeg")
+	night, _, err := image.Decode(bytes.NewBuffer(earthLights))
 	if err != nil {
 		panic(err)
 	}
@@ -35,14 +43,4 @@ func main() {
 	if err := gg.SavePNG("projector.png", im.Image()); err != nil {
 		panic(err)
 	}
-}
-
-func pic(fname string) (image.Image, error) {
-	f, err := os.Open(fname)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-	image, _, err := image.Decode(f)
-	return image, err
 }
