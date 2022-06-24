@@ -1,11 +1,13 @@
 package images
 
 import (
+	"fmt"
 	"github.com/fogleman/gg"
 	"github.com/jphastings/jan-poka/pkg/math"
 	"github.com/jphastings/jan-poka/pkg/projections"
 	"image"
 	"image/color"
+	"image/draw"
 )
 
 type ImageMap struct {
@@ -16,21 +18,17 @@ type ImageMap struct {
 	anchorSet [4]bool
 	trans     projections.Transformer
 
-	dc *gg.Context
+	dc     *gg.Context
+	target draw.Image
 
 	PointColor color.Color
 	PointSize  float64
 }
 
-func New(w, h int, prj projections.Projection) *ImageMap {
-	dc := gg.NewContext(w, h)
+func New(bounds image.Rectangle, prj projections.Projection) *ImageMap {
+	dc := gg.NewContext(bounds.Max.X, bounds.Max.Y)
 	dc.SetRGB255(0, 0, 0)
 	dc.Clear()
-
-	bounds := image.Rectangle{
-		Min: image.Point{},
-		Max: image.Point{X: w, Y: h},
-	}
 
 	return &ImageMap{
 		bounds:  bounds,
@@ -41,6 +39,10 @@ func New(w, h int, prj projections.Projection) *ImageMap {
 		PointColor: color.RGBA{R: 255, A: 255},
 		PointSize:  2,
 	}
+}
+
+func (im *ImageMap) Target(img draw.Image) {
+	im.target = img
 }
 
 func (im *ImageMap) SetAnchor(n, x, y int) bool {
@@ -80,4 +82,13 @@ func (im *ImageMap) ShowPoint(target math.LLACoords) {
 
 func (im *ImageMap) Image() image.Image {
 	return im.dc.Image()
+}
+
+func (im *ImageMap) Draw() error {
+	if im.target == nil {
+		return fmt.Errorf("no target defined")
+	}
+
+	draw.Draw(im.target, im.bounds, im.dc.Image(), image.Point{}, draw.Src)
+	return nil
 }

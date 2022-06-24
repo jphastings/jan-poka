@@ -8,6 +8,7 @@ require (
 	github.com/eiannone/keyboard v0.0.0-20200508000154-caf4b762e807
 	github.com/faiface/beep v1.1.0
 	github.com/fogleman/gg v1.3.0
+	github.com/gonutz/framebuffer v1.0.0
 	github.com/kellydunn/golang-geo v0.7.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/mochi-co/mqtt v1.0.1
