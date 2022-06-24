@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	_ "embed"
+	"github.com/fogleman/gg"
 	"github.com/gonutz/framebuffer"
 	"github.com/jphastings/jan-poka/pkg/rpi"
 	"log"
@@ -46,4 +47,6 @@ func main() {
 	if err := im.Draw(); err != nil {
 		log.Fatalf("Couldn't display map")
 	}
+
+	gg.SavePNG("projection.png", im.Image())
 }
