@@ -501,6 +501,8 @@ github.com/twuillemin/modes v0.4.0 h1:4cssAPwJ5tsQCVyPvWTqHNJiuBDuhbX4tX0N4hLU8A
 github.com/twuillemin/modes v0.4.0/go.mod h1:j7Mu6IpyPpdoGSEKFeueJ/Vgqhs3DqX+6g2z5H+UYck=
 github.com/urfave/cli v1.20.0/go.mod h1:70zkFmudgCuE/ngEzBv17Jvp/497gISqfk5gWijbERA=
 github.com/urfave/cli v1.22.1/go.mod h1:Gos4lmkARVdJ6EkW0WaNv/tZAAMe9V7XWyB60NtXRu0=
+github.com/veandco/go-sdl2 v0.4.24 h1:J+OCnPp0yfas4DAG13e3kIgC84mNxWGa3gpWYxrQQfI=
+github.com/veandco/go-sdl2 v0.4.24/go.mod h1:OROqMhHD43nT4/i9crJukyVecjPNYYuCofep6SNiAjY=
 github.com/vmihailenco/msgpack v4.0.4+incompatible h1:dSLoQfGFAo3F6OoNhwUmLwVgaUXK79GlxNBwueZn0xI=
 github.com/vmihailenco/msgpack v4.0.4+incompatible/go.mod h1:fy3FlTQTDXWkZ7Bh6AcGMlsjHatGryHQYUTf1ShIgkk=
 github.com/wroge/wgs84 v1.1.2 h1:XtPl1SApaSXxQ/noAY7ZKukCKeh9PBHcy0NZh9uAxdc=

@@ -15,6 +15,7 @@ require (
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.17.0
 	github.com/twuillemin/modes v0.4.0
+	github.com/veandco/go-sdl2 v0.4.24
 	github.com/wroge/wgs84 v1.1.2
 	go.etcd.io/bbolt v1.3.6
 	gonum.org/v1/gonum v0.11.0
