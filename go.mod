@@ -1,6 +1,8 @@
 module github.com/jphastings/jan-poka
 
-go 1.17
+go 1.23.0
+
+toolchain go1.24.3
 
 require (
 	cloud.google.com/go/texttospeech v1.1.0
@@ -25,8 +27,11 @@ require (
 	github.com/asdine/storm v2.1.2+incompatible // indirect
 	github.com/asdine/storm/v3 v3.2.1 // indirect
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
+	github.com/kr/pretty v0.2.1 // indirect
 	github.com/nxadm/tail v1.4.8 // indirect
 	github.com/rs/xid v1.3.0 // indirect
+	golang.org/x/exp/shiny v0.0.0-20250606033433-dcc06ee1d476 // indirect
+	golang.org/x/sync v0.10.0 // indirect
 )
 
 require (
@@ -34,7 +39,7 @@ require (
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/google/go-cmp v0.5.6 // indirect
+	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/googleapis/gax-go/v2 v2.1.1 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
@@ -47,17 +52,15 @@ require (
 	github.com/ziutek/mymysql v1.5.4 // indirect
 	github.com/zsefvlol/timezonemapper v1.0.0
 	go.opencensus.io v0.23.0 // indirect
-	golang.org/x/exp v0.0.0-20220104160115-025e73f80486 // indirect
-	golang.org/x/image v0.0.0-20211028202545-6944b10bf410 // indirect
-	golang.org/x/mobile v0.0.0-20220104184238-4a8be17bd2e3 // indirect
-	golang.org/x/mod v0.6.0-dev.0.20211013180041-c96bc1413d57 // indirect
-	golang.org/x/net v0.0.0-20220105145211-5b0dc2dfae98 // indirect
+	golang.org/x/image v0.14.0 // indirect
+	golang.org/x/mobile v0.0.0-20231127183840-76ac6878050a // indirect
+	golang.org/x/mod v0.22.0 // indirect
+	golang.org/x/net v0.33.0 // indirect
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8 // indirect
-	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e // indirect
-	golang.org/x/text v0.3.7 // indirect
+	golang.org/x/sys v0.28.0 // indirect
+	golang.org/x/text v0.21.0 // indirect
 	golang.org/x/time v0.0.0-20211116232009-f0f3c7e86c11 // indirect
-	golang.org/x/tools v0.1.8 // indirect
-	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
+	golang.org/x/tools v0.28.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/grpc v1.43.0 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
